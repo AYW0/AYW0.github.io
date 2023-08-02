@@ -1,5 +1,5 @@
 ---
-title: "Teaching Assistant - Exploded Ensemble"
+title: "Teaching Assistant - 57821 Exploded Ensemble"
 collection: teaching
 type: "Undergraduate course"
 permalink: /teaching/2022-fall-teaching
