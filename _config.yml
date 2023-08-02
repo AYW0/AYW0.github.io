@@ -82,11 +82,11 @@ yandex_site_verification :
 author:
   name             : "Alexander Wang"
   avatar           : "profile.png"
-  bio              : "Your biography for the left-hand sidebar"
+  bio              : "[CV/Resume]"
   location         : "Pittsburgh, USA"
   employer         : "Carnegie Mellon University"
   pubmed           : 
-  googlescholar    : "http://yourfullgooglescholarurl.com"
+  googlescholar    : "https://scholar.google.com/"
   email            :
   researchgate     :  # example: "https://www.researchgate.net/profile/yourprofile"
   uri              :
