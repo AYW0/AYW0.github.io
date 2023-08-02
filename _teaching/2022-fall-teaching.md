@@ -8,14 +8,5 @@ date: 2022-09-01
 location: "Pittsburgh, USA"
 ---
 
-Worked with Jesse Stiles and Annie Hui-Hsin Hsieh in the development of class activities and performances for the Exploded Ensemble group.
-Collaborated  with the Canadian Electronic Ensemble for their 50th anniversary performance.
-
-Heading 1
-======
-
-Heading 2
-======
-
-Heading 3
-======
+Worked with Jesse Stiles and Annie Hui-Hsin Hsieh in the development of class activities and performances for the [Exploded Ensemble](http://www.explodedensemble.org/) group.
+Collaborated  with the [Canadian Electronic Ensemble](https://www.canadianelectronicensemble.com/) for their 50th anniversary performance.
