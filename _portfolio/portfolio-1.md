@@ -1,6 +1,6 @@
 ---
 title: "Expression"
-excerpt: 'Realtime generative visuals and timbre control using machine learning pose recognition(PoseNet)<img src="/images/expression_gif.gif" alt="GIF Animation" style="max-width: 200px;">'
+excerpt: 'Realtime generative visuals and timbre control using machine learning pose recognition(PoseNet)<br><img src="/images/expression_gif.gif" alt="GIF Animation" style="max-width: 200px;">'
 collection: portfolio
 ---
 
