@@ -8,4 +8,4 @@ date: 2023-09-01
 location: "Pittsburgh, USA"
 ---
 
-Teaching a 3 credit self designed course at CMU. Lecture on varying topics related to music, computing, and design. Programming instruction using P5.js. Syllabus [here](https://www.google.com](https://drive.google.com/file/d/1-MKpeivYQDHd0Ziefjfn7tihIKY7G2vX/view?usp=sharing)https://drive.google.com/file/d/1-MKpeivYQDHd0Ziefjfn7tihIKY7G2vX/view?usp=sharing).
+Teaching a 3 credit self designed course at CMU. Lecture on varying topics related to music, computing, and design. Programming instruction using P5.js. Syllabus [here](https://drive.google.com/file/d/1-MKpeivYQDHd0Ziefjfn7tihIKY7G2vX/view?usp=sharing).
