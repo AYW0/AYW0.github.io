@@ -1,7 +1,7 @@
 ---
 title: "MARingBA - Music Adaptive Ringtones for Blended Audio Notification Delivery"
 collection: publications
-permalink: /publication/2024-05-01-MARingBA
+permalink: /publication/MARingBA
 excerpt: 'We present a novel approach that blends ringtones into background music to modulate their noticeability'
 date: 2024-05-01
 venue: 'ACM CHI(under review)'
