@@ -2,7 +2,7 @@
 title: "MARingBA - Music Adaptive Ringtones for Blended Audio Notification Delivery"
 collection: publications
 
-excerpt: 'We present a novel approach that blends ringtones into background music to modulate their noticeability <br><iframe width="560" height="315" src="https://www.youtube.com/embed/x1sri_t7UGc?si=lj6e_3TE1C14oLIl" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>'
+excerpt: 'We present a novel approach that blends ringtones into background music to modulate their noticeability <br><img src="/images/sound designer.png"  style="max-width: 200px;">'
 
 
 
