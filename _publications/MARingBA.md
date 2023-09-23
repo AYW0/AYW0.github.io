@@ -2,13 +2,13 @@
 title: "MARingBA - Music Adaptive Ringtones for Blended Audio Notification Delivery"
 collection: publications
 
-excerpt: 'We present a novel approach that blends ringtones into background music to modulate their noticeability <br><img src="/images/MARingBAfigure.png"  style="max-width: 500px;">'
+excerpt: 'We present a novel approach that blends ringtones into background music to modulate their noticeability <br><img src="/images/MARingBAfigure.png"  style="max-width: 400px;">'
 
 
 
 date: 2024-05-01
 venue: 'ACM CHI(under review)'
-paperurl: 'http://ayw0.github.io/files/paper3.pdf'
+paperurl: 'http://ayw0.github.io/files/CHI_2024_MARingBA.pdf'
 citation: 'Alexander Wang, Yi Fei Cheng, David Lindlbauer. (2024). &quot;MARingBA - Music Adaptive Ringtones for Blended Audio Notification Delivery.&quot; <i>ACM CHI</i>. 1(3).'
 ---
 <!-- permalink: /publication/MARingBA -->
