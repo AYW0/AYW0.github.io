@@ -3,7 +3,7 @@ title: "Teaching Assistant - 57821 Exploded Ensemble"
 collection: teaching
 type: "Undergraduate course"
 venue: "Carnegie Mellon University, IDEATE"
-date: 2022-09-01
+date: 2022/2023
 location: "Pittsburgh, USA"
 ---
 <!--/permalink: teaching/2022-fall-teaching-->
