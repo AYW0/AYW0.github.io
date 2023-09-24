@@ -18,7 +18,7 @@ main:
    # - title: "CV"
    #   url: /cv/
     - title: "CV"
-    url: www.google.com
+    url: /cv/
     
   # - title: "Guide"
   #   url: /markdown/
