@@ -1,5 +1,5 @@
 ---
-title: "Instructor - 98203 Music and Interaction"
+title: "Instructor - 98203 Music and Interaction (2023)"
 collection: teaching
 type: "Undergraduate course"
 permalink: /teaching/2023-fall-teaching
