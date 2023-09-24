@@ -1,5 +1,5 @@
 ---
-title: "Teaching Assistant - 57821 Exploded Ensemble"
+title: "Teaching Assistant - 57821 Exploded Ensemble (2022-2023)"
 collection: teaching
 type: "Undergraduate course"
 venue: "Carnegie Mellon University"
