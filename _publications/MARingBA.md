@@ -2,7 +2,7 @@
 title: "MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery"
 collection: publications
 
-excerpt: '<img src="/images/MARingBAfigure.png"  style="max-width: 400px;"><br> __Alexander Wang__, Yi Fei Cheng, David Lindlbauer. '
+excerpt: '<img src="/images/MARingBAfigure.png"  style="max-width: 400px;"><br> Alexander Wang, Yi Fei Cheng, David Lindlbauer. '
 
 
 
