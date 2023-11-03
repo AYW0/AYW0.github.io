@@ -5,6 +5,6 @@ sitemap: false
 permalink: /underreview/
 ---
 
-I currently have no publications. Multiple projects are ongoing and under review, check back in a few months. :)
+Many exciting research projects are currently ongoing and under review at top conferences. Please check back in a few months! :)
 
 
