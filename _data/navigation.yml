@@ -12,8 +12,8 @@ main:
   - title: "Portfolio"
     url: /portfolio/
 
-  - title: "CV"
-    url: https://drive.google.com/file/d/1HrjpZS8EW0ipBUWyLAvDbSeIj9kokOcj/view?usp=sharing
+  # - title: "CV"
+  #   url: https://drive.google.com/file/d/1HrjpZS8EW0ipBUWyLAvDbSeIj9kokOcj/view?usp=sharing
         
   # - title: "Blog Posts"
   #   url: /year-archive/
