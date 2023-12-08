@@ -9,3 +9,6 @@ location: "Pittsburgh, USA"
 ---
 
 Taught a self-designed course at CMU. Lecture on varying topics related to music, computing, and design. Programming instruction using P5.js. View the syllabus [here](https://drive.google.com/file/d/1V2fDkWqL7B-zhe_V85LqcXMyJ76ygwj4/view?usp=sharing) and student projects [here](https://www.youtube.com/watch?v=HKy8wJ2vrTM).
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/HKy8wJ2vrTM?si=Euuc9Ds9ATBQYtZc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
