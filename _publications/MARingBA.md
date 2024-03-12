@@ -7,7 +7,6 @@ date: 2024-05-01
 venue: 'ACM CHI'
 paperurl: 'https://doi.org/10.1145/3613904.3642376'
 citation: '<strong>Alexander Wang</strong>, Yi Fei Cheng, David Lindlbauer. <a href="https://doi.org/10.1145/3613904.3642376">(PDF)</a>'
-video: "https://www.youtube.com/embed/uSQJCviG-uE?si=TyIyX3H8cFnFL0lj"
 
 ---
 <!-- permalink: /publication/MARingBA -->
