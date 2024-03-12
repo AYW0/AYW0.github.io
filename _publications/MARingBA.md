@@ -7,7 +7,7 @@ excerpt: '<img src="/images/MARingBAfigure.png"  style="max-width: 400px;"><br>'
 
 
 date: 2024-05-01
-venue: 'ACM CHI 2024'
+venue: 'ACM CHI'
 paperurl: 'http://ayw0.github.io/files/CHI_2024_MARingBA.pdf'
 citation: '<strong>Alexander Wang</strong>, Yi Fei Cheng, David Lindlbauer. <a href="https://doi.org/10.1145/3613904.3642376">(PDF)</a>'
 ---
