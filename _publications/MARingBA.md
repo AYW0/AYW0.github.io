@@ -2,10 +2,7 @@
 title: "MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery"
 collection: publications
 
-excerpt: '<img src="/images/MARingBAfigure.png"  style="max-width: 400px;"><br>'
-
-
-
+<!-- excerpt: '<img src="/images/MARingBAfigure.png"  style="max-width: 400px;"><br>' -->
 date: 2024-05-01
 venue: 'ACM CHI'
 paperurl: 'https://doi.org/10.1145/3613904.3642376'
