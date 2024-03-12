@@ -65,10 +65,15 @@
       <p>Download <a href=" {{ post.paperurl }} "><u>here</u></a></p>
     {% endif %}
 
-    {% if post.video %}
+<!--     {% if post.video %}
       <div class="archive__item-video">
         <iframe width="400" height="240" src="{{ post.video }}" frameborder="0" allowfullscreen></iframe>
-      </div>
+      </div> -->
+    {% if post.video %}
+  <div class="archive__item-video">
+    <iframe width="50%" height="auto" src="{{ post.video }}" frameborder="0" allowfullscreen></iframe>
+  </div>
+{% endif %}
     {% endif %}
 
   </article>
