@@ -16,4 +16,4 @@ Before joining CMU, I earned my BS in Interactive Media Arts🎨 from New York U
 
 <h1>News</h1>
 
-[MARingBA](https://ayw0.github.io/publications/MARingBA/) received a <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;"> Best Paper Honorable Mention (top 5%)</strong> at CHI 2024!
+<strong>April 2024</strong> [MARingBA](https://ayw0.github.io/publications/MARingBA/) received a <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;"> Best Paper Honorable Mention (top 5%)</strong> at CHI 2024!
