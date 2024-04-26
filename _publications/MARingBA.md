@@ -4,7 +4,7 @@ collection: publications
 
 excerpt: '<img src="/images/MARingBAfigure.png"  style="max-width: 400px;"><br>'
 date: 2024-05-01
-venue: 'ACM CHI'
+venue: 'CHI 2024 | <strong>Best Paper Honorable Mention (top 5%)</strong>'
 paperurl: 'https://doi.org/10.1145/3613904.3642376'
 citation: '<strong>Alexander Wang</strong>, Yi Fei Cheng, David Lindlbauer. <a href="https://doi.org/10.1145/3613904.3642376">(PDF)</a>'
 
