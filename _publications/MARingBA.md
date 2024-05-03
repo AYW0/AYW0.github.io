@@ -18,6 +18,14 @@ Audio notifications provide users with an efficient way to access information be
 
 <figure>
 <audio controls>
+  <source src="../../../assets/audio/MARINGBA-hotlinebling.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+  <figcaption>Hotline bling - Drake, iPhone (Classic)</figcaption>
+</figure>
+
+<figure>
+<audio controls>
   <source src="../../../assets/audio/MARINGBA-whatislove.mp3" type="audio/mpeg">
   Your browser does not support the audio element.
 </audio>
