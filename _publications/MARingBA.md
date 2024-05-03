@@ -32,7 +32,23 @@ Audio notifications provide users with an efficient way to access information be
   <figcaption>What is love - Haddaway, Google Hangouts</figcaption>
 </figure>
 
-Listen to examples here: [https://augmented-perception.org/publications/2024-maringba.html](https://augmented-perception.org/publications/2024-maringba.html)
+<figure>
+<audio controls>
+  <source src="../../../assets/audio/MARINGBA-happy.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+  <figcaption>Happy - Pharrell Williams, Discord</figcaption>
+</figure>
+
+<figure>
+<audio controls>
+  <source src="../../../assets/audio/MARINGBA-usedtoknow.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+  <figcaption>Somebody that I used to know - Gotye, iPhone</figcaption>
+</figure>
+
+More details here: [https://augmented-perception.org/publications/2024-maringba.html](https://augmented-perception.org/publications/2024-maringba.html)
 
   <iframe width="560" height="315" src="https://www.youtube.com/embed/uSQJCviG-uE?si=TyIyX3H8cFnFL0lj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 <!--
