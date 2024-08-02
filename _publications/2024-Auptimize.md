@@ -2,7 +2,7 @@
 title: "Auptimize: Optimal Placement of Spatial Audio Cues for Extended Reality"
 collection: publications
 
-excerpt: '<img src="/images/MVAfigure.png"  style="max-width: 400px;"><br>'
+excerpt: ''
 date: 2024-10-01
 venue: 'UIST 2024'
 paperurl: 'https://doi.org/10.1145/3654777.3676424'
@@ -12,7 +12,7 @@ citation: 'Hyunsung Cho, <strong>Alexander Wang</strong>, Divya Kartik, Emily Li
 <!-- permalink: /publication/MARingBA -->
 <!-- excerpt: '<img src="/images/MARingBAfigure.png"  style="max-width: 400px;"><br>' -->
 <!--video: "https://www.youtube.com/embed/uSQJCviG-uE?si=TyIyX3H8cFnFL0lj"-->
-<img src="/images/MVAfigure.png"><br>
+
 __Abstract__    
 Spatial audio in Extended Reality (XR) provides users with better
 awareness of where virtual elements are placed, and efficiently
@@ -32,9 +32,3 @@ errors due to inter-source proximity and front-back confusion. Our
 evaluation shows that Auptimize decreases spatial audio-based source identification errors compared to playing sound cues at the
 paired visual-sound locations. We demonstrate the applicability of
 Auptimize for diverse spatial audio-based interactive XR scenarios.
-<!-- More details here: [https://augmented-perception.org/publications/2024-singing-assistants.html](https://augmented-perception.org/publications/2024-singing-assistants.html)
-
-<!--<iframe width="560" height="315" src="https://www.youtube.com/embed/uSQJCviG-uE?si=TyIyX3H8cFnFL0lj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-<!--
-[View paper here](https://doi.org/10.1145/3613904.3642376)
-Alexander Wang, David Lindlbauer, Chris Donahue. (2024). "Towards Music-Aware Virtual Assistants" <i>ACM UIST</i>. -->
