@@ -1,0 +1,56 @@
+---
+title: "Towards Music-Aware Virtual Assistants"
+collection: publications
+
+excerpt: '<img src="/images/MARingBAfigure.png"  style="max-width: 400px;"><br>'
+date: 2024-10-01
+venue: 'UIST 2024'
+paperurl: 'https://doi.org/10.1145/3654777.3676416'
+citation: '<strong>Alexander Wang</strong>, David Lindlbauer, Chris Donahue. <a href="https://doi.org/10.1145/3654777.3676416">(PDF)</a>'
+
+---
+<!-- permalink: /publication/MARingBA -->
+<!-- excerpt: '<img src="/images/MARingBAfigure.png"  style="max-width: 400px;"><br>' -->
+<!--video: "https://www.youtube.com/embed/uSQJCviG-uE?si=TyIyX3H8cFnFL0lj"-->
+__Abstract__    
+We propose a system for modifying spoken notifications in a manner that is sensitive to the music a user is listening to. Spoken notifications provide convenient access to rich information without the need for a screen. Virtual assistants see prevalent use in hands-free settings such as driving or exercising, activities where users also regularly enjoy listening to music. In such settings, virtual assistants will temporarily mute a user's music to improve intelligibility. However, users may perceive these interruptions as intrusive, negatively impacting their music-listening experience. To address this challenge, we propose the concept of music-aware virtual assistants, where speech notifications are modified to resemble a voice singing in harmony with the user's music. We contribute a system that processes user music and notification text to produce a blended mix, replacing original song lyrics with the notification content. In a user study comparing musical assistants to standard virtual assistants, participants expressed that musical assistants fit better with music, reduced intrusiveness, and provided a more delightful listening experience overall.
+
+<figure>
+<audio controls>
+  <source src="../../../assets/audio/MARINGBA-hotlinebling.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+  <figcaption>Hotline bling - Drake, iPhone (Classic)</figcaption>
+</figure>
+
+<figure>
+<audio controls>
+  <source src="../../../assets/audio/MARINGBA-whatislove.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+  <figcaption>What is love - Haddaway, Google Hangouts</figcaption>
+</figure>
+
+<figure>
+<audio controls>
+  <source src="../../../assets/audio/MARINGBA-happy.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+  <figcaption>Happy - Pharrell Williams, Discord</figcaption>
+</figure>
+
+<figure>
+<audio controls>
+  <source src="../../../assets/audio/MARINGBA-usedtoknow.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+  <figcaption>Somebody that I used to know - Gotye, iPhone</figcaption>
+</figure>
+
+More details here: [https://augmented-perception.org/publications/2024-singing-assistants.html](https://augmented-perception.org/publications/2024-singing-assistants.html)
+
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/uSQJCviG-uE?si=TyIyX3H8cFnFL0lj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<!--
+[View paper here](https://doi.org/10.1145/3613904.3642376)
+
+Alexander Wang, David Lindlbauer, Chris Donahue. (2024). "Towards Music-Aware Virtual Assistants" <i>ACM UIST</i>. -->
