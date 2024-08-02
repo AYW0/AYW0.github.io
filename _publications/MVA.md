@@ -2,7 +2,7 @@
 title: "Towards Music-Aware Virtual Assistants"
 collection: publications
 
-excerpt: '<img src="/images/MARingBAfigure.png"  style="max-width: 400px;"><br>'
+excerpt: '<img src="/images/MVAfigure.png"  style="max-width: 400px;"><br>'
 date: 2024-10-01
 venue: 'UIST 2024'
 paperurl: 'https://doi.org/10.1145/3654777.3676416'
@@ -17,34 +17,34 @@ We propose a system for modifying spoken notifications in a manner that is sensi
 
 <figure>
 <audio controls>
-  <source src="../../../assets/audio/MARINGBA-hotlinebling.mp3" type="audio/mpeg">
+  <source src="../../../assets/audio/MVA-getlucky.mp3" type="audio/mpeg">
   Your browser does not support the audio element.
 </audio>
-  <figcaption>Hotline bling - Drake, iPhone (Classic)</figcaption>
+  <figcaption>Get lucky - Daft Punk, "your flight to New York is boarding now"</figcaption>
 </figure>
 
 <figure>
 <audio controls>
-  <source src="../../../assets/audio/MARINGBA-whatislove.mp3" type="audio/mpeg">
+  <source src="../../../assets/audio/MVA-disturbia.mp3" type="audio/mpeg">
   Your browser does not support the audio element.
 </audio>
-  <figcaption>What is love - Haddaway, Google Hangouts</figcaption>
+  <figcaption>Disturbia - Rihanna, "trash pickup at 10 am today"</figcaption>
 </figure>
 
 <figure>
 <audio controls>
-  <source src="../../../assets/audio/MARINGBA-happy.mp3" type="audio/mpeg">
+  <source src="../../../assets/audio/MVA-crawling.mp3" type="audio/mpeg">
   Your browser does not support the audio element.
 </audio>
-  <figcaption>Happy - Pharrell Williams, Discord</figcaption>
+  <figcaption>Crawling - Linkin Park, "assignment due tonight"</figcaption>
 </figure>
 
 <figure>
 <audio controls>
-  <source src="../../../assets/audio/MARINGBA-usedtoknow.mp3" type="audio/mpeg">
+  <source src="../../../assets/audio/MVA-spain.mp3" type="audio/mpeg">
   Your browser does not support the audio element.
 </audio>
-  <figcaption>Somebody that I used to know - Gotye, iPhone</figcaption>
+  <figcaption>Spain - Chick Corea, "new meeting invitation"</figcaption>
 </figure>
 
 More details here: [https://augmented-perception.org/publications/2024-singing-assistants.html](https://augmented-perception.org/publications/2024-singing-assistants.html)
