@@ -180,6 +180,7 @@ collections:
     permalink: /:collection/:path/
   publications:
     output: true
+    sort_by: date
     permalink: /:collection/:path/
   portfolio:
     output: true
