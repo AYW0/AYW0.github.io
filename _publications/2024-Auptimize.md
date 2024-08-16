@@ -1,4 +1,3 @@
-<!--
 ---
 title: "Auptimize: Optimal Placement of Spatial Audio Cues for Extended Reality"
 collection: publications
