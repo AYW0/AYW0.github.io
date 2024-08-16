@@ -2,14 +2,14 @@
 title: "Auptimize: Optimal Placement of Spatial Audio Cues for Extended Reality"
 collection: publications
 
-excerpt: ''
+excerpt: '<img src="/images/auptimizefigure.png"  style="max-width: 400px;"><br>'
 date: 2024-10-01
 venue: 'UIST 2024'
 paperurl: 'https://doi.org/10.1145/3654777.3676424'
 citation: 'Hyunsung Cho, <strong>Alexander Wang</strong>, Divya Kartik, Emily Liying Xie, Yukang Yan, David Lindlbauer. <a href="https://doi.org/10.1145/3654777.3676424">(PDF)</a>'
 
 ---
-
+<img src="/images/auptimizefigure.png"><br>
 
 __Abstract__    
 Spatial audio in Extended Reality (XR) provides users with better
