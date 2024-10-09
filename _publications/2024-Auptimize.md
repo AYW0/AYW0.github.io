@@ -30,3 +30,7 @@ errors due to inter-source proximity and front-back confusion. Our
 evaluation shows that Auptimize decreases spatial audio-based source identification errors compared to playing sound cues at the
 paired visual-sound locations. We demonstrate the applicability of
 Auptimize for diverse spatial audio-based interactive XR scenarios.
+
+More details here: [https://augmented-perception.org/publications/2024-auptimize.html](https://augmented-perception.org/publications/2024-auptimize.html)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/w3ieaFBVOzQ?si=UbnfInWrXDySzy-n" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
