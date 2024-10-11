@@ -8,11 +8,11 @@ redirect_from:
   - /about.html
 ---
 
-Hi! I'm Alexander, a visiting researcher at the University of Michigan. I currently work with Dhruv Jain and the [Soundability Lab](https://accessibility.eecs.umich.edu/) on sound-related HCI research. My research interests generally revolve around designing, developing, and evaluating innovative approaches in HCI, often drawing from my interdisciplinary background in media arts and music computing. I am particularly interested in the intelligent adaptation of sound (including music) content to better fit different scenarios that users may encounter.
+Hi! I'm Alexander, a visiting researcher at the University of Michigan. I currently work with Dhruv Jain and the [Soundability Lab](https://accessibility.eecs.umich.edu/) on sound-related HCI research. My research interest lies at the intersection of **technical human-computer interaction** (HCI), and **sound and music computing**. I develop innovative systems that **intelligently adapt sounds based on usage contexts** to provide better user experiences.
 
-I recently graduated from Carnegie Mellon University, where I worked with David Lindlbauer ([Augmented Perception Lab](https://augmented-perception.org/)) and Chris Donahue ([Generative Creativity Lab](https://chrisdonahue.com/)) on exciting research projects involving the seamless integration of audio notifications into user music. This work led to publications in premier HCI conferences including CHI and UIST, and have been honored with a best paper honorable mention award at CHI 2024.
+I recently graduated from Carnegie Mellon University as a master's student, where I worked with David Lindlbauer ([Augmented Perception Lab](https://augmented-perception.org/)) and Chris Donahue ([Generative Creativity Lab](https://chrisdonahue.com/)) on exciting research projects involving the seamless integration of audio notifications into user music. This work led to publications in premier **HCI conferences including ACM CHI and UIST**, and have been honored with a best paper honorable mention award at CHI 2024.
 
-Before that, I received my BS in Interactive Media Arts🎨 from New York University (Shanghai), where I also minored in Computer Science💻, Game Design🎮, and Music🎼. I'm an avid gamer and music enthusiast. I find as much joy in playing games and listening to music as I do in creating my own [games](https://ayw0.github.io/portfolio/) and [music](https://soundcloud.com/alex-wang-796617401/sets/alexs-compositions/s-NJGasTQyLPD).
+Before that, I received my BS in Interactive Media Arts🎨 from New York University (Shanghai), where I also minored in Computer Science💻, Game Design🎮, and Music🎼. In my free time, I enjoy playing video games and listening to music. I also enjoy creating my own [games](https://ayw0.github.io/portfolio/) and [music](https://soundcloud.com/alex-wang-796617401/sets/alexs-compositions/s-NJGasTQyLPD).
 
 <h1>News</h1>
 
