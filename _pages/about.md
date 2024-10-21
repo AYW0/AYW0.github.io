@@ -19,3 +19,5 @@ Before that, I received my BS in Interactive Media Arts🎨 from New York Univer
 <strong>June 2024</strong> Excited to join the [Soundability Lab](https://accessibility.eecs.umich.edu/)!
 
 <strong>April 2024</strong> [MARingBA](https://ayw0.github.io/publications/2024-MARingBA/) received a <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;"> Best Paper Honorable Mention (top 5%)</strong> at CHI 2024!
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/PFd-AhcDPoA?si=qvEmte_Q-46YAAoN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
