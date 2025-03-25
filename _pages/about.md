@@ -8,13 +8,16 @@ redirect_from:
   - /about.html
 ---
 
-Hi! I’m Alexander, a visiting researcher at the University of Michigan, currently working with Dhruv Jain and the [Soundability Lab](https://accessibility.eecs.umich.edu/). My work lies at the intersection of **technical human-computer interaction** and **music computing**, where I aim to revolutionize the way we engage with music through adaptive experiences. To achieve this, my current research focuses on two key areas: **(1) developing context-aware systems** that intelligently adapt and generate music to enhance user experiences, and **(2) creating AI-driven tools** that support content creators in authoring such experiences.
+Hi! I’m Alex, an incoming PhD student at the Human-Computer Interaction Institute (HCII) at Carnegie Mellon University. I work with Professors David Lindlbauer ([Augmented Perception Lab](https://augmented-perception.org/)) and Chris Donahue ([Generative Creativity Lab](https://chrisdonahue.com/)). 
 
-I recently graduated from Carnegie Mellon University as a master's student, where I worked with David Lindlbauer ([Augmented Perception Lab](https://augmented-perception.org/)) and Chris Donahue ([Generative Creativity Lab](https://chrisdonahue.com/)) on exciting research projects involving the seamless integration of audio notifications into user music. This work led to publications in premier **HCI conferences including ACM CHI and UIST**, and have been honored with a best paper honorable mention award at CHI 2024.
+My work lies at the intersection of **technical human-computer interaction** and **music computing**, where I aim to revolutionize how we engage with sound and music through adaptive experiences. To achieve this, my current research focuses on two key areas: **(1) developing context-aware systems** that intelligently adapt and generate audio to enhance user experiences, and **(2) creating AI-driven tools** that support content creators in authoring such experiences. My work in adaptive audio has been published in premier **HCI conferences including ACM CHI and UIST**, with a best paper honorable mention award at CHI 2024.
 
-Before that, I received my BS in Interactive Media Arts🎨 from New York University (Shanghai), where I also minored in Computer Science💻, Game Design🎮, and Music🎼. In my free time, I enjoy playing video games and listening to music. I also enjoy creating my own [games](https://ayw0.github.io/portfolio/) and [music](https://soundcloud.com/alex-wang-796617401/sets/alexs-compositions/s-NJGasTQyLPD).
+
+Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [Soundability Lab](https://accessibility.eecs.umich.edu/), University of Michigan. I hold an MS in Music and Technology from Carnegie Mellon University, and a BS in Interactive Media Arts🎨 from NYU Shanghai, where I also minored in Computer Science💻, Game Design🎮, and Music🎼.
+
 
 <h1>News</h1>
+<strong>February 2025</strong> I will join CMU HCII as a PhD student starting Fall 2025!
 
 <strong>June 2024</strong> Excited to join the [Soundability Lab](https://accessibility.eecs.umich.edu/)!
 
