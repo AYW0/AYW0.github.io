@@ -8,7 +8,7 @@ redirect_from:
   - /about.html
 ---
 
-Hi! I’m Alex, an incoming PhD student at the Human-Computer Interaction Institute (HCII) at Carnegie Mellon University. I work with Professors David Lindlbauer ([Augmented Perception Lab](https://augmented-perception.org/)) and Chris Donahue ([Generative Creativity Lab](https://chrisdonahue.com/)). 
+Hi! I’m Alex, an incoming PhD student in the Human-Computer Interaction Institute (HCII) at Carnegie Mellon University. I work with Professors David Lindlbauer ([Augmented Perception Lab](https://augmented-perception.org/)) and Chris Donahue ([Generative Creativity Lab](https://chrisdonahue.com/)). 
 
 My work lies at the intersection of **technical human-computer interaction** and **music computing**, where I aim to revolutionize how we engage with sound and music through adaptive experiences. To achieve this, my current research focuses on two key areas: **(1) developing context-aware systems** that intelligently adapt and generate audio to enhance user experiences, and **(2) creating AI-driven tools** that support content creators in authoring such experiences. My work in adaptive audio has been published in premier **HCI conferences including ACM CHI and UIST**, with a best paper honorable mention award at CHI 2024.
 
