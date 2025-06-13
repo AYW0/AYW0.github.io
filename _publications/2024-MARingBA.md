@@ -4,7 +4,7 @@ collection: publications
 
 excerpt: '<img src="/images/MARingBAfigureedit.png"  style="max-width: 400px;"><br>'
 date: 2024-05-01
-venue: 'CHI 2024 | <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;"> Best Paper Honorable Mention (top 5%)</strong>
+venue: 'CHI ’24: Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems| <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;"> Best Paper Honorable Mention (top 5%)</strong>
 '
 paperurl: 'https://doi.org/10.1145/3613904.3642376'
 citation: '<strong>Alexander Wang</strong>, Yi Fei Cheng, David Lindlbauer. <a href="https://doi.org/10.1145/3613904.3642376">(PDF)</a>'
@@ -55,5 +55,5 @@ More details here: [https://augmented-perception.org/publications/2024-maringba.
 <!--   <iframe width="560" height="315" src="https://www.youtube.com/embed/uSQJCviG-uE?si=TyIyX3H8cFnFL0lj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe> -->
 <!--
 [View paper here](https://doi.org/10.1145/3613904.3642376)
-
 Alexander Wang, Yi Fei Cheng, David Lindlbauer. (2024). "MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery" <i>ACM CHI</i>. -->
+
