@@ -24,3 +24,22 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
 <strong>April 2024</strong> [MARingBA](https://ayw0.github.io/publications/2024-MARingBA/) received a <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;"> Best Paper Honorable Mention (top 5%)</strong> at CHI 2024!
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/PFd-AhcDPoA?si=qvEmte_Q-46YAAoN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<!--
+<div style="display: flex; flex-wrap: wrap; margin-bottom: 2em;">
+-->
+<h1>Selected Publications</h1>
+See [all publications](https://ayw0.github.io/publications/)
+  <!-- Left: YouTube Embed -->
+  <div style="flex: 1; min-width: 300px; max-width: 500px;">
+    <iframe width="100%" height="280" src="https://www.youtube.com/embed/G6gvRIKrGvw?si=oSedKrVMw7hatkwG" frameborder="0" allowfullscreen></iframe>
+  </div>
+
+  <!-- Right: Publication Details -->
+  <div style="flex: 2; padding-left: 20px; min-width: 300px;">
+    <h3 style="margin-top: 0;">RISE: Adaptive Music Playback for Realtime Intensity Synchronization with Exercise</h3>
+    <p><strong>Alexander Wang</strong>, Chris Donahue, Dhruv Jain</p>
+    <p><i>ISMIR 2025: Proceedings of the 26th International Society for Music Information Retrieval Conference</i></p>
+  </div>
+
+</div>
+
