@@ -29,6 +29,8 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
 -->
 <h1>Selected Publications</h1>
 See [all publications](https://ayw0.github.io/publications/)
+
+<div style="display: flex; flex-wrap: wrap; margin-bottom: 2em;">
   <!-- Left: YouTube Embed -->
   <div style="flex: 1; min-width: 300px; max-width: 500px;">
     <iframe width="100%" height="280" src="https://www.youtube.com/embed/G6gvRIKrGvw?si=oSedKrVMw7hatkwG" frameborder="0" allowfullscreen></iframe>
