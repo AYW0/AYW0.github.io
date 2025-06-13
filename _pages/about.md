@@ -30,10 +30,14 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
 <h1>Selected Publications</h1>
 See [all publications](https://ayw0.github.io/publications/)
 
-<div style="display: flex; flex-wrap: wrap; margin-bottom: 2em;">
-  <!-- Left: YouTube Embed -->
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; margin-bottom: 2em;">
+  <!-- Left: Responsive YouTube Embed -->
   <div style="flex: 1; min-width: 300px; max-width: 500px;">
-    <iframe width="100%" height="280" src="https://www.youtube.com/embed/G6gvRIKrGvw?si=oSedKrVMw7hatkwG" frameborder="0" allowfullscreen></iframe>
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+      <iframe src="https://www.youtube.com/embed/G6gvRIKrGvw?si=oSedKrVMw7hatkwG"
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+              frameborder="0" allowfullscreen></iframe>
+    </div>
   </div>
 
   <!-- Right: Publication Details -->
@@ -42,6 +46,5 @@ See [all publications](https://ayw0.github.io/publications/)
     <p><strong>Alexander Wang</strong>, Chris Donahue, Dhruv Jain</p>
     <p><i>ISMIR 2025: Proceedings of the 26th International Society for Music Information Retrieval Conference</i></p>
   </div>
-
 </div>
 
