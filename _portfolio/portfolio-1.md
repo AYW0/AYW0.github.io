@@ -1,6 +1,6 @@
 ---
 title: "Expression"
-excerpt: 'Realtime generative visuals and timbre control using machine learning pose recognition(PoseNet)<br><img src="/images/expression_gif.gif" alt="GIF Animation" style="max-width: 200px;">'
+excerpt: 'Realtime generative visuals and timbre control using machine learning pose recognition (PoseNet)<br><img src="/images/expression_gif.gif" alt="GIF Animation" style="max-width: 200px;">'
 collection: portfolio
 ---
 
@@ -13,4 +13,4 @@ This project was initially built as a pose recognition rhythm game. Try it [here
 <iframe width="560" height="315" src="https://www.youtube.com/embed/718UbCU_8IQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 <br>
 
-Both songs used in the video are of my original production, check out my [SoundCloud playlist](https://soundcloud.com/alex-wang-796617401/sets/alexs-compositions/s-NJGasTQyLPD) for more.
+Both songs used in the video are my original production. Check out my [SoundCloud playlist](https://soundcloud.com/alex-wang-796617401/sets/alexs-compositions/s-NJGasTQyLPD) for more.
