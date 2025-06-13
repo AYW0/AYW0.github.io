@@ -22,22 +22,47 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
 <strong>June 2024</strong> Excited to join the [Soundability Lab](https://accessibility.eecs.umich.edu/)!
 
 <strong>April 2024</strong> [MARingBA](https://ayw0.github.io/publications/2024-MARingBA/) received a <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;"> Best Paper Honorable Mention (top 5%)</strong> at CHI 2024!
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/PFd-AhcDPoA?si=qvEmte_Q-46YAAoN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<!--
+<iframe width="560" height="315" src="https://www.youtube.com/embed/PFd-AhcDPoA?si=qvEmte_Q-46YAAoN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe> -->
 <!--
 <div style="display: flex; flex-wrap: wrap; margin-bottom: 2em;">
 -->
 <h1>Selected Publications</h1>
 See [all publications](https://ayw0.github.io/publications/)
 
-<div style="display: flex; flex-wrap: wrap; align-items: flex-start; margin-bottom: 2em;">
-  <!-- Left: Responsive YouTube Embed -->
+<!-- CHI 2024 Paper -->
+<div style="display: flex; flex-wrap: wrap; margin-bottom: 3em; align-items: flex-start;">
   <div style="flex: 1; min-width: 300px; max-width: 500px;">
-    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
-      <iframe src="https://www.youtube.com/embed/G6gvRIKrGvw?si=oSedKrVMw7hatkwG"
-              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-              frameborder="0" allowfullscreen></iframe>
-    </div>
+    <iframe width="100%" height="280" src="https://www.youtube.com/embed/PFd-AhcDPoA?si=qvEmte_Q-46YAAoN" frameborder="0" allowfullscreen></iframe>
+  </div>
+
+  <div style="flex: 2; padding-left: 20px; min-width: 300px;">
+    <h3 style="margin-top: 0;">MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery</h3>
+    <p><strong>Alexander Wang</strong>, Yi Fei Cheng, David Lindlbauer</p>
+    <p><i>CHI 2024: Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems <br> <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;">Best Paper Honorable Mention (top 5%)</strong></i></p>
+    <p><a href="https://doi.org/10.1145/3613904.3642376" target="_blank" rel="noopener noreferrer">[PDF]</a></p>
+  </div>
+</div>
+
+<!-- UIST 2024 Paper -->
+<div style="display: flex; flex-wrap: wrap; margin-bottom: 3em; align-items: flex-start;">
+  <div style="flex: 1; min-width: 300px; max-width: 500px;">
+    <iframe width="100%" height="280" src="https://www.youtube.com/embed/CRGXo4Rg5uM?si=J4Q6-UPToWkpHQU2" frameborder="0" allowfullscreen></iframe>
+  </div>
+
+  <div style="flex: 2; padding-left: 20px; min-width: 300px;">
+    <h3 style="margin-top: 0;">Towards Music-Aware Virtual Assistants</h3>
+    <p><strong>Alexander Wang</strong>, David Lindlbauer, Chris Donahue</p>
+    <p><i>UIST 2024: Proceedings of the 37th Annual ACM Symposium on User Interface Software and Technology</i></p>
+    <p><a href="https://doi.org/10.1145/3654777.3676416" target="_blank" rel="noopener noreferrer">[PDF]</a></p>
+  </div>
+</div>
+
+<!-- RISE Paper -->
+<div style="display: flex; flex-wrap: wrap; margin-bottom: 3em; align-items: flex-start;">
+  <!-- Left: YouTube Embed -->
+  <div style="flex: 1; min-width: 300px; max-width: 500px;">
+    <iframe width="100%" height="280" src="https://www.youtube.com/embed/G6gvRIKrGvw?si=oSedKrVMw7hatkwG" frameborder="0" allowfullscreen></iframe>
   </div>
 
   <!-- Right: Publication Details -->
@@ -47,4 +72,7 @@ See [all publications](https://ayw0.github.io/publications/)
     <p><i>ISMIR 2025: Proceedings of the 26th International Society for Music Information Retrieval Conference</i></p>
   </div>
 </div>
+
+
+
 
