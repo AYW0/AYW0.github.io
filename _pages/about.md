@@ -23,9 +23,10 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
 
 <strong>April 2024</strong> [MARingBA](https://ayw0.github.io/publications/2024-MARingBA/) received a <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;"> Best Paper Honorable Mention (top 5%)</strong> at CHI 2024!
 
-<iframe width="100%" height="480" src="https://www.youtube.com/embed/uSQJCviG-uE?si=TyIyX3H8cFnFL0lj" 
-title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/uSQJCviG-uE?si=TyIyX3H8cFnFL0lj"
+title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 allowfullscreen></iframe>
+
 
 
 
