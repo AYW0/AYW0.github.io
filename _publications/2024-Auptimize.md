@@ -4,7 +4,7 @@ collection: publications
 
 excerpt: '<img src="/images/auptimizefigure.png"  style="max-width: 400px;"><br>'
 date: 2024-10-01
-venue: 'UIST 2024'
+venue: 'UIST 2024: Proceedings of the 37th Annual ACM Symposium on User Interface Software and Technology'
 paperurl: 'https://doi.org/10.1145/3654777.3676424'
 citation: 'Hyunsung Cho, <strong>Alexander Wang</strong>, Divya Kartik, Emily Liying Xie, Yukang Yan, David Lindlbauer. <a href="https://doi.org/10.1145/3654777.3676424">(PDF)</a>'
 
