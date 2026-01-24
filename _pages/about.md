@@ -17,7 +17,7 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
 <h1>Selected Publications</h1>
 
 
-  <h2 style="margin:0; font-size:1.5em; border-bottom:none;"><strong>MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery</strong></h2>
+  <h2 style="margin:0; font-size:1.5em; border-bottom:none !important;"><strong>MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery</strong></h2>
   <a href="https://dl.acm.org/doi/10.1145/3613904.3642376">(PDF)</a> | 
   <a href="https://www.youtube.com/watch?v=PFd-AhcDPoA">(Video)</a><br>
   Alex Wang, Yi Fei Cheng, David Lindlbauer <br>
@@ -27,7 +27,7 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
 
 
 
-   <h2 style="margin:0; font-size:1.5em; border-bottom:none;"><strong>Towards Music-Aware Virtual Assistants</strong></h2>
+   <h2 style="margin:0; font-size:1.5em; border-bottom:none !important;"><strong>Towards Music-Aware Virtual Assistants</strong></h2>
   <a href="https://doi.org/10.1145/3654777.3676416">(PDF)</a> | 
   <a href="https://www.youtube.com/watch?v=CRGXo4Rg5uM">(Video)</a><br>
   Alexander Wang, David Lindlbauer, Chris Donahue <br>
@@ -36,7 +36,7 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
 
 
 
-   <h2 style="margin:0; font-size:1.5em; border-bottom:none;"><strong>RISE: Music Rearrangement for Realtime Intensity Synchronization With Exercise</strong></h2>
+   <h2 style="margin:0; font-size:1.5em; border-bottom:none !important;"><strong>RISE: Music Rearrangement for Realtime Intensity Synchronization With Exercise</strong></h2>
   <a href="https://zenodo.org/records/17706321">(PDF)</a> | 
   <a href="https://www.youtube.com/watch?v=XZLBfpt6Lgg">(Video)</a><br>
   Alex Wang, Chris Donahue, Dhruv Jain <br>
