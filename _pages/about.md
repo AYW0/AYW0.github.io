@@ -20,7 +20,7 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
   <h2 style="margin:0; font-size:1.2em; border-bottom:none !important;"><strong>MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery</strong></h2>
   <a href="https://dl.acm.org/doi/10.1145/3613904.3642376">(PDF)</a> | 
   <a href="https://www.youtube.com/watch?v=PFd-AhcDPoA">(Video)</a><br>
-  Alex Wang, Yi Fei Cheng, David Lindlbauer <br>
+  Alexander Wang, Yi Fei Cheng, David Lindlbauer <br>
   <em>CHI 2024: Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems</em><br>
   <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;"> Best Paper Honorable Mention (top 5%)</strong><br>
   <img src="/images/MARingBAfigureedit.png" alt="MARingBA Paper Image" width="400">
@@ -39,7 +39,7 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
    <h2 style="margin:0; font-size:1.2em; border-bottom:none !important;"><strong>RISE: Music Rearrangement for Realtime Intensity Synchronization With Exercise</strong></h2>
   <a href="https://zenodo.org/records/17706321">(PDF)</a> | 
   <a href="https://www.youtube.com/watch?v=XZLBfpt6Lgg">(Video)</a><br>
-  Alex Wang, Chris Donahue, Dhruv Jain <br>
+  Alexander Wang, Chris Donahue, Dhruv Jain <br>
   <em>ISMIR 2025: Proceedings of the 26th International Society for Music Information Retrieval Conference</em><br>
   <img src="/images/RiseTeaserFig.png" alt="RISE Paper Image" width="400">
 
