@@ -17,29 +17,29 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
 <h1>Selected Publications</h1>
 
 <p>
-  <strong>MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery</strong><br>
+  <h2><strong>MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery</strong><h2><br>
   Alex Wang, Yi Fei Cheng, David Lindlbauer <a href="https://dl.acm.org/doi/10.1145/3613904.3642376">(PDF)</a> | 
   <a href="https://www.youtube.com/watch?v=PFd-AhcDPoA">(Video)</a><br>
   <em>CHI 2024: Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems</em><br>
   <i class="fas fa-award" style="color: red;"></i> <strong style="color: red;"> Best Paper Honorable Mention (top 5%)</strong><br>
-  <img src="/images/MARingBAfigureedit.png" alt="MARingBA Paper Image" width="200">
+  <img src="/images/MARingBAfigureedit.png" alt="MARingBA Paper Image" width="400">
 </p>
 
 <p>
-  <strong>Towards Music-Aware Virtual Assistants</strong><br>
+   <h2><strong>Towards Music-Aware Virtual Assistants</strong><h2><br>
   Alexander Wang, David Lindlbauer, Chris Donahue <a href="https://doi.org/10.1145/3654777.3676416">(PDF)</a> | 
   <a href="https://www.youtube.com/watch?v=CRGXo4Rg5uM">(Video)</a><br>
   <em>UIST 2024: Proceedings of the 37th Annual ACM Symposium on User Interface Software and Technology</em><br>
-  <img src="/images/MVAfigure.png" alt="Towards Music-Aware Virtual Assistants Paper Image" style="max-width: 400px;">
+  <img src="/images/MVAfigure.png" alt="Towards Music-Aware Virtual Assistants Paper Image" width="400">
 </p>
 
 <p>
-  <strong>RISE: Music Rearrangement for Realtime Intensity Synchronization With Exercise</strong><br>
+   <h2><strong>RISE: Music Rearrangement for Realtime Intensity Synchronization With Exercise</strong><h2><br>
   <a href="https://zenodo.org/records/17706321">(PDF)</a> | 
   <a href="https://www.youtube.com/watch?v=XZLBfpt6Lgg">(Video)</a><br>
   Alex Wang, Chris Donahue, Dhruv Jain <br>
-  <em>ISMIR 2025: Proceedings of the 26th International Society for Music Information Retrieval Conference</em>
-  <img src="/images/RiseTeaserFig.png" alt="RISE Paper Image" width="200">
+  <em>ISMIR 2025: Proceedings of the 26th International Society for Music Information Retrieval Conference</em><br>
+  <img src="/images/RiseTeaserFig.png" alt="RISE Paper Image" width="400">
 </p>
 <!-- <h1>News</h1>
 
