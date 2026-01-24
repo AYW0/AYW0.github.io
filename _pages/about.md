@@ -14,7 +14,7 @@ My research envisions a future where media adapts intelligently to the context o
 
 Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [Soundability Lab](https://accessibility.eecs.umich.edu/), University of Michigan. I hold an MS in Music and Technology from Carnegie Mellon University, and a BS in Interactive Media Arts🎨 from NYU Shanghai, where I also minored in Computer Science💻, Game Design🎮, and Music🎼.
 
-<h1 style="font-size:2em; border-bottom:1px solid #ccc; padding-bottom:0.5em; margin-top:1em; margin-bottom:0.5em;">Selected Publications</h1>
+<h1 style="font-size:1.5em; border-bottom:1px solid #ccc; padding-bottom:0.5em; margin-top:1em; margin-bottom:0.5em;">Selected Publications</h1>
 
 
   <h2 style="margin:0; font-size:1.2em; border-bottom:none !important;"><strong>MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery</strong></h2>
