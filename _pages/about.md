@@ -17,7 +17,7 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
 
 <ul style="list-style-type: none; padding-left: 0;">
   <li><strong>May 2026</strong> 💼 Joining Adobe (SF) as a <strong>Research Scientist Intern</strong></li>
-  <li><strong>April 2026</strong> ✈️ Attending <strong>CHI 2026</strong></a> in Barcelona 🇪🇸 with 2 co-authored papers: 
+  <li><strong>April 2026</strong> ✈️ Attending <strong>CHI 2026</strong> in Barcelona 🇪🇸 with 2 co-authored papers: 
     <a href="https://arxiv.org/abs/2602.05064">Live Music Agents</a> and 
     <a href="https://arxiv.org/abs/2601.22082">Auditorily Embodied Agents</a>
   </li>
