@@ -13,6 +13,15 @@ Hi! I’m Alex, a first-year PhD student in the Human-Computer Interaction Insti
 My research envisions a future where media adapts intelligently to the context of its consumption. To achieve this, my current work focuses on three complementary areas: **(1) Understanding human perception** and engagement with media across different consumption contexts to shape opportunities for media to adapt and enhance user experience, **(2) developing AI-driven methods** for media generation and transformation to open up a design space for media adaptation, and **(3) building design tools** that enable creators to author adaptive content. My work in adaptive music has been published in premier **HCI conferences including ACM CHI and UIST**, with a best paper honorable mention award at CHI 2024.
 
 Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [Soundability Lab](https://accessibility.eecs.umich.edu/), University of Michigan. I hold an MS in Music and Technology from Carnegie Mellon University, and a BS in Interactive Media Arts🎨 from NYU Shanghai, where I also minored in Computer Science💻, Game Design🎮, and Music🎼.
+<h1 style="font-size:1.5em; border-bottom:1px solid #ccc; padding-bottom:0.5em; margin-top:1em; margin-bottom:0.5em;">News</h1>
+
+<ul style="list-style-type: none; padding-left: 0;">
+  <li><strong>May 2026</strong> 💼 Joining Adobe (SF) as a <strong>Research Scientist Intern</strong></li>
+  <li><strong>April 2026</strong> ✈️ Attending <strong>CHI 2026</strong></a> in Barcelona 🇪🇸 with 2 co-authored papers: 
+    <a href="https://arxiv.org/abs/2602.05064">Live Music Agents</a> and 
+    <a href="https://arxiv.org/abs/2601.22082">Auditorily Embodied Agents</a>
+  </li>
+</ul>
 
 <h1 style="font-size:1.5em; border-bottom:1px solid #ccc; padding-bottom:0.5em; margin-top:1em; margin-bottom:0.5em;">Selected Publications</h1>
 
