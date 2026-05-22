@@ -23,8 +23,12 @@ Previously, I worked with Professor Dhruv Jain as a visiting researcher at the [
   </li>
 </ul>
 
-<h1 style="font-size:1.5em; border-bottom:1px solid #ccc; padding-bottom:0.5em; margin-top:1em; margin-bottom:0.5em;">Selected Publications</h1>
-
+<h1 style="font-size:1.5em; border-bottom:1px solid #ccc; padding-bottom:0.5em; margin-top:1em; margin-bottom:0.5em;">
+  Selected Publications
+  <span style="font-size:0.6em; font-weight:normal;">
+    (<a href="https://scholar.google.com/citations?user=mTa4Tx0AAAAJ&hl=en&oi=sra">full publication list on Google Scholar</a>)
+  </span>
+</h1>
 
  
 
