@@ -1,2 +1,49 @@
+# --- macOS junk ---
+.DS_Store
+**/.DS_Store
+
+# --- Jekyll build output (unused; we serve static via .nojekyll) ---
 _site/
 
+# --- Old academicpages theme: kept on disk, never published ---
+_archive/
+
+# --- Heavy source masters & render output ---
+# These are NOT referenced by any page. They stay on your Mac but are
+# excluded from the published site to keep the repo small and fast.
+maringba/rendered audio sample/
+**/*.key
+**/*.pptx
+musicassistant/mva.pdf
+multiverse/multiverse.pdf
+
+# --- Unreferenced media: kept on disk, excluded from deploy ---
+images/tn_TraumA.mp4
+images/tn_lim.mp4
+images/tn_temporal.mp4
+images/trauma_gif.gif
+images/expression_gif.gif
+images/floating_gif.gif
+images/sound designer.png
+images/tn_floating.mp4
+images/temporal_gif.gif
+images/lim_gif.gif
+images/tn_expression.mp4
+images/float.png
+images/trauma.png
+images/other_gif.gif
+images/expression.png
+images/RISEteaserFig.pdf
+images/particlesfloat.png
+images/pariticleIcon.png
+images/MARingBAfigurefull.pdf
+publications/livemusicagents.png
+musicassistant/MVA/call me maybe.mp3
+multiverse/teaser.png
+images/Temporalposter2.png
+images/MARingBAfigure.png
+images/profile.png
+files/paper3.pdf
+files/paper2.pdf
+files/paper1.pdf
+images/bio-photo.jpg

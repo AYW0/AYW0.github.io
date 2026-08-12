@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MultiVerse — Alexander Wang</title>
+  <meta name="description" content="MultiVerse: A Creator-Centered Approach for Authoring Context-Adaptive Lyrics (UIST 2026).">
+  <link rel="stylesheet" href="/assets/css/project.css?v=16">
+</head>
+<body>
+  <div class="proj-wrap">
+
+    <a class="proj-back" href="/">← Alexander Wang</a>
+
+    <header class="proj-hero">
+      <h1 class="proj-title">MultiVerse: A Creator-Centered Approach for Authoring Context-Adaptive Lyrics</h1>
+      <p class="proj-authors"><span class="me">Alexander Wang</span>, Chris Donahue, David Lindlbauer</p>
+      <p class="proj-venue">UIST 2026 — ACM Symposium on User Interface Software and Technology &nbsp;·&nbsp; To appear</p>
+      <nav class="proj-actions">
+        <a class="proj-btn" href="https://doi.org/10.1145/3830398.3830530" target="_blank" rel="noopener">Paper</a>
+      </nav>
+    </header>
+
+    <div class="vplayer" data-video="multiverse.mp4">
+      <img class="vplayer-poster" src="c3.png" alt="MultiVerse preview">
+      <button class="vplayer-play" type="button" aria-label="Play preview">▶</button>
+    </div>
+
+    <p class="proj-lead">
+      We present C<sup>3</sup>, a creator-centered paradigm for adaptive media authoring that gives
+      artists explicit control over how their work adapts across creators, content, and context. We
+      instantiate C<sup>3</sup> in songwriting through MultiVerse, a system for steering adaptive lyrics
+      while preserving musical structure and creative intent.
+    </p>
+
+    <figure class="proj-figure">
+      <img src="c3.png" alt="A Venn diagram of Content, Context, and Creator; their intersection is creator-authored adaptive media, contrasted with automatic adaptive media, creator-authored static media, and creator-authored adaptive interfaces">
+      <figcaption>C<sup>3</sup> unifies creator, content, and context to support creator-driven adaptive media.</figcaption>
+    </figure>
+
+    <section class="proj-section">
+      <h2>Our Approach</h2>
+      <p>
+        To show how C<sup>3</sup> works in MultiVerse, we walk through a creator iteratively authoring
+        steering controls, aiming to adapt the line to each listener while keeping the rhyme scheme, the
+        theme of isolation, and a connection to each listener's context. Each phase adds a control, and
+        you can hear the sung result.
+      </p>
+      <div class="wt">
+
+        <div class="wt-step">
+          <span class="wt-num">1</span>
+          <div class="wt-body">
+            <p class="wt-title">Original</p>
+            <p class="wt-desc">The line the creator wants to adapt, from a song about isolation and feeling lost.</p>
+            <p class="wt-lyric">“My dog just died, my friend hates me, I saw myself on MTV.”</p>
+            <audio controls preload="none" src="multiverseWalkthru/1.%20lost_original.mp3"></audio>
+          </div>
+        </div>
+
+        <div class="wt-step">
+          <span class="wt-num">2</span>
+          <div class="wt-body">
+            <p class="wt-title">No constraints</p>
+            <p class="wt-desc">Adapting for a listener persona, Anna, a graduate student, with no controls shifts the line entirely toward her and loses the artist's intent.</p>
+            <p class="wt-lyric">“Anna bends sound into code, chasing music that learns to listen.”</p>
+            <audio controls preload="none" src="multiverseWalkthru/2.%20lost_no_control.mp3"></audio>
+          </div>
+        </div>
+
+        <div class="wt-step">
+          <span class="wt-num">3</span>
+          <div class="wt-body">
+            <p class="wt-title">Content structure</p>
+            <p class="wt-desc">The creator adds structural controls so the line fits the song: the last two words must rhyme, and no word is split across rhythm clusters.</p>
+            <p class="wt-lyric">“Anna codes songs with heart and art, she builds new systems from the start.”</p>
+            <audio controls preload="none" src="multiverseWalkthru/3.%20lost_structure.mp3"></audio>
+          </div>
+        </div>
+
+        <div class="wt-step">
+          <span class="wt-num">4</span>
+          <div class="wt-body">
+            <p class="wt-title">Creator intent</p>
+            <p class="wt-desc">The creator adds intent, evoking isolation and feeling lost, and locks the words “hates me” so the line keeps the song's meaning.</p>
+            <p class="wt-lyric">“The systems I built now hate me, and lock me in this frequency.”</p>
+            <audio controls preload="none" src="multiverseWalkthru/4.%20lost_intent.mp3"></audio>
+          </div>
+        </div>
+
+        <div class="wt-step">
+          <span class="wt-num">5</span>
+          <div class="wt-body">
+            <p class="wt-title">Audience context</p>
+            <p class="wt-desc">A contextual query surfaces the listener's recent hardship, Anna's paper was rejected, and the line is grounded in it.</p>
+            <p class="wt-lyric">“My paper died, my lab hates me, reviewer writes with cruelty.”</p>
+            <audio controls preload="none" src="multiverseWalkthru/5.%20lost_context.mp3"></audio>
+          </div>
+        </div>
+
+        <div class="wt-step">
+          <span class="wt-num">6</span>
+          <div class="wt-body">
+            <p class="wt-title">Generalize across audiences</p>
+            <p class="wt-desc">The same controls are previewed for other listeners, like Elena, an indie game designer, adapting to each context while preserving the rhyme, theme, and structure.</p>
+            <p class="wt-lyric">“My co-dev left, my mod hates me, late nights alone, streets feel empty.”</p>
+            <audio controls preload="none" src="multiverseWalkthru/6.%20lost_elena.mp3"></audio>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="proj-section">
+      <h2>Citation</h2>
+      <div class="proj-cite">
+        <button class="proj-copy" type="button" data-copy="#bib">Copy</button>
+        <pre id="bib">@inproceedings{wang2026multiverse,
+  title     = {MultiVerse: A Creator-Centered Approach for Authoring Context-Adaptive Lyrics},
+  author    = {Wang, Alexander and Donahue, Chris and Lindlbauer, David},
+  booktitle = {Proceedings of the 39th Annual ACM Symposium on User Interface Software and Technology},
+  year      = {2026},
+  doi       = {10.1145/3830398.3830530}
+}</pre>
+      </div>
+    </section>
+
+    <footer class="proj-footer">
+      <a href="/">← Back to Alexander Wang</a>
+    </footer>
+
+  </div>
+
+  <script>
+    document.querySelectorAll('.proj-copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var el = document.querySelector(btn.getAttribute('data-copy'));
+        if (!el) return;
+        navigator.clipboard.writeText(el.textContent).then(function () {
+          var old = btn.textContent;
+          btn.textContent = 'Copied';
+          setTimeout(function () { btn.textContent = old; }, 1400);
+        });
+      });
+    });
+  </script>
+  <script src="/assets/js/vplayer.js?v=2"></script>
+</body>
+</html>

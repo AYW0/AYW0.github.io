@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MARingBA — Alexander Wang</title>
+  <meta name="description" content="MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery (CHI 2024).">
+  <link rel="stylesheet" href="/assets/css/project.css?v=16">
+</head>
+<body>
+  <div class="proj-wrap">
+
+    <a class="proj-back" href="/">← Alexander Wang</a>
+
+    <header class="proj-hero">
+      <h1 class="proj-title">MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery</h1>
+      <p class="proj-authors"><span class="me">Alexander Wang</span>, Yi Fei Cheng, David Lindlbauer</p>
+      <p class="proj-venue">CHI 2024 — ACM Conference on Human Factors in Computing Systems</p>
+      <p class="proj-venue"><span class="proj-award">🏆 Best Paper Honorable Mention (top 5%)</span></p>
+      <nav class="proj-actions">
+        <a class="proj-btn" href="https://doi.org/10.1145/3613904.3642376" target="_blank" rel="noopener">Paper</a>
+        <a class="proj-btn" href="https://www.youtube.com/watch?v=PFd-AhcDPoA" target="_blank" rel="noopener">Video</a>
+        <a class="proj-btn" href="https://augmented-perception.org/publications/2024-maringba.html" target="_blank" rel="noopener">Project</a>
+      </nav>
+    </header>
+
+    <div class="vplayer" data-video="maringba.mp4" data-youtube="PFd-AhcDPoA">
+      <img class="vplayer-poster" src="MARingBAfigureedit.png" alt="MARingBA preview">
+      <button class="vplayer-play" type="button" aria-label="Play preview">▶</button>
+    </div>
+
+    <p class="proj-lead">
+      We explore a design space for adapting audio notifications and present MARingBA, a system that
+      adapts audio notifications to be seamlessly blended into music with controllable levels of
+      saliency. In a study with 12 users, we demonstrate that our technique successfully modulates user
+      response time as well as their perceived level of noticeability, immediacy, and distraction.
+    </p>
+
+    <section class="proj-section">
+      <h2>Audio Examples</h2>
+      <div class="ax-row">
+        <div class="proj-audio-grid">
+          <div class="proj-audio-card">
+            <p class="proj-audio-song">Hotline Bling — Drake</p>
+            <p class="proj-audio-context">iPhone ringtone (Classic)</p>
+            <audio controls preload="none" src="MARINGBA-hotlinebling.mp3"></audio>
+          </div>
+          <div class="proj-audio-card">
+            <p class="proj-audio-song">What Is Love — Haddaway</p>
+            <p class="proj-audio-context">Google Hangouts notification</p>
+            <audio controls preload="none" src="MARINGBA-whatislove.mp3"></audio>
+          </div>
+          <div class="proj-audio-card">
+            <p class="proj-audio-song">Happy — Pharrell Williams</p>
+            <p class="proj-audio-context">Discord notification</p>
+            <audio controls preload="none" src="MARINGBA-happy.mp3"></audio>
+          </div>
+          <div class="proj-audio-card">
+            <p class="proj-audio-song">Somebody That I Used to Know — Gotye</p>
+            <p class="proj-audio-context">iPhone ringtone</p>
+            <audio controls preload="none" src="MARINGBA-usedtoknow.mp3"></audio>
+          </div>
+        </div>
+        <img class="ax-meme" src="drake-meme.jpeg" alt="Drake meme: rejecting jarring interruptions, preferring harmonically blended notifications">
+      </div>
+    </section>
+
+    <section class="proj-section">
+      <h2>Modulating Saliency</h2>
+      <p>
+        Today's audio notifications are largely one-size-fits-all. In contrast, visual notifications
+        span a range of saliency, from subtle indicators like Slack's red dot, to banners, to full
+        pop-up alerts. MARingBA brings this idea to audio by introducing multiple ways to deliver
+        notifications, allowing less important alerts to blend into the music instead of causing
+        abrupt interruptions.
+      </p>
+      <div id="mtx"></div>
+      <div id="mtx-player" class="mtx-player" hidden>
+        <div class="mtx-player-top">
+          <button class="mtx-pp" type="button" aria-label="Play or pause">❚❚</button>
+          <span class="mtx-player-label" id="mtx-label"></span>
+          <span class="mtx-player-time"><span id="mtx-cur">0:00</span> / <span id="mtx-dur">0:00</span></span>
+        </div>
+        <div class="mtx-timeline" id="mtx-timeline">
+          <div class="mtx-fill" id="mtx-fill"></div>
+        </div>
+        <div class="mtx-hint">● notification moments — click a marker to jump there</div>
+        <p class="mtx-note"><span class="mtx-note-badge">Note</span> For low and medium saliency, scheduling may delay the actual notification by a few seconds past the marker.</p>
+      </div>
+    </section>
+
+    <section class="proj-section">
+      <h2>Our Approach</h2>
+      <p>
+        MARingBA takes the music you're already listening to and an incoming notification, analyzes
+        the music, and reshapes the notification to blend in. Here is each step, with audio.
+      </p>
+      <div class="wt">
+
+        <div class="wt-step">
+          <span class="wt-num">1</span>
+          <div class="wt-body">
+            <p class="wt-title">Inputs</p>
+            <p class="wt-desc">The music the listener is playing, and an incoming notification — here, the Google Hangouts ringtone.</p>
+            <div class="wt-audios">
+              <div class="wt-audio"><span class="lab">Music</span><audio controls preload="none" src="walkthrough/input-music.mp3"></audio></div>
+              <div class="wt-audio"><span class="lab">Notification</span><audio controls preload="none" src="walkthrough/notification.wav"></audio></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wt-step">
+          <span class="wt-num">2</span>
+          <div class="wt-body">
+            <p class="wt-title">Analyze musical features</p>
+            <p class="wt-desc">We extract the music's <strong>beat</strong>, <strong>key</strong>, and <strong>structure</strong> — the scaffolding used to reshape and place the notification in the steps below.</p>
+            <img class="wt-fig" src="walkthrough/features.png" alt="Music information retrieval pipeline: downbeat, key and tempo, stereo balance">
+          </div>
+        </div>
+
+        <div class="wt-step">
+          <span class="wt-num">3</span>
+          <div class="wt-body">
+            <p class="wt-title">Beat matching</p>
+            <p class="wt-desc">Overlaid naively, the ringtone fights the groove. Aligning it to the beat lets it lock in with the music.</p>
+            <img class="wt-fig" src="walkthrough/beat.png" alt="Notification onsets misaligned, then time-stretched to match the tempo">
+            <div class="wt-audios">
+              <div class="wt-audio"><span class="lab">Without beat matching</span><audio controls preload="none" src="walkthrough/naive.mp3"></audio></div>
+              <div class="wt-audio after"><span class="lab">With beat matching</span><audio controls preload="none" src="walkthrough/beat-match.mp3"></audio></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wt-step">
+          <span class="wt-num">4</span>
+          <div class="wt-body">
+            <p class="wt-title">Key matching</p>
+            <p class="wt-desc">Beat-aligned but still clashing harmonically. Pitch-shifting the ringtone into the song's key makes it consonant.</p>
+            <img class="wt-fig" src="walkthrough/key.png" alt="Notes out of key, then pitched up to match the song's key">
+            <div class="wt-audios">
+              <div class="wt-audio"><span class="lab">Without key matching</span><audio controls preload="none" src="walkthrough/beat-match.mp3"></audio></div>
+              <div class="wt-audio after"><span class="lab">With key matching</span><audio controls preload="none" src="walkthrough/key-match.mp3"></audio></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wt-step">
+          <span class="wt-num">5</span>
+          <div class="wt-body">
+            <p class="wt-title">Schedule to song structure</p>
+            <p class="wt-desc">We place the notification at a natural moment in the song's structure rather than cutting in arbitrarily.</p>
+            <img class="wt-fig" src="walkthrough/schedule.png" alt="Notification received, delayed to the start of the next section">
+            <div class="wt-audios">
+              <div class="wt-audio after"><span class="lab">Scheduled</span><audio controls preload="none" src="walkthrough/schedule.mp3"></audio></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wt-step">
+          <span class="wt-num">6</span>
+          <div class="wt-body">
+            <p class="wt-title">Adjust timbre</p>
+            <p class="wt-desc">Finally, we shape the ringtone's timbre so it sits inside the mix — controlling just how much it stands out.</p>
+            <div class="wt-audios">
+              <div class="wt-audio after"><span class="lab">Timbre adjusted</span><audio controls preload="none" src="walkthrough/timbre.mp3"></audio></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="proj-section">
+      <h2>Results</h2>
+      <p>
+        Our evaluation showed that MARingBA successfully modulated the saliency of audio notifications.
+        Lower-priority notifications were noticed later and perceived as less distracting without
+        compromising users' confidence that they had heard every notification. Participants also
+        preferred our integrated adaptation over conventional notification delivery.
+      </p>
+      <figure class="proj-figure">
+        <img src="Maringba_study.jpg" alt="Box plots of participants' subjective ratings across Low, Medium, High, and Standard delivery methods">
+        <figcaption>
+          Participants' subjective ratings across delivery methods on a scale from 1 (low) to 7 (high),
+          and ranking of preference from 1st (most preferred) to 4th (least preferred). Horizontal bars
+          indicate statistically significant differences (p&nbsp;&lt;&nbsp;.05) between conditions.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="proj-section">
+      <h2>Citation</h2>
+      <div class="proj-cite">
+        <button class="proj-copy" type="button" data-copy="#bib">Copy</button>
+        <pre id="bib">@inproceedings{wang2024maringba,
+  title     = {MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery},
+  author    = {Wang, Alexander and Cheng, Yi Fei and Lindlbauer, David},
+  booktitle = {Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems},
+  year      = {2024},
+  doi       = {10.1145/3613904.3642376}
+}</pre>
+      </div>
+    </section>
+
+    <footer class="proj-footer">
+      <a href="/">← Back to Alexander Wang</a>
+    </footer>
+
+  </div>
+
+  <script src="/assets/js/vplayer.js?v=2"></script>
+  <script>
+    document.querySelectorAll('.proj-copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var el = document.querySelector(btn.getAttribute('data-copy'));
+        if (!el) return;
+        navigator.clipboard.writeText(el.textContent).then(function () {
+          var old = btn.textContent;
+          btn.textContent = 'Copied';
+          setTimeout(function () { btn.textContent = old; }, 1400);
+        });
+      });
+    });
+
+    // Saliency matrix with a seekable player. Rows = songs, columns = levels.
+    // One shared audio element; picking a cell loads that clip into the player
+    // bar, which has a timeline marked with the notification moments (from the
+    // notification-timestamps doc) that you can click to jump to.
+    (function () {
+      var mount = document.getElementById('mtx');
+      if (!mount) return;
+
+      var dir = 'saliency/';
+      var levels = ['Low', 'Medium', 'High', 'Standard'];
+      // [file stem, display label]
+      var songs = [
+        ['Hotline bling', 'Hotline Bling — Drake'],
+        ['What is love', 'What Is Love — Haddaway'],
+        ['Happy', 'Happy — Pharrell Williams'],
+        ['Somebody that I used to know', 'Somebody That I Used to Know — Gotye'],
+        ['Never gonna give you up', 'Never Gonna Give You Up — Rick Astley']
+      ];
+      // Notification onset times (seconds) per "stem|Level" — three per clip.
+      var NOTES = {
+        'Somebody that I used to know|Low': [40, 100, 168],
+        'Somebody that I used to know|Medium': [17, 59, 146],
+        'Somebody that I used to know|High': [41, 87, 145],
+        'Somebody that I used to know|Standard': [46, 101, 153],
+        'Happy|Low': [51, 127, 169],
+        'Happy|Medium': [14, 69, 138],
+        'Happy|High': [13, 67, 112],
+        'Happy|Standard': [21, 76, 152],
+        'Hotline bling|Low': [17, 65, 135],
+        'Hotline bling|Medium': [44, 98, 139],
+        'Hotline bling|High': [58, 127, 168],
+        'Hotline bling|Standard': [53, 95, 166],
+        'What is love|Low': [11, 66, 139],
+        'What is love|Medium': [18, 108, 170],
+        'What is love|High': [57, 99, 142],
+        'What is love|Standard': [45, 100, 155],
+        'Never gonna give you up|Low': [14, 60, 128],
+        'Never gonna give you up|Medium': [24, 83, 161],
+        'Never gonna give you up|High': [44, 108, 156],
+        'Never gonna give you up|Standard': [35, 91, 167]
+      };
+      var PREROLL = 2; // start slightly before the onset so you hear it arrive
+
+      // --- player bar elements ---
+      var bar = document.getElementById('mtx-player');
+      var pp = bar.querySelector('.mtx-pp');
+      var labelEl = document.getElementById('mtx-label');
+      var curEl = document.getElementById('mtx-cur');
+      var durEl = document.getElementById('mtx-dur');
+      var timeline = document.getElementById('mtx-timeline');
+      var fill = document.getElementById('mtx-fill');
+
+      var audio = new Audio();
+      var current = null;   // active cell button
+      var notes = [];       // active clip's notification times
+
+      function fmt(t) {
+        if (!isFinite(t)) return '0:00';
+        var m = Math.floor(t / 60), s = Math.floor(t % 60);
+        return m + ':' + (s < 10 ? '0' : '') + s;
+      }
+      function clearActive() {
+        if (current) { current.classList.remove('is-playing'); current.textContent = '▶'; current = null; }
+      }
+      function layoutMarkers() {
+        // remove old markers
+        Array.prototype.slice.call(timeline.querySelectorAll('.mtx-marker')).forEach(function (m) { m.remove(); });
+        var d = audio.duration;
+        if (!isFinite(d) || d <= 0) return;
+        notes.forEach(function (t, i) {
+          var mk = document.createElement('button');
+          mk.type = 'button';
+          mk.className = 'mtx-marker';
+          mk.style.left = (Math.min(t, d) / d * 100) + '%';
+          mk.title = 'Notification ' + (i + 1) + ' at ' + fmt(t);
+          mk.setAttribute('aria-label', mk.title);
+          mk.addEventListener('click', function (e) {
+            e.stopPropagation();
+            audio.currentTime = Math.max(0, t - PREROLL);
+            audio.play().catch(function () {});
+          });
+          timeline.appendChild(mk);
+        });
+      }
+      function playPause() {
+        if (audio.paused) { audio.play().catch(function () {}); }
+        else { audio.pause(); }
+      }
+
+      pp.addEventListener('click', playPause);
+      audio.addEventListener('loadedmetadata', function () { durEl.textContent = fmt(audio.duration); layoutMarkers(); });
+      audio.addEventListener('timeupdate', function () {
+        curEl.textContent = fmt(audio.currentTime);
+        var d = audio.duration || 0;
+        fill.style.width = (d ? (audio.currentTime / d * 100) : 0) + '%';
+      });
+      audio.addEventListener('play', function () {
+        pp.textContent = '❚❚';
+        if (current) { current.classList.add('is-playing'); current.textContent = '❚❚'; }
+      });
+      audio.addEventListener('pause', function () {
+        pp.textContent = '▶';
+        if (current) { current.classList.remove('is-playing'); current.textContent = '▶'; }
+      });
+
+      // seek by click / drag on the timeline
+      var dragging = false;
+      function seekTo(clientX) {
+        var r = timeline.getBoundingClientRect();
+        var ratio = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+        if (isFinite(audio.duration)) audio.currentTime = ratio * audio.duration;
+      }
+      timeline.addEventListener('pointerdown', function (e) {
+        if (e.target.classList.contains('mtx-marker')) return;
+        dragging = true; seekTo(e.clientX);
+      });
+      document.addEventListener('pointermove', function (e) { if (dragging) seekTo(e.clientX); });
+      document.addEventListener('pointerup', function () { dragging = false; });
+
+      function load(stem, level, label, btn) {
+        clearActive();
+        current = btn;
+        notes = NOTES[stem + '|' + level] || [];
+        labelEl.textContent = label + ' · ' + level;
+        bar.hidden = false;
+        audio.src = encodeURI(dir + stem + ' - ' + level + '.mp3');
+        durEl.textContent = '0:00'; curEl.textContent = '0:00'; fill.style.width = '0';
+        audio.play().catch(function () {});
+      }
+
+      // --- build the matrix ---
+      var table = document.createElement('table');
+      table.className = 'mtx';
+      var thead = document.createElement('thead');
+      var hr = document.createElement('tr');
+      hr.appendChild(document.createElement('th'));
+      levels.forEach(function (l) {
+        var th = document.createElement('th');
+        th.textContent = l;
+        if (l === 'Standard') { th.className = 'mtx-standard'; }
+        hr.appendChild(th);
+      });
+      thead.appendChild(hr);
+      table.appendChild(thead);
+
+      var tbody = document.createElement('tbody');
+      songs.forEach(function (s) {
+        var tr = document.createElement('tr');
+        var th = document.createElement('th');
+        th.scope = 'row';
+        th.textContent = s[1];
+        tr.appendChild(th);
+        levels.forEach(function (l) {
+          var td = document.createElement('td');
+          var btn = document.createElement('button');
+          btn.className = 'mtx-btn';
+          btn.type = 'button';
+          btn.textContent = '▶';
+          btn.setAttribute('aria-label', s[1] + ', ' + l + ' saliency');
+          btn.addEventListener('click', function () {
+            if (current === btn) { playPause(); return; }
+            load(s[0], l, s[1], btn);
+          });
+          td.appendChild(btn);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+
+      var wrap = document.createElement('div');
+      wrap.className = 'mtx-wrap';
+      wrap.appendChild(table);
+      mount.appendChild(wrap);
+    })();
+  </script>
+</body>
+</html>

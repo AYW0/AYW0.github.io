@@ -1,0 +1,188 @@
+/* Standalone styles for /storymode/ — not shared with the academic theme. */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #05070d;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+#meteor-field {
+  position: fixed;
+  inset: 0;
+  display: block;
+}
+
+.story-landing {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  color: #eaf3fb;
+  transition: opacity 0.9s ease;
+}
+
+.story-landing.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.story-enter-btn {
+  appearance: none;
+  border: 1px solid rgba(191, 233, 255, 0.55);
+  background: rgba(191, 233, 255, 0.06);
+  color: #eaf3fb;
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.85rem 2.4rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.story-enter-btn:hover {
+  background: rgba(191, 233, 255, 0.16);
+  box-shadow: 0 0 24px rgba(191, 233, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.story-hint {
+  margin-top: 1.4rem;
+  font-size: 0.78rem;
+  color: #7d93a6;
+  letter-spacing: 0.05em;
+}
+
+.story-controls {
+  position: fixed;
+  right: 1.5rem;
+  top: 1.5rem;
+  display: flex;
+  gap: 0.6rem;
+  z-index: 40;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.story-controls.is-visible {
+  opacity: 1;
+}
+
+/* Visual-novel dialogue box, pinned to the bottom. */
+.story-dialogue {
+  position: fixed;
+  left: 50%;
+  bottom: 2.2rem;
+  transform: translateX(-50%) translateY(14px);
+  width: min(720px, calc(100vw - 3rem));
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.story-dialogue.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.story-dialogue-inner {
+  position: relative;
+  background: rgba(6, 10, 18, 0.72);
+  border: 1px solid rgba(150, 200, 255, 0.22);
+  border-radius: 14px;
+  padding: 1.1rem 1.5rem 1.4rem;
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+  box-shadow: 0 10px 44px rgba(0, 0, 0, 0.5);
+}
+
+.story-dialogue-name {
+  margin: 0 0 0.45rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8fd0f0;
+}
+
+.story-dialogue-text {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #e7f1fb;
+  font-weight: 300;
+  min-height: 1.7em;
+  white-space: pre-wrap;
+}
+
+.story-dialogue-next {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.55rem;
+  font-size: 0.8rem;
+  color: #8fd0f0;
+  opacity: 0;
+}
+
+.story-dialogue-next.is-ready {
+  animation: story-next-bounce 1.3s ease-in-out infinite;
+}
+
+@keyframes story-next-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.45; }
+  50% { transform: translateY(3px); opacity: 1; }
+}
+
+/* One mask, used both ways: opaque black over everything on load, then
+   faded away to reveal the already-rendered scene beneath (slow, like
+   drifting into a dream); and faded back to opaque on exit, before
+   navigating away. A single overlay fade is far more robust than trying to
+   fade each element in individually. */
+.story-mask {
+  position: fixed;
+  inset: 0;
+  background: #05070d;
+  opacity: 1;
+  pointer-events: none;
+  z-index: 999;
+  transition: opacity 4.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.story-mask.is-hidden {
+  opacity: 0;
+}
+
+.story-icon-btn {
+  width: 2.4rem;
+  height: 2.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(191, 233, 255, 0.35);
+  background: rgba(5, 7, 13, 0.55);
+  color: #eaf3fb;
+  font-size: 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.story-icon-btn:hover {
+  background: rgba(191, 233, 255, 0.14);
+  border-color: rgba(191, 233, 255, 0.6);
+}
+
+@media (max-width: 480px) {
+  .story-enter-btn { padding: 0.75rem 1.9rem; }
+}

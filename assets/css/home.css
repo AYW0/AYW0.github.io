@@ -1,0 +1,250 @@
+/* Standalone styles for the new single-page academic home (/home/).
+   Self-contained — does not use the Jekyll/academicpages theme. */
+
+:root {
+  --ink: #1c1d21;
+  --muted: #6a6f78;
+  --faint: #9aa0a8;
+  --accent: #2f5b8f;
+  --rule: #e7e8ea;
+  --bg: #fdfdfc;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s ease;
+}
+a:hover { border-bottom-color: var(--accent); }
+
+.home-wrap {
+  max-width: none;
+  margin: 0;
+  padding: 4rem clamp(1.5rem, 5vw, 6rem) 5rem;
+}
+
+/* ---- Header ---- */
+.home-header {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+}
+.home-photo {
+  flex: 0 0 auto;
+  width: 148px;
+  height: 148px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+}
+.home-intro { flex: 1 1 auto; min-width: 0; }
+.home-name {
+  margin: 0 0 0.25rem;
+  font-size: 1.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.home-affil {
+  margin: 0 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+.home-affil a { color: var(--muted); border-bottom-color: var(--faint); }
+.home-affil a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.home-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  font-size: 0.92rem;
+}
+.home-links a { color: var(--muted); }
+.home-links a:hover { color: var(--accent); }
+
+/* ---- Body text ---- */
+.home-bio p { margin: 0 0 1rem; }
+.home-bio p:last-child { margin-bottom: 0; }
+
+/* ---- Sections ---- */
+.home-section { margin-top: 3rem; }
+.home-section > h2 {
+  margin: 0 0 1.2rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--faint);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ---- News ---- */
+.home-news { display: grid; gap: 0.65rem; }
+.home-news-item {
+  display: grid;
+  grid-template-columns: 6.2rem 1fr;
+  gap: 0.8rem;
+  align-items: baseline;
+}
+.home-news-date {
+  color: var(--faint);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.home-news-text { margin: 0; }
+
+/* ---- Publications ---- */
+.home-pub {
+  display: flex;
+  gap: 1.3rem;
+  margin-bottom: 1.8rem;
+  align-items: flex-start;
+}
+.home-pub-thumb {
+  flex: 0 0 auto;
+  width: 180px;
+  height: 123px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--rule);
+  background: #fff;
+}
+.home-pub-body { flex: 1 1 auto; min-width: 0; }
+.home-pub-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.home-pub-authors { margin: 0 0 0.2rem; font-size: 0.95rem; }
+.home-pub-authors .me { font-weight: 700; }
+.home-pub-venue { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.9rem; }
+.home-pub-award { color: #b4451f; font-weight: 600; }
+.home-pub-links { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem; }
+.home-pub-links a {
+  color: var(--accent);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.1rem 0.7rem;
+}
+.home-pub-links a:hover { border-color: var(--accent); background: rgba(47, 91, 143, 0.05); }
+
+/* ---- Footer ---- */
+.home-footer {
+  margin-top: 3.5rem;
+  padding-top: 1.3rem;
+  border-top: 1px solid var(--rule);
+  color: var(--faint);
+  font-size: 0.83rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 620px) {
+  .home-wrap { padding: 2.5rem 1.2rem 3.5rem; }
+  .home-header { flex-direction: column; gap: 1.2rem; align-items: center; text-align: center; }
+  .home-links { justify-content: center; }
+  .home-name { font-size: 1.7rem; }
+  .home-news-item { grid-template-columns: 1fr; gap: 0.1rem; }
+  .home-pub { flex-direction: column; gap: 0.7rem; }
+  .home-pub-thumb { width: 100%; max-width: 320px; height: auto; aspect-ratio: 180 / 123; }
+  .home-pub-featured { flex-direction: column; gap: 0.9rem; align-items: stretch; }
+  .home-pub-featured .vplayer { flex-basis: auto; width: 100%; }
+}
+
+/* ---- Poster → play video player (shared component) ---- */
+.vplayer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #05070d;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+}
+.vplayer-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.vplayer-play {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 74px; height: 74px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(20, 24, 32, 0.62);
+  color: #fff;
+  font-size: 1.45rem;
+  padding-left: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.vplayer:hover .vplayer-play { background: rgba(47, 91, 143, 0.85); transform: translate(-50%, -50%) scale(1.06); }
+.vplayer-media { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
+.vplayer-frame { position: absolute; inset: 0; }
+.vplayer-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* Featured (selected) publication: video beside the details on desktop
+   (stacks on mobile — see the media query below). */
+.home-pub-featured {
+  display: flex;
+  gap: 1.6rem;
+  align-items: flex-start;
+  margin-bottom: 2.6rem;
+}
+/* Compact by default (roughly the height of the details beside it); grows a
+   little once a video is playing. */
+.home-pub-featured .vplayer {
+  flex: 0 0 auto;
+  width: 240px;
+  margin-bottom: 0;
+  transition: width 0.25s ease;
+}
+.home-pub-featured .vplayer[data-active] { width: 400px; }
+.home-pub-featured .home-pub-body { flex: 1 1 auto; min-width: 0; }
+
+/* Featured publication with a static (non-video) poster that links out */
+.home-pub-media { flex: 0 0 auto; width: 240px; display: block; border-bottom: none; }
+.home-pub-media img { width: 100%; border-radius: 10px; border: 1px solid var(--rule); display: block; }
+
+@media (max-width: 620px) {
+  .home-pub-featured .vplayer,
+  .home-pub-featured .vplayer[data-active],
+  .home-pub-featured .home-pub-media { flex-basis: auto; width: 100%; }
+}
+
+/* ---- Games showcase ---- */
+.home-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.1rem;
+}
+.home-game { margin: 0; }
+.home-game .vplayer { cursor: pointer; }
+.home-game .vplayer-poster { object-fit: cover; }
+.home-game-title { margin-top: 0.5rem; font-weight: 600; font-size: 0.95rem; }

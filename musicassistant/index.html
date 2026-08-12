@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Music-Aware Virtual Assistants — Alexander Wang</title>
+  <meta name="description" content="Towards Music-Aware Virtual Assistants (UIST 2024): spoken notifications sung in harmony with your music.">
+  <link rel="stylesheet" href="/assets/css/project.css?v=16">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+</head>
+<body>
+  <div class="proj-wrap">
+
+    <a class="proj-back" href="/">← Alexander Wang</a>
+
+    <header class="proj-hero">
+      <h1 class="proj-title">Towards Music-Aware Virtual Assistants</h1>
+      <p class="proj-authors"><span class="me">Alexander Wang</span>, David Lindlbauer, Chris Donahue</p>
+      <p class="proj-venue">UIST 2024 — ACM Symposium on User Interface Software and Technology</p>
+      <nav class="proj-actions">
+        <a class="proj-btn" href="https://doi.org/10.1145/3654777.3676416" target="_blank" rel="noopener">Paper</a>
+        <a class="proj-btn" href="https://www.youtube.com/watch?v=cfTumi2MC8E" target="_blank" rel="noopener">Video</a>
+        <a class="proj-btn" href="https://augmented-perception.org/publications/2024-singing-assistants.html" target="_blank" rel="noopener">Project</a>
+      </nav>
+    </header>
+
+    <div class="vplayer" data-video="musicassistant.mp4" data-youtube="cfTumi2MC8E">
+      <img class="vplayer-poster" src="MVAfigure.png" alt="Music-Aware Virtual Assistants preview">
+      <button class="vplayer-play" type="button" aria-label="Play preview">▶</button>
+    </div>
+
+    <p class="proj-lead">
+      We contribute a novel technique for generating new melodies in pop songs with precise rhythmic
+      control. We instantiate this technique in a system that enables conversational agents (e.g., Siri
+      and Google Maps) to sing over background music while preserving both the composition of the current
+      song and the prosody of spoken notifications. Our evaluations show that this approach improves the
+      intelligibility of sung messages.
+    </p>
+
+    <section class="proj-section">
+      <h2>Audio Examples</h2>
+      <div class="proj-audio-grid">
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Get Lucky — Daft Punk</p>
+          <p class="proj-audio-context">"your flight to New York is boarding now"</p>
+          <audio controls preload="none" src="MVA-getlucky.mp3"></audio>
+        </div>
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Disturbia — Rihanna</p>
+          <p class="proj-audio-context">"trash pickup at 10 am today"</p>
+          <audio controls preload="none" src="MVA-disturbia.mp3"></audio>
+        </div>
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Crawling — Linkin Park</p>
+          <p class="proj-audio-context">"assignment due tonight"</p>
+          <audio controls preload="none" src="MVA-crawling.mp3"></audio>
+        </div>
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Spain — Chick Corea</p>
+          <p class="proj-audio-context">"new meeting invitation"</p>
+          <audio controls preload="none" src="MVA-spain.mp3"></audio>
+        </div>
+      </div>
+      <div class="proj-audio-grid compact">
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Take On Me — a-ha</p>
+          <audio controls preload="none" src="MVA/take%20on%20me.mp3"></audio>
+        </div>
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Wake Me Up — Avicii</p>
+          <audio controls preload="none" src="MVA/wake%20me%20up.mp3"></audio>
+        </div>
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Don't You Worry Child — Swedish House Mafia</p>
+          <audio controls preload="none" src="MVA/dont%20you%20worry%20child.mp3"></audio>
+        </div>
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Numb — Linkin Park</p>
+          <audio controls preload="none" src="MVA/numb.mp3"></audio>
+        </div>
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Sad Machine — Porter Robinson</p>
+          <audio controls preload="none" src="MVA/sad%20machine.mp3"></audio>
+        </div>
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Them Changes — Thundercat</p>
+          <audio controls preload="none" src="MVA/them%20changes.mp3"></audio>
+        </div>
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">Canon in D — Pachelbel</p>
+          <audio controls preload="none" src="MVA/canon%20in%20D.mp3"></audio>
+        </div>
+        <div class="proj-audio-card">
+          <p class="proj-audio-song">The Legend of Zelda</p>
+          <audio controls preload="none" src="MVA/the%20legend%20of%20zelda.mp3"></audio>
+        </div>
+      </div>
+    </section>
+
+    <section class="proj-section">
+      <h2>Our Approach</h2>
+      <p>
+        We contribute a method for generating new melodies that fit both the musical context and the
+        natural rhythm of the spoken text.
+      </p>
+      <p>
+        To align with the musical context, we use the
+        <a href="https://arxiv.org/abs/2306.08620" target="_blank" rel="noopener">Anticipatory Music
+        Transformer</a> to inpaint a new melody from the surrounding music. It models a distribution
+        \(p_\theta(e \mid c)\) over a sequence of event notes \(e\) given a disjoint sequence of control
+        notes \(c\), where each note is a tuple
+        \(n = \langle n^{\text{time}}, n^{\text{dur}}, n^{\text{ins}}, n^{\text{pitch}}\rangle\) of start
+        time, duration, instrument, and pitch, factorized autoregressively:
+      </p>
+      <div class="wt-math">
+        $$p_\theta(n) = p_\theta\!\left(n^{\text{time}}\right)\, p_\theta\!\left(n^{\text{dur}} \mid n^{\text{time}}\right)\, p_\theta\!\left(n^{\text{ins}}, n^{\text{pitch}} \mid n^{\text{time}}, n^{\text{dur}}\right).$$
+      </div>
+      <p>
+        We fine-tune it for our setting, where the conditioning contexts are the song's melody \(M\),
+        harmony \(H\), and click track \(C\), taken from the Hooktheory dataset. Given a span in the
+        middle of the melody, from \(t_b\) to \(t_e\), we fine-tune the model to generate that span,
+        \(M_{[t_b,\,t_e)}\), from \(M_{\lt t_b} \cup M_{\ge t_e} \cup H \cup C\). The melody in the span is thus conditioned on all
+        notes from all instruments in the past, as well as all notes up to \(X = 5\) seconds into the
+        future. With anticipation, this corresponds to controls and events
+      </p>
+      <div class="wt-math">
+        $$c = M_{\ge t_e} \cup H_{\ge t_b} \cup C, \qquad e = M_{\lt t_e} \cup H_{\lt t_b}.$$
+      </div>
+      <p>
+        To align with the spoken rhythm, we first estimate the message's prosody: we synthesize the text
+        with TTS and use forced alignment to estimate the onset time \(\hat{t}_i\) of each syllable. Because stretching a single syllable across many notes hurts intelligibility, we generate one
+        note per syllable, rejecting any sample with fewer notes than syllables. The syllable onsets
+        give timings under which the text sounds natural, so we constrain each generated note to fall
+        within \(\pm U\) of them, where \(U = \tfrac{60}{4\,\mathrm{BPM}}\) is the length of one
+        sixteenth note. We sample with two inference-time constraints on the start \(n_i^{\text{time}}\) and
+        duration \(n_i^{\text{dur}}\) of each note relative to the syllable onset \(\hat{t}_i\):
+      </p>
+      <div class="wt-math">
+        $$p'\!\left(n_i^{\text{time}}\right) \propto \begin{cases} p_\theta\!\left(n_i^{\text{time}} \mid \cdot\right) & \left|\,n_i^{\text{time}} - \hat{t}_i\,\right| \le U \\[4pt] 0 & \text{otherwise} \end{cases}$$
+        $$p'\!\left(n_i^{\text{dur}} \mid n_i^{\text{time}}\right) \propto \begin{cases} p_\theta\!\left(n_i^{\text{dur}} \mid n_i^{\text{time}}, \cdot\right) & \left|\,n_i^{\text{dur}} - (\hat{t}_{i+1} - \hat{t}_i)\,\right| \le U \\[4pt] 0 & \text{otherwise} \end{cases}$$
+      </div>
+      <div class="fig-row">
+        <figure class="proj-figure">
+          <img src="approach/syllables.png" alt="TTS and forced alignment estimate a syllable onset time for each syllable">
+          <figcaption>We estimate prosody by synthesizing the text with TTS and using forced alignment to estimate the onset time of each syllable.</figcaption>
+        </figure>
+        <figure class="proj-figure">
+          <img src="approach/prosody-mapping.png" alt="A new melody generated to fit the music while matching the syllable timings, one syllable per note">
+          <figcaption>Using the syllable onsets, we generate a new melody that fits the music while minimizing distortion of speech rhythm, mapping each syllable to a single note.</figcaption>
+        </figure>
+      </div>
+      <figure class="proj-figure">
+        <img src="approach/melody.png" alt="An arbitrary melody breaks the rhythm of the words; a prosody-tailored melody preserves it">
+        <figcaption>
+          When a text transcript is mapped to an arbitrary melody, the natural rhythm of the text is
+          broken, stretching some syllables and compressing others. Tailoring the melody to the prosody
+          of the text minimizes these distortions and maintains the natural flow of speech.
+        </figcaption>
+      </figure>
+      <p>
+        To synthesize the final audio, we modify the TTS output to match the pitch and duration of the
+        generated melody. Using the same syllable onsets, we remap the pitch and duration of each syllable
+        so they match the melody, one syllable per note. We chose this speech-modification approach over
+        direct singing voice synthesis, which showed significant intelligibility issues in our preliminary
+        experiments.
+      </p>
+    </section>
+
+    <section class="proj-section">
+      <h2>Comparisons</h2>
+
+      <div class="cmp">
+        <p class="wt-title">Our approach vs. baseline</p>
+        <div class="wt-audios">
+          <div class="wt-audio"><span class="lab">Baseline</span><audio controls preload="none" src="compare/callmemaybe-naive.mp3"></audio></div>
+          <div class="wt-audio after"><span class="lab">Our approach</span><audio controls preload="none" src="compare/callmemaybe.mp3"></audio></div>
+        </div>
+      </div>
+
+      <div class="cmp">
+        <p class="wt-title">Melody generation: prosody-aware generation vs. original melody</p>
+        <p class="wt-desc">Holding the synthesis method fixed, we compare melodies. Our prosody-aware generation preserves the natural rhythm of the spoken text, while singing the notification to the song's original melody distorts the words.</p>
+        <div class="wt-audios">
+          <div class="wt-audio after"><span class="lab">Prosody-aware generation</span><audio controls preload="none" src="compare/rick-prosody.mp3"></audio></div>
+          <div class="wt-audio"><span class="lab">Original melody</span><audio controls preload="none" src="compare/rick-original.mp3"></audio></div>
+        </div>
+      </div>
+
+      <div class="cmp">
+        <p class="wt-title">Voice synthesis: our synthesis approach vs. SVS</p>
+        <p class="wt-desc">Holding the melody fixed, we compare two ways to make the voice sing: our synthesis approach versus singing voice conversion. Our approach stayed more intelligible.</p>
+        <div class="wt-audios">
+          <div class="wt-audio after"><span class="lab">Our synthesis approach</span><audio controls preload="none" src="MVA-getlucky.mp3"></audio></div>
+          <div class="wt-audio"><span class="lab">Singing voice conversion</span><audio controls preload="none" src="compare/getlucky-svc.mp3"></audio></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="proj-section">
+      <h2>Results</h2>
+      <p>
+        We evaluated both objective intelligibility and subjective experience. Objectively, we measured
+        the word error rate (WER) of delivered notifications by transcribing them with automatic speech
+        recognition: reusing or freshly generating a melody hurts intelligibility, but adding
+        prosody-aware melody generation brings pitched text-to-speech down to 2% WER, on par with plain,
+        non-musical speech. Subjectively, in a study with 12 participants, musical notifications were
+        rated as fitting better with the music, less intrusive, and more delightful than standard TTS
+        (all significant), while remaining noticeable and comparable in overall experience.
+      </p>
+      <div class="fig-row">
+        <figure class="proj-figure">
+          <img src="results/wer-table.png" alt="Table of mean word error rate across voice synthesis and melody generation methods">
+          <figcaption>Mean WER for different voice synthesis and melody generation methods.</figcaption>
+        </figure>
+        <figure class="proj-figure">
+          <img src="results/ratings.png" alt="Bar chart of mean subjective ratings, musical assistants versus standard TTS">
+          <figcaption>Mean subjective ratings (1 to 7). Error bars show standard error, and * marks statistically significant differences.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="proj-section">
+      <h2>Citation</h2>
+      <div class="proj-cite">
+        <button class="proj-copy" type="button" data-copy="#bib">Copy</button>
+        <pre id="bib">@inproceedings{wang2024musicaware,
+  title     = {Towards Music-Aware Virtual Assistants},
+  author    = {Wang, Alexander and Lindlbauer, David and Donahue, Chris},
+  booktitle = {Proceedings of the 37th Annual ACM Symposium on User Interface Software and Technology},
+  year      = {2024},
+  doi       = {10.1145/3654777.3676416}
+}</pre>
+      </div>
+    </section>
+
+    <footer class="proj-footer">
+      <a href="/">← Back to Alexander Wang</a>
+    </footer>
+
+  </div>
+
+  <script src="/assets/js/vplayer.js?v=2"></script>
+  <script>
+    document.querySelectorAll('.proj-copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var el = document.querySelector(btn.getAttribute('data-copy'));
+        if (!el) return;
+        navigator.clipboard.writeText(el.textContent).then(function () {
+          var old = btn.textContent;
+          btn.textContent = 'Copied';
+          setTimeout(function () { btn.textContent = old; }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>The Other Side — Alexander Wang</title>
+  <link rel="stylesheet" href="/assets/css/storymode.css?v=13">
+</head>
+<body>
+
+  <canvas id="meteor-field"></canvas>
+
+  <main class="story-landing" id="story-landing">
+    <button id="story-enter" class="story-enter-btn" type="button">Start</button>
+    <p class="story-hint">Sound on. Best with headphones.</p>
+  </main>
+
+  <div class="story-controls" id="story-controls">
+    <button id="story-playpause" class="story-icon-btn" type="button" aria-label="Play or pause the music" hidden>▶</button>
+    <a href="/" id="story-exit" class="story-icon-btn story-exit" aria-label="Return to the academic site">✕</a>
+  </div>
+
+  <div class="story-dialogue" id="story-dialogue" hidden>
+    <div class="story-dialogue-inner">
+      <p class="story-dialogue-name" id="story-dialogue-name" hidden></p>
+      <p class="story-dialogue-text" id="story-dialogue-text"></p>
+      <span class="story-dialogue-next" id="story-dialogue-next" aria-hidden="true">▾</span>
+    </div>
+  </div>
+
+  <div class="story-mask" id="story-mask" aria-hidden="true"></div>
+
+  <script src="https://unpkg.com/tone@15.1.22/build/Tone.js"></script>
+  <script src="https://unpkg.com/rita@3.2.16/dist/rita.min.js"></script>
+  <script src="/assets/js/storymode/particles.js?v=15"></script>
+  <script src="/assets/js/storymode/music-engine.js?v=15"></script>
+  <script src="/assets/js/storymode/story-script.js?v=15"></script>
+  <script src="/assets/js/storymode/dialogue.js?v=15"></script>
+  <script src="/assets/js/storymode/main.js?v=15"></script>
+</body>
+</html>

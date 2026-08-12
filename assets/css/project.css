@@ -1,0 +1,443 @@
+/* Shared styles for project / demo pages (e.g. /maringba/, /musicassistant/).
+   Self-contained, matches the /home/ aesthetic. */
+
+:root {
+  --ink: #1c1d21;
+  --muted: #6a6f78;
+  --faint: #9aa0a8;
+  --accent: #2f5b8f;
+  --rule: #e7e8ea;
+  --bg: #fdfdfc;
+  --card: #ffffff;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s ease;
+}
+a:hover { border-bottom-color: var(--accent); }
+
+.proj-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 2rem 5rem;
+}
+
+.proj-back {
+  display: inline-block;
+  margin-bottom: 2.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.proj-back:hover { color: var(--accent); }
+
+/* ---- Hero ---- */
+.proj-hero { text-align: center; margin-bottom: 2.5rem; }
+.proj-title {
+  margin: 0 0 1rem;
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.proj-authors { margin: 0 0 0.4rem; font-size: 1.02rem; }
+.proj-authors .me { font-weight: 700; }
+.proj-venue { margin: 0 0 0.3rem; color: var(--muted); font-size: 0.95rem; }
+.proj-award { color: #b4451f; font-weight: 600; }
+
+.proj-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1.4rem;
+}
+.proj-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+.proj-btn:hover { background: var(--ink); color: #fff; border-bottom-color: var(--ink); }
+
+/* ---- Media / figures ---- */
+.proj-figure { margin: 0 0 2.5rem; text-align: center; }
+.proj-figure img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--rule);
+}
+.proj-figure figcaption {
+  margin-top: 0.6rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.proj-video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 0 0 2.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+}
+.proj-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* Placeholder for assets not yet provided. */
+.proj-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 220px;
+  margin: 0 0 2.5rem;
+  padding: 2rem;
+  border: 1.5px dashed var(--rule);
+  border-radius: 8px;
+  color: var(--faint);
+  font-size: 0.9rem;
+  background: repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(0,0,0,0.012) 12px, rgba(0,0,0,0.012) 24px);
+}
+
+/* ---- Sections ---- */
+.proj-section { margin-top: 3rem; }
+.proj-section > h2 {
+  margin: 0 0 1.1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--faint);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+.proj-section p { margin: 0 0 1rem; }
+
+/* ---- Audio example cards ---- */
+.proj-audio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+.proj-audio-card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 1rem 1.1rem 1.1rem;
+}
+.proj-audio-song { font-weight: 600; font-size: 0.98rem; margin: 0 0 0.15rem; }
+.proj-audio-context { color: var(--muted); font-size: 0.85rem; margin: 0 0 0.7rem; }
+.proj-audio-card audio { width: 100%; height: 38px; }
+
+/* ---- Citation ---- */
+.proj-cite { position: relative; }
+.proj-cite pre {
+  margin: 0;
+  background: #f6f7f8;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 1.1rem 1.2rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #2b2d31;
+}
+.proj-copy {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.proj-copy:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---- Footer ---- */
+.proj-footer {
+  margin-top: 3.5rem;
+  padding-top: 1.3rem;
+  border-top: 1px solid var(--rule);
+  color: var(--faint);
+  font-size: 0.83rem;
+  text-align: center;
+}
+
+@media (max-width: 620px) {
+  .proj-wrap { padding: 1.5rem 1.2rem 3.5rem; }
+  .proj-title { font-size: 1.6rem; }
+  .proj-audio-grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Poster → play video player (shared component) ---- */
+.vplayer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #05070d;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  margin-bottom: 2.5rem;
+}
+.vplayer-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.vplayer-play {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 78px; height: 78px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(20, 24, 32, 0.62);
+  color: #fff;
+  font-size: 1.5rem;
+  padding-left: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.vplayer:hover .vplayer-play { background: rgba(47, 91, 143, 0.85); transform: translate(-50%, -50%) scale(1.06); }
+.vplayer-media { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
+.vplayer-frame { position: absolute; inset: 0; }
+.vplayer-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* ---- Saliency matrix ---- */
+.mtx-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.mtx { border-collapse: collapse; width: 100%; min-width: 520px; }
+.mtx th, .mtx td { padding: 0.6rem 0.7rem; text-align: center; border-bottom: 1px solid var(--rule); }
+.mtx thead th {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: var(--faint);
+}
+.mtx thead th.mtx-standard { color: #b0b5bc; font-style: italic; }
+.mtx tbody th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  padding-right: 1.2rem;
+}
+.mtx-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.mtx-btn:hover { border-color: var(--accent); }
+.mtx-btn.is-playing { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ---- Lead paragraph (overview under the hero video) ---- */
+.proj-lead {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--ink);
+  margin: 0 0 2.6rem;
+}
+@media (max-width: 620px) { .proj-lead { font-size: 1.08rem; } }
+
+/* ---- Saliency matrix player bar ---- */
+.mtx-player {
+  margin-top: 1.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem 1rem;
+  background: #fff;
+}
+.mtx-player[hidden] { display: none; }
+.mtx-player-top { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
+.mtx-pp {
+  flex: 0 0 auto;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.mtx-pp:hover { border-color: var(--accent); }
+.mtx-player-label { flex: 1 1 auto; min-width: 0; font-weight: 600; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mtx-player-time { flex: 0 0 auto; color: var(--muted); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+.mtx-timeline {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: #e9ebee;
+  cursor: pointer;
+  touch-action: none;
+}
+.mtx-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--accent); border-radius: 999px; }
+.mtx-marker {
+  position: absolute;
+  top: 50%;
+  width: 14px; height: 14px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #e0a33a;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
+  cursor: pointer;
+  padding: 0;
+}
+.mtx-marker:hover { background: #c98a1f; }
+.mtx-hint { margin-top: 0.6rem; color: var(--faint); font-size: 0.78rem; }
+.mtx-hint::first-letter { color: #e0a33a; }
+
+/* ---- Approach walkthrough ---- */
+.wt { margin-top: 0.5rem; }
+.wt-step { display: flex; gap: 1rem; padding: 1.4rem 0; border-top: 1px solid var(--rule); }
+.wt-step:first-child { border-top: none; padding-top: 0.5rem; }
+.wt-num {
+  flex: 0 0 auto;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.82rem; font-weight: 700;
+}
+.wt-body { flex: 1 1 auto; min-width: 0; }
+.wt-title { margin: 0 0 0.2rem; font-weight: 600; font-size: 1.02rem; }
+.wt-desc { margin: 0 0 0.8rem; color: var(--muted); font-size: 0.92rem; }
+.wt-audios { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.8rem; }
+.wt-audio { background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 0.7rem 0.85rem; }
+.wt-audio .lab { display: block; font-size: 0.82rem; margin: 0 0 0.4rem; color: var(--muted); }
+.wt-audio.after .lab { color: var(--accent); font-weight: 600; }
+.wt-audio audio { width: 100%; height: 34px; }
+
+/* ---- Matrix scheduling disclaimer ---- */
+.mtx-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.7rem 0 0;
+  padding: 0.55rem 0.75rem;
+  border-left: 3px solid #e0a33a;
+  background: rgba(224, 163, 58, 0.08);
+  border-radius: 0 6px 6px 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.mtx-note-badge {
+  flex: 0 0 auto;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a9741a;
+  background: rgba(224, 163, 58, 0.22);
+  border-radius: 4px;
+  padding: 0.08rem 0.4rem;
+  margin-top: 0.05rem;
+}
+
+/* Walkthrough step figure */
+.wt-fig {
+  display: block;
+  width: 100%;
+  max-width: 620px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  margin: 0 0 0.9rem;
+  background: #fff;
+}
+
+/* Audio Examples row: cards beside the Drake meme */
+.ax-row { display: flex; gap: 1.5rem; align-items: flex-start; }
+.ax-row .proj-audio-grid { flex: 1 1 auto; min-width: 0; }
+.ax-meme {
+  flex: 0 0 auto;
+  width: 240px;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+}
+@media (max-width: 700px) {
+  .ax-row { flex-direction: column; }
+  .ax-meme { width: 100%; max-width: 300px; align-self: center; }
+}
+
+/* Comparison blocks (project pages) */
+.cmp { padding: 1.3rem 0; border-top: 1px solid var(--rule); }
+
+/* Compact (non-hero) example grid + expand button */
+.more-btn {
+  margin-top: 1rem;
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+}
+.more-btn:hover { border-color: var(--accent); background: rgba(47, 91, 143, 0.05); }
+.proj-audio-grid.compact { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.6rem; margin-top: 1rem; }
+.proj-audio-grid.compact .proj-audio-card { padding: 0.6rem 0.7rem; }
+.proj-audio-grid.compact .proj-audio-song { font-size: 0.85rem; margin-bottom: 0.4rem; }
+.proj-audio-grid.compact audio { height: 32px; }
+
+/* Display math blocks in the approach walkthrough */
+.wt-math { overflow-x: auto; overflow-y: hidden; margin: 0.4rem 0 1rem; }
+.wt-math mjx-container { margin: 0.3rem 0 !important; }
+
+/* Side-by-side figure row (project pages) */
+.fig-row { display: flex; flex-wrap: wrap; gap: 1.3rem; align-items: flex-start; }
+.fig-row .proj-figure { flex: 1 1 300px; margin: 0 0 1.5rem; }
+
+/* Bulleted list in project prose */
+.proj-list { margin: 0 0 1rem; padding-left: 1.2rem; }
+.proj-list li { margin: 0 0 0.4rem; }
+
+/* Walkthrough lyric line + audio (MultiVerse) */
+.wt-lyric {
+  margin: 0.15rem 0 0.7rem;
+  padding: 0.55rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  background: #f6f7f8;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: var(--ink);
+}
+.wt-step audio { width: 100%; max-width: 440px; height: 36px; display: block; }
