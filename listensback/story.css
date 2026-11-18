@@ -398,3 +398,5 @@ b { font-weight: 700; }
 @media (prefers-reduced-motion: reduce) { .uf-orb, .uf-rays, .unlockfx i, .uf-banner, .qbub.unlocked { animation-duration: .01s; animation-delay: 0s; } }
 .qbub.unlock::before { opacity: 0; }
 .uf-banner { z-index: 5; }
+.t-call { display: flex; align-items: center; gap: 10px; }
+.t-call img { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid #34c759; flex: none; }

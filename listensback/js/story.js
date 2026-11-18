@@ -734,8 +734,8 @@ const CH = [async () => {
   showLive('timeline', 'Today', 'Ringtone over the song: the music is cut, the ringtone ignores the beat', async () => { if (!engine.playing) engine.play(); engine.applyParams(preset('conventional')); await engine.trigger(IPHONE, { ...preset('conventional'), repeats: PICK.reps[0] }); ringing = 'jarring'; });
   ringing = 'jarring';
   startle(1);
-  label('call', at(room.phone, 0, 0.18, 0), '<b>Incoming call</b> · Mom', 'phone');
-  think('Ugh, my song! 😣', 'bad');
+  label('call', at(room.phone, 0, 0.18, 0), '<b>Incoming call</b> · Chris Donahue', 'phone');
+  think('Ugh, my song! Chris, why now?! 😣', 'bad');
   await say('<b>Jarring.</b> The song is cut out, and the ringtone blasts in its own tempo and key, wherever the song happens to be.');
   await wait(1500);
   await choices([{ label: 'Try it again with MARingBA', primary: true }]);
@@ -755,7 +755,7 @@ const CH = [async () => {
   label('nb', at(room.speakers[0], 0, 1.3, 0), ring.start.sweet ? `<i>enters</i> right where the bass drops back in · in ${Math.max(0, ring.wait).toFixed(1)} s` : `<i>enters</i> on the next phrase · in ${Math.max(0, ring.wait).toFixed(1)} s`, 'chip');
   label('vs', at(room.speakers[1], 0, 1.3, 0), '<i>mix</i> fades in, softened, with reverb', 'chip');
   ringing = 'blended';
-  later(() => { anim.groove = true; think('Oh, a call. Still in the groove 🎶', 'good'); }, Math.max(0, ring.wait * 1000));
+  later(() => { anim.groove = true; think('Oh, Chris is calling. Still in the groove 🎶', 'good'); }, Math.max(0, ring.wait * 1000));
   showLive('timeline', 'MARingBA · Subtle', 'The ringtone, beat-matched and key-matched, waits for the next phrase', async () => { if (!engine.playing) engine.play(); engine.applyParams(preset('subtle')); countdown = await engine.trigger(IPHONE, SUBTLE()); ringing = 'blended'; });
   room.setShot(SHOTS.phone);
   await say('The ringtone is <b>stretched to the song’s tempo</b>, <b>moved into its key</b>, and <b>waits for the next phrase</b>, then fades in softly like another instrument in the mix. You still notice it. It just doesn’t break the song.');
@@ -945,9 +945,9 @@ const CH = [async () => {
   let first = true, unlocked = false;
   for (;;) {
     const list = [
-      ['live', 'Why make recorded music adaptive at all?'],
       ['future', 'What’s next? (future work)'],
       ['creators', 'What did songwriters think?'],
+      ['live', 'Why make recorded music adaptive at all?'],
     ];
     let reveal = false;
     if (asked.has('live') || asked.has('creators')) { list.push(['author', 'Is it still the creator’s if it’s adapted by AI??']); if (!unlocked) { unlocked = true; reveal = true; } }
@@ -1356,7 +1356,7 @@ function frame(now) {
     tip.innerHTML = `<div class="t-k">${hv.userData.info.sub}</div><div class="t-t">${hv.userData.info.title}</div>`;
     tip.style.left = `${room.pointer.x + 18}px`; tip.style.top = `${room.pointer.y + 12}px`; tip.hidden = false;
   } else if (hv && hv.userData.hover === 'phone') {
-    tip.innerHTML = `<div class="t-k">Phone</div><div class="t-t">${ringing ? 'Ringing…' : 'Quiet'}</div>`;
+    tip.innerHTML = `<div class="t-call"><img src="img/story/chris.jpg" alt=""><div><div class="t-k">${ringing ? 'Incoming call' : 'Recent call'}</div><div class="t-t">Chris Donahue</div></div></div>`;
     tip.style.left = `${room.pointer.x + 18}px`; tip.style.top = `${room.pointer.y + 12}px`; tip.hidden = false;
   } else tip.hidden = true;
 
