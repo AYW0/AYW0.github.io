@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Alexander Wang</title>
   <meta name="description" content="Alexander Wang — PhD student in Human-Computer Interaction at Carnegie Mellon University, researching adaptive media and music.">
-  <link rel="stylesheet" href="/assets/css/home.css?v=13">
+  <link rel="stylesheet" href="/assets/css/home.css?v=15">
 </head>
 <body>
 
@@ -35,6 +35,13 @@
         (<a href="https://augmented-perception.org/" target="_blank" rel="noopener">Augmented Perception Lab</a>) and
         Chris Donahue
         (<a href="https://gclef-cmu.org/" target="_blank" rel="noopener">Generative Creativity Lab</a>).
+      </p>
+      <p class="home-try">
+        <a class="try-story" href="/listensback/story.html">
+          <span class="try-spark" aria-hidden="true">✦</span>
+          <span class="try-text">Try an interactive experience to learn more about my work.</span>
+          <span class="try-go" aria-hidden="true">Try it ▸</span>
+        </a>
       </p>
       <p>
 Generative AI's growing ability to generate and transform multimedia content, even at runtime,
@@ -370,7 +377,46 @@ including ACM CHI and UIST, with a Best Paper Honorable Mention at CHI 2024.
 
   <script src="/assets/js/vplayer.js?v=2"></script>
   <script>
-    document.getElementById('home-year').textContent = new Date().getFullYear();
+    try { document.getElementById('home-year').textContent = new Date().getFullYear(); } catch (e) {}
+    // Finished the story: the profile photo is the drawn Alex from the story until you hover it.
+    (function () {
+      var done = false;
+      try { done = sessionStorage.getItem('aw-story-done') === '1'; sessionStorage.removeItem('aw-story-done'); } catch (e) {}
+      var img = document.querySelector('.home-photo');
+      if (!done || !img) return;
+      var real = img.getAttribute('src');
+      img.src = '/listensback/img/story/alex-drawn.png';
+      img.classList.add('is-drawn');
+      img.title = 'Hover to wake me up';
+      img.addEventListener('mouseenter', function swap() {
+        img.classList.add('is-waking');
+        setTimeout(function () { img.src = real; img.classList.remove('is-drawn'); img.removeAttribute('title'); }, 180);
+        setTimeout(function () { img.classList.remove('is-waking'); }, 420);
+        img.removeEventListener('mouseenter', swap);
+      });
+    })();
+    // Return fade: if we just came back from the other side, hold white then
+    // fade it away to reveal the page. Otherwise hide the mask instantly.
+    (function () {
+      var mask = document.getElementById('aw-mask');
+      if (!mask) return;
+      var returning = false;
+      try { returning = sessionStorage.getItem('aw-return-fade') === '1'; } catch (e) {}
+      if (!returning) { mask.style.transition = 'none'; mask.style.opacity = '0'; }
+      else {
+        try { sessionStorage.removeItem('aw-return-fade'); } catch (e) {}
+        setTimeout(function () { mask.classList.add('aw-mask-hidden'); }, 900);
+      }
+      // coming back via the browser's back button restores the page as it was left, white overlay
+      // included: clear it so the page is never stuck on white
+      window.addEventListener('pageshow', function (ev) {
+        document.querySelectorAll('.aw-fadeout').forEach(function (n) { n.remove(); });
+        if (ev.persisted) { mask.style.transition = 'none'; mask.style.opacity = '0'; }
+        var veil = document.getElementById('aw-portal-veil'); if (ev.persisted && veil) veil.classList.remove('is-revealing');
+      });
+      // safety net: whatever happens, the mask is gone after a few seconds
+      setTimeout(function () { mask.style.transition = 'opacity .6s'; mask.style.opacity = '0'; }, 4500);
+    })();
 
     // Portal → the other side (/storymode/), with an iris-wipe transition.
     (function () {
@@ -390,17 +436,25 @@ including ACM CHI and UIST, with a Best Paper Honorable Mention at CHI 2024.
       });
     })();
 
-    // Return fade: if we just came back from the other side, hold white then
-    // fade it away to reveal the page. Otherwise hide the mask instantly.
+    // Story invite: fade the page to white, then open the story, which fades in from white.
     (function () {
-      var mask = document.getElementById('aw-mask');
-      if (!mask) return;
-      var returning = false;
-      try { returning = sessionStorage.getItem('aw-return-fade') === '1'; } catch (e) {}
-      if (!returning) { mask.style.transition = 'none'; mask.style.opacity = '0'; return; }
-      try { sessionStorage.removeItem('aw-return-fade'); } catch (e) {}
-      setTimeout(function () { mask.classList.add('aw-mask-hidden'); }, 900);
+      var link = document.querySelector('.try-story');
+      if (!link) return;
+      link.addEventListener('click', function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        var href = link.getAttribute('href');
+        try { sessionStorage.setItem('aw-story-fade', '1'); } catch (err) {}
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { window.location.href = href; return; }
+        var w = document.createElement('div'); w.className = 'aw-fadeout';
+        w.style.cssText = 'position:fixed;inset:0;background:#fff;opacity:0;z-index:20001;pointer-events:all;transition:opacity .9s cubic-bezier(.4,0,.2,1)';
+        document.body.appendChild(w);
+        requestAnimationFrame(function () { requestAnimationFrame(function () { w.style.opacity = '1'; }); });
+        setTimeout(function () { window.location.href = href; }, 950);
+      });
     })();
+
+
   </script>
 
 </body>

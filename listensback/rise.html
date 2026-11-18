@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RISE Workout</title>
+  <meta name="description" content="Music that rearranges itself so the high-energy parts line up with your workout.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 26 L12 14 L18 20 L28 6' stroke='%23ff5a6e' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="sing.css">
+  <link rel="stylesheet" href="rise.css">
+</head>
+<body style="--accent:#ff5a6e">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div>
+        <h1>RISE</h1>
+        <p class="sub">Music that keeps pace with your workout</p>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="paper" href="index.html">Ringtones</a>
+      <a class="paper" href="sing.html">Musical assistant</a>
+      <a class="paper" href="https://arxiv.org/abs/2509.17112" target="_blank" rel="noopener">ISMIR 2025 paper ↗</a>
+    </nav>
+  </header>
+
+  <section class="intro">
+    <p class="lede">Songs don't know when you're working hard. The chorus ends just as your set starts, or kicks in while you rest. <strong>RISE rearranges the song as you go</strong>, using jump cuts only: it loops the high-energy part while you work and skips ahead through it when you rest, cutting only at points where the music repeats so you don't hear the seam.</p>
+    <ol class="steps">
+      <li><b>1</b><span>Pick a song and press <kbd>Play</kbd></span></li>
+      <li><b>2</b><span>Steer it: <kbd>L</kbd> loop, <kbd>S</kbd> skip, <kbd>N</kbd> normal · click the timeline or <kbd>←</kbd> <kbd>→</kbd> to move</span></li>
+      <li><b>3</b><span>The athlete squats while the music is high energy</span></li>
+    </ol>
+  </section>
+
+  <div id="missing" class="banner" hidden>
+    Audio files not found. Run the server from the <code>web/</code> folder so the <code>assets</code> link to <code>MusicNotification/Assets</code> resolves (see README).
+  </div>
+
+  <main class="layout">
+    <div class="col-main">
+      <section class="card gym">
+        <div class="gym-row">
+          <canvas id="athlete" class="athlete" aria-label="Simulated athlete"></canvas>
+          <div class="gym-side">
+            <div class="stats">
+              <div><span class="label">Music now</span><span id="statMusic">–</span></div>
+              <div><span class="label">Song time</span><span id="statPos" class="mono">–</span></div>
+              <div><span class="label">Set</span><span id="statSet" class="mono">–</span></div>
+              <div><span class="label">Reps</span><span id="statReps" class="mono">0</span></div>
+            </div>
+            <div class="gym-buttons">
+              <button class="ring-btn go" id="startBtn" disabled><span id="startLabel">Play</span></button>
+            </div>
+          </div>
+        </div>
+        <canvas id="track" class="track" aria-label="The music coming up, with high and low intensity, cut points and jumps"></canvas>
+        <canvas id="overview" class="overview" aria-label="Whole song, click or drag to move the playhead"></canvas>
+        <div class="map-head"><h2>Played so far</h2><span class="muted small">top: the song as written · bottom: what you heard · <span style="color:var(--skip)">hatched = skipped</span> · <span style="color:var(--loop)">yellow = played again</span></span></div>
+        <canvas id="traj" class="traj" aria-label="Song position over playing time: the original song and the rearranged playback, with loops and skips marked"></canvas>
+        <div class="map-head"><h2>Song map</h2><span class="muted small" id="mapNote"></span></div>
+        <canvas id="map" class="map" aria-label="The song's sections, its cutpoints and the jumps taken"></canvas>
+        <div class="legend">
+          <span><i class="lg-high"></i>High intensity</span>
+          <span><i class="lg-low"></i>Low intensity</span>
+          <span><i class="lg-loop"></i>Loop (jump back)</span>
+          <span><i class="lg-skip"></i>Skip (jump ahead)</span>
+        </div>
+      </section>
+
+      <section class="card songs">
+        <div class="card-head"><h2>Song</h2><span class="muted" id="songStatus"></span></div>
+        <div class="song-list" id="songList" role="listbox" aria-label="Songs"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>What the music did</h2></div>
+        <ol class="log" id="log"><li class="muted">Jumps appear here as they happen.</li></ol>
+      </section>
+    </div>
+
+    <aside class="col-side">
+      <section class="card">
+        <div class="card-head"><h2>Steer the music</h2></div>
+        <div class="modes">
+          <button class="mode" data-mode="normal"><b>▶ Play normally</b><span>The song plays as written. <kbd>N</kbd></span></button>
+          <button class="mode loop" data-mode="loop"><b>↺ Loop</b><span>Keep the current section going with the longest seamless loop. <kbd>L</kbd></span></button>
+          <button class="mode skip" data-mode="skip"><b>⤼ Skip ahead</b><span>Jump forward through the current section to reach the next one sooner. <kbd>S</kbd></span></button>
+        </div>
+        <p class="muted small rec-note">Try it: loop a chorus to make the set longer, or skip through a verse to get to the next set sooner. The athlete works whenever the music is high energy.</p>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>Cutpoints in this section</h2><span class="muted small" id="cutNote"></span></div>
+        <p class="muted small" style="margin:0 0 8px">Audition any one: playback jumps 4 s before it and takes that cut once, so you can check it by ear.</p>
+        <div class="cutlist" id="cutList"></div>
+      </section>
+      <section class="card controls" id="controls"></section>
+      <section class="card how">
+        <div class="card-head"><h2>How it works</h2></div>
+        <ol>
+          <li><b>Sections.</b> Each song is split into sections and labelled high or low intensity by drum loudness (within 5 dB of the loudest).</li>
+          <li><b>Cutpoints.</b> Pairs of beats inside one section where the music repeats, so jumping between them is seamless.</li>
+          <li><b>Loop</b> takes the longest jump back in the current section; <b>Skip</b> the longest jump forward. Nothing ever jumps between sections.</li>
+          <li><b>The athlete</b> squats on the beat while the music is high energy and sits down to rest when it calms.</li>
+        </ol>
+        <p class="muted small">Sections and cutpoints are precomputed offline. The audio is never filtered or time-stretched.</p>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    Web re-implementation of “RISE: Adaptive Music Playback for Realtime Intensity Synchronization with Exercise” (Wang, Donahue &amp; Jain, ISMIR 2025), unguided mode. Songs are copyrighted and for local research use only.
+  </footer>
+
+  <script type="module" src="js/rise.js"></script>
+</body>
+</html>

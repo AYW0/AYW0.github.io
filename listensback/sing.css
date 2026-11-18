@@ -1,0 +1,37 @@
+.nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.roll { height: 280px; }
+
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; width: 14px; height: 6px; border-radius: 3px; }
+.lg-mel { background: rgba(255, 255, 255, 0.55); }
+.lg-syl { background: #7fd1ff; }
+.lg-note { background: var(--accent); }
+
+.msgs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.msg {
+  border: 1px solid var(--line); background: var(--card-2); border-radius: 999px;
+  padding: 7px 14px; font-size: 13px; cursor: pointer; text-align: left;
+}
+.msg:hover { border-color: #44445f; }
+.msg[aria-checked="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--card-2)); }
+
+.msg-input { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.msg-input input {
+  flex: 1 1 240px; min-width: 0; background: var(--bg-2); border: 1px solid var(--line); color: var(--text);
+  border-radius: 10px; padding: 9px 12px; font: inherit; font-size: 14px;
+}
+.msg-input input:focus { outline: none; border-color: var(--accent); }
+.mini {
+  border: 1px solid var(--line); background: var(--bg-2); border-radius: 10px; padding: 8px 12px;
+  font-size: 13px; cursor: pointer; white-space: nowrap;
+}
+.mini:hover:not(:disabled) { border-color: var(--accent); }
+.mini:disabled { opacity: 0.4; cursor: default; }
+
+.syls { font-family: var(--mono); font-size: 12.5px; word-break: break-word; }
+.syls span { color: var(--accent); }
+
+.how ol { margin: 0; padding-left: 18px; display: grid; gap: 8px; font-size: 13.5px; color: #cfcfe0; }
+.how b { color: var(--text); }
+.how p { margin: 12px 0 0; }

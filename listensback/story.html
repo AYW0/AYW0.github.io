@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Music That Listens Back</title>
+  <meta name="description" content="A short interactive story about context-aware music adaptation: MARingBA, music-aware conversational agents and RISE.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='4' width='12' height='24' rx='2' fill='none' stroke='%2322305a' stroke-width='2'/%3E%3Ccircle cx='12' cy='19' r='4' fill='none' stroke='%2322305a' stroke-width='2'/%3E%3Ccircle cx='12' cy='10' r='2' fill='%2322305a'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="story.css">
+</head>
+<body>
+  <!-- arriving from the homepage: start white and fade the room in -->
+  <div id="arrive" style="position:fixed;inset:0;background:#fff;z-index:100;pointer-events:none;opacity:0;transition:opacity 1.6s cubic-bezier(.22,1,.36,1)"></div>
+  <script>
+    (function () {
+      var a = document.getElementById('arrive'), on = false;
+      try { on = sessionStorage.getItem('aw-story-fade') === '1'; sessionStorage.removeItem('aw-story-fade'); } catch (e) {}
+      if (!on) { a.remove(); return; }
+      a.style.transition = 'none'; a.style.opacity = '1';
+      window.addEventListener('load', function () { setTimeout(function () { a.style.transition = 'opacity 1.6s cubic-bezier(.22,1,.36,1)'; a.style.opacity = '0'; setTimeout(function () { a.remove(); }, 1700); }, 150); });
+    })();
+  </script>
+  <div class="stage">
+    <canvas id="scene" aria-label="A line-drawn living room. Drag to look around."></canvas>
+    <div id="labels"></div>
+    <div id="tip" class="tip" hidden></div>
+
+    <header class="bar">
+      <div class="brand"><a class="homebtn" id="homebtn" href="/" aria-label="Back to Alex's website" title="Back to Alex's website"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2V20a1 1 0 0 1-1 1h-5.2v-5.6H9.2V21H4a1 1 0 0 1-1-1z"/></svg></a><span class="mono">STORY</span> Music that listens back</div>
+      <ol class="chapters">
+        <li class="on">Hi</li><li>Calls</li><li>Voice agent</li><li>Workout</li><li>Lyrics</li><li>End</li>
+      </ol>
+      <a id="papercard" class="papercard" href="#" hidden><div class="pk-head"><span class="pk-venue"></span><b class="pk-title"></b><span class="pk-auth"></span></div><img class="pk-teaser" alt=""></a>
+    </header>
+
+    <div class="loading mono" id="loading"></div>
+
+    <section id="vizcard" class="vizcard" aria-live="polite">
+      <div class="vz-head"><span class="vz-kind mono"></span><span class="vz-title"></span><button class="vz-replay" id="vz-replay" hidden>🔔 Play again</button></div>
+      <canvas id="vz-timeline" class="vz-canvas"></canvas>
+      <canvas id="vz-roll" class="vz-canvas"></canvas>
+      <canvas id="vz-rise" class="vz-canvas"></canvas>
+      <canvas id="vz-mir" class="vz-canvas"></canvas>
+      <div id="vz-mv" class="vz-canvas vz-mv"></div>
+      <canvas id="vz-bm" class="vz-canvas"></canvas>
+      <canvas id="vz-pro" class="vz-canvas"></canvas>
+      <canvas id="vz-cut" class="vz-canvas"></canvas>
+      <canvas id="vz-study" class="vz-canvas"></canvas>
+      <canvas id="vz-wer" class="vz-canvas"></canvas>
+      <div id="vz-cutplay" class="vz-canvas vz-skipwrap"><canvas></canvas><button class="sk-play" data-lane="2">▶ Loop B</button><button class="sk-play" data-lane="3">▶ Skip B</button></div>
+      <div id="vz-skip" class="vz-canvas vz-skipwrap"><canvas></canvas><button class="sk-play" data-lane="0">▶ As written</button><button class="sk-play" data-lane="1">▶ With skip</button></div>
+      <div class="vz-figs"></div>
+    </section>
+
+    <div id="jumpflash" class="jumpflash" aria-hidden="true"><svg viewBox="0 0 80 40"><polygon class="ar-skip" points="4,16 52,16 52,4 76,20 52,36 52,24 4,24"/><polygon class="ar-loop" points="76,16 28,16 28,4 4,20 28,36 28,24 76,24"/></svg><span></span></div>
+
+    <section id="dialogue" class="dialogue" aria-live="polite">
+      <img class="dface" id="dface" src="img/story/alex-drawn.png" alt="Alex">
+      <div class="dname mono" id="dname">Alex</div>
+      <div class="dtext" id="dtext"></div>
+      <div class="dacts" id="dacts"></div>
+    </section>
+
+    <div id="questions" class="questions" hidden></div>
+    <div id="outro" class="outro" hidden>
+      <a href="index.html"><span class="mono">CHI 2024</span><b>MARingBA</b>Ringtones that play along with the song</a>
+      <a href="sing.html"><span class="mono">UIST 2024</span><b>Music-aware voice agents</b>Messages sung into the song</a>
+      <a href="rise.html"><span class="mono">ISMIR 2025</span><b>RISE</b>Songs rearranged around your workout</a>
+      <a href="https://doi.org/10.1145/3830398.3830530" target="_blank" rel="noopener"><span class="mono">UIST 2026</span><b>MultiVerse</b>Lyrics that adapt to each listener, steered by the artist</a>
+    </div>
+
+    <div id="lightbox" class="lightbox" hidden onclick="if(event.target===this||event.target.classList.contains('lb-x'))this.hidden=true">
+      <div class="lb-card"><button class="lb-x" aria-label="Close">✕</button><img alt="Poster"><div class="lb-acts"><a class="choice lb-paper" href="#" target="_blank" rel="noopener">Read the paper ↗</a><a class="choice primary lb-demo" href="#"></a></div></div>
+    </div>
+
+    <div id="phonecut" class="phonecut" hidden>
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="pcskin" width="7" height="7" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#fff"/><circle cx="3.5" cy="3.5" r="0.7" fill="#c9cfe0"/></pattern></defs></svg>
+      <div class="pc-phone">
+        <div class="pc-screen">
+          <div class="pc-app"><span class="np">Now playing</span><span class="pl">Playlist</span></div>
+          <div class="pc-list"></div>
+          <div class="pc-art"><span>♪</span></div>
+          <div class="pc-title">Hotline Bling</div>
+          <div class="pc-artist">Drake</div>
+          <div class="pc-bar"><i></i></div>
+          <div class="pc-hint">Tap ▶ to play</div>
+          <div class="pc-ctl"><button class="pc-skip" id="pc-prev" aria-label="Previous song">⏮</button><button class="pc-play" id="pc-play" aria-label="Play"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button><button class="pc-skip" id="pc-next" aria-label="Next song">⏭</button></div>
+        </div>
+      </div>
+      <svg class="pc-hand" viewBox="0 0 260 150" aria-hidden="true"><g fill="url(#pcskin)" stroke="#22305a" stroke-width="3" stroke-linejoin="round">
+        <path d="M20 150 C22 100 40 70 70 62 L190 62 C220 70 238 100 240 150 Z"/>
+        <path d="M44 74 C30 70 26 52 40 46 C52 42 60 54 62 64" /><path d="M216 74 C230 70 234 52 220 46 C208 42 200 54 198 64"/>
+      </g></svg>
+      <svg class="pc-thumb" viewBox="0 0 80 120" aria-hidden="true"><path d="M60 120 C64 80 50 40 36 18 C28 6 12 10 14 26 C18 56 30 90 30 120 Z" fill="url(#pcskin)" stroke="#22305a" stroke-width="3" stroke-linejoin="round"/></svg>
+    </div>
+
+    <div id="profile" class="lightbox" hidden onclick="if(event.target===this||event.target.classList.contains('lb-x'))this.hidden=true">
+      <div class="pf-card"><button class="lb-x" aria-label="Close">✕</button>
+        <img src="img/story/alex.jpg" alt="">
+        <div class="pf-body"><b>Alex Wang</b><span class="pf-role">2nd-year PhD student</span><span>Human-Computer Interaction Institute, Carnegie Mellon University</span>
+          <span class="pf-links"><a href="mailto:alexanderwang@cmu.edu">alexanderwang@cmu.edu</a><a href="https://ayw0.github.io" target="_blank" rel="noopener">ayw0.github.io ↗</a></span></div>
+      </div>
+    </div>
+
+    <div id="chtitle" class="chtitle" aria-live="polite"><span class="ct-num"></span><span class="ct-name"></span><span class="ct-sub"></span></div>
+
+    <div id="intro" class="intro">
+      <div class="card">
+        <div class="mono kicker">An interactive story · 3 min · sound on 🔊</div>
+        <h1>Music that listens back</h1>
+        <p>Generative AI can now transform media at runtime. What if the music you are listening to adapted to what happens around you: a phone call, a voice agent, a workout?</p>
+        <button id="begin" class="begin">Begin ▸</button>
+        <p class="small">Drag to look around the room · hover the speakers · Space to continue</p>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="js/story.js"></script>
+<script>
+  // back to the website: fade to white; the homepage fades back in from white
+  document.getElementById('homebtn').addEventListener('click', function (e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    var href = this.getAttribute('href');
+    try { sessionStorage.setItem('aw-return-fade', '1'); } catch (err) {}
+    var w = document.createElement('div'); w.className = 'aw-fadeout';
+    w.style.cssText = 'position:fixed;inset:0;background:#fff;opacity:0;z-index:200;pointer-events:all;transition:opacity .8s ease';
+    document.body.appendChild(w);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { w.style.opacity = '1'; }); });
+    setTimeout(function () { location.href = href; }, 850);
+  });
+  // back/forward restores the page as it was left: drop any white overlay
+  window.addEventListener('pageshow', function () {
+    document.querySelectorAll('.aw-fadeout').forEach(function (n) { n.remove(); });
+    var a = document.getElementById('arrive'); if (a) a.remove();
+  });
+</script>
+</body>
+</html>

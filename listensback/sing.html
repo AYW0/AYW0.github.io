@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Musical Assistant</title>
+  <meta name="description" content="A voice assistant that sings its notifications along with your music.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='9' cy='24' r='5' fill='%23ff9f5a'/%3E%3Crect x='12' y='4' width='3' height='20' fill='%23ff9f5a'/%3E%3Cpath d='M15 4c6 2 9 5 9 10-2-3-5-4-9-4z' fill='%23ff9f5a'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="sing.css">
+</head>
+<body style="--accent:#ff9f5a">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div>
+        <h1>Musical Assistant</h1>
+        <p class="sub">Spoken notifications sung into your music</p>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="paper" href="index.html">← Ringtones (MARingBA)</a>
+      <a class="paper" href="https://doi.org/10.1145/3654777.3676416" target="_blank" rel="noopener">UIST 2024 paper ↗</a>
+    </nav>
+  </header>
+
+  <section class="intro">
+    <p class="lede">When Siri or Alexa talks, your music drops out. <strong>A musical assistant sings the message instead</strong>, in place of the singer, to the song's beat and the singer's own melody.</p>
+    <ol class="steps">
+      <li><b>1</b><span>Pick a song</span></li>
+      <li><b>2</b><span>Pick or type a message</span></li>
+      <li><b>3</b><span>Press <kbd>Notify</kbd> or <kbd>N</kbd>, then switch to <em>Standard</em> to compare</span></li>
+    </ol>
+  </section>
+
+  <div id="missing" class="banner" hidden>
+    Audio files not found. Run the server from the <code>web/</code> folder so the <code>assets</code> link to <code>MusicNotification/Assets</code> resolves (see README).
+  </div>
+
+  <main class="layout">
+    <div class="col-main">
+      <section class="card songs">
+        <div class="card-head"><h2>Song</h2><span class="muted" id="songStatus"></span></div>
+        <div class="song-list" id="songList" role="listbox" aria-label="Songs"></div>
+      </section>
+
+      <section class="card player">
+        <div class="now">
+          <button class="play" id="playBtn" aria-label="Play" disabled>
+            <svg viewBox="0 0 24 24" class="i-play"><path d="M7 4.5v15l13-7.5z"/></svg>
+            <svg viewBox="0 0 24 24" class="i-pause"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+          </button>
+          <div class="now-meta">
+            <div class="now-title" id="nowTitle">Choose a song to start</div>
+            <div class="now-sub" id="nowSub">&nbsp;</div>
+          </div>
+          <div class="now-stats">
+            <div><span class="label">Tempo</span><span id="statBpm">–</span></div>
+            <div><span class="label">Key</span><span id="statKey">–</span></div>
+            <div><span class="label">Time</span><span id="statTime" class="mono">0:00</span></div>
+          </div>
+        </div>
+        <canvas id="roll" class="timeline roll" aria-label="Piano roll: the singer's melody, and the notification's notes where they land"></canvas>
+        <canvas id="overview" class="overview" aria-label="Song overview, click to seek"></canvas>
+        <div class="player-foot">
+          <div class="legend">
+            <span><i class="lg-mel"></i>Singer's melody (pitch-tracked)</span>
+            <span><i class="lg-syl"></i>Speech rhythm</span>
+            <span><i class="lg-note"></i>Sung notification</span>
+          </div>
+          <span class="muted small">Space: play/pause · N: notify · Esc: stop</span>
+        </div>
+      </section>
+
+      <section class="card ring">
+        <div class="card-head"><h2>Notification</h2><span class="muted small" id="voiceNote"></span></div>
+        <div class="msgs" id="msgList" role="radiogroup" aria-label="Message"></div>
+        <div class="msg-input">
+          <input id="msgText" type="text" maxlength="90" placeholder="Or type your own message…" aria-label="Notification text">
+          <button class="mini" id="hearSpeech" title="Hear the plain text-to-speech">▶ Speech</button>
+          <button class="mini" id="hearSung" title="Hear the last sung version on its own" disabled>▶ Sung only</button>
+        </div>
+        <div class="ring-row">
+          <button class="ring-btn" id="notifyBtn" disabled>
+            <span class="bell" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-9 9v5a3 3 0 0 0 3 3h2v-7H5v-1a7 7 0 0 1 14 0v1h-3v7h2a3 3 0 0 0 3-3v-5a9 9 0 0 0-9-9z"/></svg>
+            </span>
+            <span id="notifyLabel">Notify</span>
+          </button>
+          <div class="explain" id="explain">
+            <p class="muted">Press play, then notify. This panel shows how the message was turned into a melody.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="col-side">
+      <section class="card">
+        <div class="card-head"><h2>Assistant</h2></div>
+        <div class="presets" id="modeList" role="radiogroup" aria-label="Assistant style"></div>
+        <p class="preset-blurb" id="modeBlurb"></p>
+      </section>
+      <section class="card controls" id="controls"></section>
+      <section class="card how">
+        <div class="card-head"><h2>How it works</h2></div>
+        <ol>
+          <li><b>Speak.</b> The message is spoken by a normal text-to-speech voice.</li>
+          <li><b>Find syllables.</b> Loudness peaks in the speech mark one syllable each.</li>
+          <li><b>Snap to the beat.</b> Each syllable keeps its natural timing, rounded to the nearest 16th note from the next bar.</li>
+          <li><b>Borrow the melody.</b> Each syllable takes the pitch the singer sings at that moment, tracked from the vocal stem.</li>
+          <li><b>Re-pitch.</b> PSOLA moves each syllable to its note and length, keeping the voice intelligible.</li>
+          <li><b>Swap the singer.</b> The original vocals drop out for those bars while the band keeps playing.</li>
+        </ol>
+        <p class="muted small">The paper generates a new melody with the Anticipatory Music Transformer and aligns speech with a forced aligner; this demo uses the original melody and simple signal processing instead.</p>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    Simplified web re-implementation of “Towards Music-Aware Virtual Assistants” (Wang, Lindlbauer &amp; Donahue, UIST 2024). Preset messages use macOS text-to-speech; typed messages use meSpeak (eSpeak, GPL). Songs are copyrighted and for local research use only.
+  </footer>
+
+  <script src="vendor/mespeak.js"></script>
+  <script type="module" src="js/sing.js"></script>
+</body>
+</html>

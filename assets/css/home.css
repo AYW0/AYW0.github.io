@@ -248,3 +248,30 @@ a:hover { border-bottom-color: var(--accent); }
 .home-game .vplayer { cursor: pointer; }
 .home-game .vplayer-poster { object-fit: cover; }
 .home-game-title { margin-top: 0.5rem; font-weight: 600; font-size: 0.95rem; }
+
+/* invite to the interactive story */
+.home-try { margin: 0.2rem 0 1.1rem; }
+.try-story { position: relative; display: flex; align-items: center; gap: 0.7rem; padding: 0.75rem 1rem; border-radius: 12px; text-decoration: none; color: var(--ink);
+  background: linear-gradient(110deg, #fff7e6, #ffeef3 45%, #eef4ff); border: 1px solid #f0d9a8; overflow: hidden;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.try-story::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.75) 50%, transparent 70%); transform: translateX(-120%); pointer-events: none; }
+.try-story:hover, .try-story:focus-visible { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(47,91,143,0.18); border-color: #e8a33d; }
+.try-story:hover::after, .try-story:focus-visible::after { animation: trySheen .9s ease; }
+@keyframes trySheen { to { transform: translateX(120%); } }
+.try-spark { font-size: 1.2rem; color: #e8a33d; animation: tryPulse 2.2s ease-in-out infinite; }
+.try-story:hover .try-spark { animation: trySpin .8s ease; }
+@keyframes tryPulse { 50% { transform: scale(1.25); opacity: 0.7; } }
+@keyframes trySpin { to { transform: rotate(180deg) scale(1.2); } }
+.try-text { flex: 1; font-size: 0.95rem; line-height: 1.4; }
+.try-text b { color: #c2410c; }
+.try-go { flex: none; font-weight: 700; font-size: 0.9rem; color: #fff; background: var(--accent); padding: 0.35rem 0.75rem; border-radius: 999px; transition: background .2s, transform .2s; }
+.try-story:hover .try-go { background: #e8a33d; transform: translateX(3px); }
+@media (prefers-reduced-motion: reduce) { .try-spark, .try-story:hover .try-spark, .try-story:hover::after { animation: none; } .try-story:hover { transform: none; } }
+@media (max-width: 560px) { .try-story { flex-wrap: wrap; } }
+
+/* after the story: the drawn portrait, until hover */
+.home-photo.is-drawn { background: #fbf8f0; object-fit: contain; animation: drawnBob 2.4s ease-in-out infinite; }
+@keyframes drawnBob { 50% { transform: rotate(-2deg) translateY(-2px); } }
+.home-photo.is-waking { animation: wake .42s ease; }
+@keyframes wake { 0% { transform: scale(1); } 45% { transform: scale(0.85) rotate(8deg); filter: blur(2px); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .home-photo.is-drawn, .home-photo.is-waking { animation: none; } }

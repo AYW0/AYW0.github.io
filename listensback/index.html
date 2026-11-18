@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MARingBA</title>
+  <meta name="description" content="Music-adaptive ringtones: notifications that play along with your music.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='14' width='5' height='14' rx='2' fill='%238b93ff'/%3E%3Crect x='11' y='4' width='5' height='24' rx='2' fill='%238b93ff'/%3E%3Crect x='18' y='10' width='5' height='18' rx='2' fill='%238b93ff'/%3E%3Crect x='25' y='7' width='5' height='21' rx='2' fill='%238b93ff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div>
+        <h1>MARingBA</h1>
+        <p class="sub">Music-Adaptive Ringtones for Blended Audio notifications</p>
+      </div>
+    </div>
+    <nav style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+      <a class="paper" href="story.html">Story ✦</a>
+      <a class="paper" href="sing.html">Musical assistant →</a>
+      <a class="paper" href="https://doi.org/10.1145/3613904.3642376" target="_blank" rel="noopener">CHI 2024 paper ↗</a>
+    </nav>
+  </header>
+
+  <section class="intro">
+    <p class="lede">Your phone rings while music is playing. Normally the music cuts out and the ringtone plays over it. <strong>MARingBA plays the ringtone along with the song instead:</strong> at the song's tempo, in its key, and starting on the beat.</p>
+    <ol class="steps">
+      <li><b>1</b><span>Pick a song</span></li>
+      <li><b>2</b><span>Hit <kbd>Ring</kbd> or press <kbd>R</kbd></span></li>
+      <li><b>3</b><span>Try <em>Conventional</em> vs. the adaptive styles to hear the difference</span></li>
+    </ol>
+  </section>
+
+  <div id="missing" class="banner" hidden>
+    Audio files not found. Run the server from the <code>web/</code> folder so the <code>assets</code> link to <code>MusicNotification/Assets</code> resolves (see README).
+  </div>
+
+  <main class="layout">
+    <div class="col-main">
+      <section class="card songs">
+        <div class="card-head"><h2>Song</h2><span class="muted" id="songStatus"></span></div>
+        <div class="song-list" id="songList" role="listbox" aria-label="Songs"></div>
+      </section>
+
+      <section class="card player">
+        <div class="now">
+          <button class="play" id="playBtn" aria-label="Play" disabled>
+            <svg viewBox="0 0 24 24" class="i-play"><path d="M7 4.5v15l13-7.5z"/></svg>
+            <svg viewBox="0 0 24 24" class="i-pause"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+          </button>
+          <div class="now-meta">
+            <div class="now-title" id="nowTitle">Choose a song to start</div>
+            <div class="now-sub" id="nowSub">&nbsp;</div>
+          </div>
+          <div class="now-stats">
+            <div><span class="label">Tempo</span><span id="statBpm">–</span></div>
+            <div><span class="label">Key</span><span id="statKey">–</span></div>
+            <div><span class="label">Time</span><span id="statTime" class="mono">0:00</span></div>
+          </div>
+        </div>
+        <canvas id="timeline" class="timeline" aria-label="Beat grid of the song with the ringtone drawn where it plays"></canvas>
+        <canvas id="overview" class="overview" aria-label="Song overview, click to seek"></canvas>
+        <div class="player-foot">
+          <label class="check"><input type="checkbox" id="metronome"> Beat clicks</label>
+          <span class="muted small">Space: play/pause · R: ring · Esc: dismiss</span>
+        </div>
+      </section>
+
+      <section class="card ring">
+        <div class="card-head"><h2>Notification</h2></div>
+        <div class="ringtones" id="ringtoneList" role="radiogroup" aria-label="Ringtone"></div>
+        <div class="ring-row">
+          <button class="ring-btn" id="ringBtn" disabled>
+            <span class="bell" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm7-6V11a7 7 0 0 0-5.5-6.84V3a1.5 1.5 0 0 0-3 0v1.16A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg>
+            </span>
+            <span id="ringLabel">Ring</span>
+          </button>
+          <div class="explain" id="explain">
+            <p class="muted">Press play, then ring. This panel explains what the system changed and why.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="col-side">
+      <section class="card">
+        <div class="card-head"><h2>Style</h2></div>
+        <div class="presets" id="presetList" role="radiogroup" aria-label="Preset"></div>
+        <p class="preset-blurb" id="presetBlurb"></p>
+      </section>
+      <section class="card controls" id="controls"></section>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    Web re-implementation of MARingBA (Wang, Cheng &amp; Lindlbauer, CHI 2024). Song stems, beats, downbeats, spectra and stereo balance were pre-computed offline; the songs are copyrighted and for local research use only.
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

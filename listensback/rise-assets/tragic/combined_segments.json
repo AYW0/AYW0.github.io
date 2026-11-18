@@ -1,0 +1,34 @@
+{
+    "segments": [
+        {
+            "start": 0,
+            "end": 82,
+            "label": "low",
+            "transitions": []
+        },
+        {
+            "start": 82,
+            "end": 114,
+            "label": "high",
+            "transitions": "[(89, 105)]"
+        },
+        {
+            "start": 114,
+            "end": 166,
+            "label": "low",
+            "transitions": []
+        },
+        {
+            "start": 166,
+            "end": 198,
+            "label": "high",
+            "transitions": "[(173, 189)]"
+        },
+        {
+            "start": 198,
+            "end": 215,
+            "label": "low",
+            "transitions": "[(201, 213)]"
+        }
+    ]
+}

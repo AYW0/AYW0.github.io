@@ -1,0 +1,46 @@
+{
+    "segments": [
+        {
+            "start": 0,
+            "end": 89,
+            "label": "low",
+            "transitions": "[(12, 36), (23, 35), (65, 81)]"
+        },
+        {
+            "start": 89,
+            "end": 125,
+            "label": "high",
+            "transitions": "[(96, 112)]"
+        },
+        {
+            "start": 125,
+            "end": 172,
+            "label": "low",
+            "transitions": "[(135, 151)]"
+        },
+        {
+            "start": 172,
+            "end": 200,
+            "label": "high",
+            "transitions": "[(178, 194)]"
+        },
+        {
+            "start": 200,
+            "end": 265,
+            "label": "low",
+            "transitions": "[(239, 255)]"
+        },
+        {
+            "start": 265,
+            "end": 326,
+            "label": "high",
+            "transitions": "[(272, 288), (273, 305), (275, 291), (276, 308), (281, 305), (282, 314), (289, 305), (293, 309), (309, 325)]"
+        },
+        {
+            "start": 326,
+            "end": 332,
+            "label": "low",
+            "transitions": []
+        }
+    ]
+}
