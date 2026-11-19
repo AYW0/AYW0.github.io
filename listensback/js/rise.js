@@ -1,3 +1,4 @@
+import { normGain } from './engine.js';
 // RISE, interactive: you steer the song with precomputed cutpoints (loop the current section
 // or skip ahead through it) and the athlete follows the music: squats on the beat while it is
 // high energy, rests while it is calm, and counts reps out loud.
@@ -46,7 +47,7 @@ class Player {
     const g = this.ctx.createGain();
     g.connect(this.out);
     g.gain.setValueAtTime(0, Math.max(this.ctx.currentTime, when - 0.001));
-    g.gain.linearRampToValueAtTime(1, when + fade);
+    g.gain.linearRampToValueAtTime(this.song.norm || 1, when + fade);
     const srcs = [this.song.buf].map((b) => {
       const s = this.ctx.createBufferSource();
       s.buffer = b; s.connect(g);
@@ -65,7 +66,7 @@ class Player {
   jump(orig, dest, xf = 0.025) {
     const c = this.ctxTimeOf(orig);
     const old = this.voices[this.voices.length - 1];
-    old.g.gain.setValueAtTime(1, c - xf);
+    old.g.gain.setValueAtTime(this.song.norm || 1, c - xf);
     old.g.gain.linearRampToValueAtTime(0, c + xf);
     old.srcs.forEach((s) => s.stop(c + xf + 0.02));
     this.voice(dest - xf, c - xf, 2 * xf);
@@ -900,7 +901,7 @@ async function selectSong(s, btn) {
     ]);
     bufCache.clear(); bufCache.set(s.id, buf);
     if (my !== token) return;
-    const song = { ...s, buf, beats, beatDur, duration: buf.duration };
+    const song = { ...s, buf, beats, beatDur, duration: buf.duration, norm: normGain([buf]) };
     const segments = buildSegments(beats, segJ, buf.duration);
     state.song = song;
     renderCuts.force = true; cutSeg = -1;

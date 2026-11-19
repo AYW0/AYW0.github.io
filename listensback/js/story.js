@@ -4,12 +4,15 @@
 import * as THREE from '../vendor/three.module.min.js';
 import { Room, POSES, mixPose } from './story-scene.js';
 import { SONGS, RINGTONES, PRESETS, MAJOR_MAP, KEY_MAJOR, KEY_MINOR } from './data.js';
-import { Engine } from './engine.js';
+import { Engine, normGain } from './engine.js';
 import * as V from './voice.js';
 import { Timeline } from './timeline.js';
-import { Roll, RiseTrack, MirFigure, MvPanel, BeatMatchFig, ProsodyFig, CutFig, StudyFig, WerFig, SkipFig, CutPlayFig } from './story-viz.js';
+import { Liminality, LIM_SONGS, loadData as loadJourney } from './liminality.js';
+import { Roll, RiseTrack, MirFigure, MvPanel, MvPipe, BeatMatchFig, ProsodyFig, CutFig, StudyFig, WerFig, SkipFig, CutPlayFig } from './story-viz.js';
 
 const $ = (s) => document.querySelector(s);
+// phones and narrow windows: the card sits on top instead of beside the room
+const isNarrow = () => window.innerWidth < 700;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const dbToGain = (db) => Math.pow(10, db / 20);
 const fmtS = (s) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}`;
@@ -76,9 +79,13 @@ const roll = new Roll($('#vz-roll'), engine, { replaceVocals: true });
 const track = new RiseTrack($('#vz-rise'));
 const mir = new MirFigure($('#vz-mir'));
 const mv = new MvPanel($('#vz-mv'));
+const mvp = new MvPipe($('#vz-mvpipe'), (clip) => {
+  playClip(clip).then((ok) => { if (!ok && clip === 'david') think('(my verse is still being recorded 🎙️)', 'good', 3000); });
+  if (clip === 'david') think('Wait, this song is about me? 😳', 'good', 3500);
+});
 const figs = { bm: new BeatMatchFig($('#vz-bm')), pro: new ProsodyFig($('#vz-pro')), cut: new CutFig($('#vz-cut')), study: new StudyFig($('#vz-study')), wer: new WerFig($('#vz-wer')), skip: new SkipFig($('#vz-skip canvas')), cutplay: new CutPlayFig($('#vz-cutplay canvas')) };
-$('#vz-cutplay').addEventListener('click', (e) => { const b = e.target.closest('.sk-play'); if (b && skip.buf) { skipPlay(+b.dataset.lane); $('#vz-cutplay').classList.remove('coach'); } });
-$('#vz-skip').addEventListener('click', (e) => { const b = e.target.closest('.sk-play'); if (b && skip.buf) { skipPlay(+b.dataset.lane); skip.played = true; coached.skip = true; $('#vz-skip').classList.remove('coach'); } });
+$('#vz-cutplay').addEventListener('click', (e) => { const b = e.target.closest('.sk-play'); if (b && skip.buf) skipToggle(+b.dataset.lane); });
+$('#vz-skip').addEventListener('click', (e) => { const b = e.target.closest('.sk-play'); if (b && skip.buf) skipToggle(+b.dataset.lane); });
 let replayFn = null;
 $('#vz-replay').addEventListener('click', async (e) => { e.stopPropagation(); if (replayFn) await replayFn(); });
 function setReplay(fn) { replayFn = fn; $('#vz-replay').hidden = !fn; }
@@ -91,7 +98,7 @@ function showLive(kind, tag, title, replay = null) {
   for (const c of vizCard.querySelectorAll('.vz-canvas')) c.classList.toggle('on', c.id === 'vz-' + kind);
   vizCard.querySelector('.vz-figs').classList.remove('on');
   vizCard.classList.add('on');
-  room.focusShift = 0.24;
+  room.focusShift = isNarrow() ? 0 : 0.24; requestAnimationFrame(() => room.applyOffset());
   requestAnimationFrame(() => { tl.resize(); roll.resize(); });
 }
 function showFigs(tag, title, figs) {
@@ -103,11 +110,11 @@ function showFigs(tag, title, figs) {
   for (const c of vizCard.querySelectorAll('.vz-canvas')) c.classList.remove('on');
   const box = vizCard.querySelector('.vz-figs');
   box.className = 'vz-figs on' + (figs.length === 1 ? ' one' : '');
-  room.focusShift = 0.24;
+  room.focusShift = isNarrow() ? 0 : 0.24; requestAnimationFrame(() => room.applyOffset());
   box.innerHTML = figs.map((f) => `<figure class="${f.tone || ''} ${f.anim || ''}"><img src="img/story/${f.src}" alt=""><figcaption>${f.cap ? `<i>${f.cap}</i>` : ''}${f.label || ''}</figcaption></figure>`).join('');
   vizCard.classList.add('on');
 }
-function hideViz() { vz.kind = null; vizCard.classList.remove('on'); room.focusShift = 0; }
+function hideViz() { vz.kind = null; vizCard.classList.remove('on'); room.focusShift = 0; requestAnimationFrame(() => room.applyOffset()); }
 
 // ---------------------------------------------------------------- person animation state
 const BUFF_KEY = 'story.davidBuff';
@@ -147,6 +154,7 @@ function walkTo(pos, rotY, dur = 2.2) {
 
 // ---------------------------------------------------------------- audio: song + analysis
 let mel = null, flightBuf = null, flightWords = null, voiceBus = null;
+const voiceSrcs = [];
 async function loadCommon() {
   const r = await fetch('tts/invite-alex.mp3');
   flightBuf = await engine.ctx.decodeAudioData(await r.arrayBuffer());
@@ -226,7 +234,7 @@ async function singFlight(forceBeat = null) {
   const vg = engine.vocalGain.gain, ag = engine.accGain.gain;
   vg.cancelScheduledValues(0); vg.setTargetAtTime(0, c0 - 0.12, 0.03); vg.setTargetAtTime(1, c1 + 0.1, 0.1);
   ag.cancelScheduledValues(0); ag.setTargetAtTime(dbToGain(-3), c0 - 0.1, 0.05); ag.setTargetAtTime(1, c1 + 0.1, 0.15);
-  const s = engine.ctx.createBufferSource(); s.buffer = buf; s.connect(voiceBus); s.start(c0 - PRE);
+  const s = engine.ctx.createBufferSource(); s.buffer = buf; s.connect(voiceBus); s.start(c0 - PRE); voiceSrcs.push(s);
   vz.notif = { mode: 'musical', t0, t1: end, notes };
   window.__lastSung = { t0, syl, sylText, q: { grid: G, alpha: q.alpha, pace: q.pace }, voiceMidi, octave, notes: notes.map((n) => ({ l: n.label, slot: n.slot, slots: n.slots, midi: n.midi, song: n.songMidi, src: n.src, vowel: n.vowel, dur: n.t1 - n.t })), y };
   return { wait: c0 - engine.ctx.currentTime, dur: end - t0, bpm: Math.round(60 / a.beatDur), n: notes.length, grid: G };
@@ -236,7 +244,7 @@ function speakFlight() {
   for (const g of [engine.vocalGain.gain, engine.accGain.gain]) {
     g.cancelScheduledValues(0); g.setTargetAtTime(dbToGain(-24), ctx.currentTime, 0.06); g.setTargetAtTime(1, c0 + dur + 0.3, 0.2);
   }
-  const s = ctx.createBufferSource(); s.buffer = flightBuf; s.connect(voiceBus); s.start(c0);
+  const s = ctx.createBufferSource(); s.buffer = flightBuf; s.connect(voiceBus); s.start(c0); voiceSrcs.push(s);
   vz.notif = { mode: 'standard', t0: engine.time + 0.35, t1: engine.time + 0.35 + dur };
   return dur + 0.6;
 }
@@ -258,7 +266,7 @@ async function loadRise(w = WORKOUT[0]) {
     fetch(dir + 'combined_segments.json').then((r) => r.json()),
     fetch(dir + w.file).then((r) => r.arrayBuffer()).then((a) => engine.ctx.decodeAudioData(a)),
   ]);
-  rise.buf = ab;
+  rise.buf = ab; rise.norm = normGain([ab]);
   rise.beats = bt.split(/[\s,]+/).filter(Boolean).map(Number);
   const B = rise.beats, at = (i) => B[Math.min(i, B.length - 1)];
   const pairs = (t) => (typeof t === 'string' ? [...t.matchAll(/\((\d+),\s*(\d+)\)/g)].map((m) => [+m[1], +m[2]]) : t || []);
@@ -287,7 +295,7 @@ async function loadSkip() {
   ]);
   const B = bt.split(/[\s,]+/).filter(Boolean).map(Number), at = (i) => B[Math.min(i, B.length - 1)];
   const pairs = (t) => (typeof t === 'string' ? [...t.matchAll(/\((\d+),\s*(\d+)\)/g)].map((m) => [+m[1], +m[2]]) : t || []);
-  skip.buf = ab; skip.beats = B;
+  skip.buf = ab; skip.beats = B; skip.norm = normGain([ab]);
   { const d = B.slice(1).map((x, i) => x - B[i]).sort((p, q) => p - q); skip.beatDur = d[d.length >> 1]; }
   skip.segs = sj.segments.map((g, i) => ({ start: at(g.start), end: i === sj.segments.length - 1 ? ab.duration : at(g.end), high: g.label === 'high',
     cuts: pairs(g.transitions).flatMap(([o, d]) => [[o, d], [d, o]]).map(([o, d]) => ({ orig: at(o), dest: at(d) })) }));
@@ -307,13 +315,13 @@ function skipStop(fade = 3) {
   skip.voices = []; skip.play = null;
 }
 // lane 0: as written; lane 1: with the skip. Returns nothing; the frame loop follows skip.play.
-function skipPlay(lane) {
+function skipPlay(lane, resume = null) {
   skipStop(0.3); riseStop(); engine.stop();
   const ctx = engine.ctx, when = ctx.currentTime + 0.08, xf = 0.025, c = skip.cut;
   const voice = (pos, at, until, fadeIn = xf) => {
     const g = ctx.createGain(); g.connect(engine.master);
-    g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(1, at + fadeIn);
-    if (until) { g.gain.setValueAtTime(1, until - xf); g.gain.linearRampToValueAtTime(0, until + xf); }
+    g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(skipLevel(), at + fadeIn);
+    if (until) { g.gain.setValueAtTime(skipLevel(), until - xf); g.gain.linearRampToValueAtTime(0, until + xf); }
     const s = ctx.createBufferSource(); s.buffer = skip.buf; s.connect(g); s.start(at, pos); if (until) s.stop(until + xf + 0.02);
     skip.voices.push({ g, s });
   };
@@ -322,13 +330,47 @@ function skipPlay(lane) {
   // the drop demos start near the end of A, so the cut comes quickly
   const from = lane >= 2 ? Math.max(D.start, D.x - 3) : SKIP.from;
   const o = lane === 2 ? D.y : lane === 3 ? D.x : c.orig, d = lane === 2 ? D.x : lane === 3 ? D.y : c.dest;
-  const jumpAt = when + (o - from);
-  if (lane === 0) voice(from, when, null, 1.2);
-  else { voice(from, when, jumpAt, 1.2); voice(d - xf, jumpAt - xf); }
+  // resuming a paused example: carry on from where it stopped (after its jump, if it had jumped)
+  const fade = resume ? 0.25 : 1.2;
+  let jumpAt;
+  if (resume && resume.jumped) {
+    // already past the jump: just continue on the far side of it
+    voice(resume.pos, when, null, fade);
+    jumpAt = when - (resume.pos - d);
+    skip.play = { lane, when: jumpAt - (o - from), jumpAt, from, o, d };
+  }
+  else {
+    const start = resume ? resume.pos : from;
+    jumpAt = when + (o - start);
+    if (lane === 0) voice(start, when, null, fade);
+    else { voice(start, when, jumpAt, fade); voice(d - xf, jumpAt - xf); flashJump(d < o ? 'loop' : 'skip', jumpAt); }
+    skip.play = { lane, when: when - (start - from), jumpAt, from, o, d };
+  }
   unlabel('bored');
-  skip.play = { lane, when, jumpAt, from, o, d };
-  if (lane !== 0) flashJump(d < o ? 'loop' : 'skip', jumpAt);
-  anim.free = false; anim.working = false; pose('stand', 0.4); rackBar();
+  skip.paused = skip.paused || {}; delete skip.paused[lane];
+  if (!resume) { anim.free = false; anim.working = false; pose('stand', 0.4); rackBar(); }
+}
+// pause the playing example, remembering where it was
+function skipPause() {
+  const p = skip.play; if (!p) return;
+  const now = engine.ctx.currentTime;
+  skip.paused = skip.paused || {};
+  skip.paused[p.lane] = { pos: skipPos(), jumped: p.lane !== 0 && now >= p.jumpAt };
+  skipStop(0.25); anim.working = false; anim.free = false; pose('stand', 0.4); rackBar(); unlabel('bored');
+}
+// a play/pause button: pause the playing one, otherwise play (or resume) this one
+function skipToggle(lane) {
+  skip.queue = []; // the reader has taken over
+  if (skip.play && skip.play.lane === lane && !skip.play.fading) { skipPause(); return; }
+  skipPlay(lane, skip.paused && skip.paused[lane]);
+}
+// play two examples back to back on their own
+function skipAuto(a, b) { skip.paused = {}; skip.queue = [b]; later(() => skipPlay(a), 900); }
+// an example finished: note it, then start the next one in the queue
+function skipEnded() {
+  skip.played = true;
+  const nx = skip.queue && skip.queue.shift();
+  if (nx != null) later(() => skipPlay(nx), 900);
 }
 // song position of the lane being played
 function skipPos() {
@@ -358,9 +400,13 @@ function runJumpFlashes() {
     void el.offsetWidth; el.classList.add('go');
   }
 }
+// workout songs share the engine's output stage, which carries the home song's normalization
+const outNorm = () => (engine.songNorm ? engine.songNorm.gain.value : 1) || 1;
+const riseLevel = () => (rise.norm || 1) / outNorm();
+const skipLevel = () => (skip.norm || 1) / outNorm();
 function riseVoice(pos, when, fade) {
   const ctx = engine.ctx, g = ctx.createGain(); g.connect(rise.analyser);
-  g.gain.setValueAtTime(0, Math.max(ctx.currentTime, when - 0.001)); g.gain.linearRampToValueAtTime(1, when + fade);
+  g.gain.setValueAtTime(0, Math.max(ctx.currentTime, when - 0.001)); g.gain.linearRampToValueAtTime(riseLevel(), when + fade);
   const s = ctx.createBufferSource(); s.buffer = rise.buf; s.connect(g); s.start(when, Math.max(0, pos));
   rise.voices.push({ g, s });
 }
@@ -379,7 +425,7 @@ function risePos(now = engine.ctx.currentTime) { let m = rise.maps[0]; for (cons
 function riseJump(orig, dest, xf = 0.025) {
   const m = rise.maps[rise.maps.length - 1], c = m.c + (orig - m.p);
   const old = rise.voices[rise.voices.length - 1];
-  old.g.gain.setValueAtTime(1, c - xf); old.g.gain.linearRampToValueAtTime(0, c + xf); old.s.stop(c + xf + 0.02);
+  old.g.gain.setValueAtTime(riseLevel(), c - xf); old.g.gain.linearRampToValueAtTime(0, c + xf); old.s.stop(c + xf + 0.02);
   riseVoice(dest - xf, c - xf, 2 * xf);
   rise.maps.push({ c, p: dest });
   flashJump(dest < orig ? 'loop' : 'skip', c);
@@ -485,10 +531,23 @@ const sfx = {
     });
   },
   blip() { this.tone(560 + Math.random() * 90, 520, 0.035, 0.018, 'triangle'); },
+  // a soft kalimba-like pluck for each spoken word: a sine with a little bell overtone and a tick
+  word(midi, accent = 0.5) {
+    const ctx = this.out(); if (!ctx) return;
+    const t = ctx.currentTime + 0.005, f = 440 * Math.pow(2, (midi - 69) / 12), vol = 0.035 + 0.05 * accent, dur = 0.12 + 0.12 * accent;
+    for (const [mult, v, type] of [[1, 1, 'sine'], [4.02, 0.18, 'sine'], [2, 0.12, 'triangle']]) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(f * mult * 1.012, t); o.frequency.exponentialRampToValueAtTime(f * mult, t + 0.03);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol * v, t + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, t + dur * (mult > 1 ? 0.5 : 1));
+      o.connect(g); g.connect(this.bus); o.start(t); o.stop(t + dur + 0.02);
+    }
+  },
 };
 document.addEventListener('click', (e) => { if (e.target.closest('button, .choice, .chapters li, .papercard, .pc-row, a')) sfx.click(); }, true);
 // paper names in Alex's lines are shown in each paper's colour
 const PAPER_COL = [[/\bMARingBA\b/g, '#2fae74'], [/Towards Music-Aware Virtual Assistants/g, '#e0479e'], [/\bmusic-aware voice agents?\b/gi, '#e0479e'], [/\bRISE\b/g, '#e8a33d'], [/\bMultiVerse\b/g, '#1d8a96']];
+const C3_COL = { creator: '#f07a1c', content: '#e0384f', context: '#1fa4b8' };
+const tintC3 = (html) => html.split(/(<[^>]+>)/).map((part) => (part.startsWith('<') ? part : part.replace(/\b(creator|content|context)(s?)\b/gi, (m, w) => `<span class="c3w" style="color:${C3_COL[w.toLowerCase()]}">${m}</span>`))).join('');
 const tintPapers = (html) => html.split(/(<[^>]+>)/).map((part) => (part.startsWith('<') ? part : PAPER_COL.reduce((t, [re, c]) => t.replace(re, (m) => `<span class="paper" style="color:${c}">${m}</span>`), part))).join('');
 // the first n visible characters of an html string (open tags are closed by the parser)
 function htmlPrefix(html, n) {
@@ -499,28 +558,59 @@ function htmlPrefix(html, n) {
   }
   return out;
 }
+// Alex "sings" her lines: one word per 16th note of whatever music is playing (a steady pace when
+// nothing is), each word with a soft tonal blip that follows a little melody in the song's key.
+// Emphasized words (<b>) land on a stronger beat, pop on screen, and get a higher, louder note.
 function _say(text, { name = 'Alex' } = {}) {
   text = tintPapers(text);
+  if (curChapter === 4) text = tintC3(text);
+  histLeave(); sayLog.push({ name, text }); histUI();
   nameEl.textContent = name;
   box.classList.add('talking');
   clearInterval(typing);
   // a paper citation header is shown at once; only the sentence is typed
-  const m = text.match(/^(<span class="cite">.*?<\/span>)([\s\S]*)$/);
+  const m = text.match(/^(<span class="cite"[^>]*>.*?<\/span>)([\s\S]*)$/);
   const head = m ? m[1] : '', body = m ? m[2] : text;
   textEl.innerHTML = head;
   textEl.dataset.full = text;
-  const plain = body.replace(/<[^>]+>/g, '');
-  let i = 0;
+  // plain characters, each marked if it sits inside <b>
+  const bold = []; let plain = '', depth = 0;
+  for (const part of body.split(/(<[^>]+>)/)) {
+    if (part.startsWith('<')) { if (/^<b[\s>]/.test(part)) depth++; else if (/^<\/b>/.test(part)) depth = Math.max(0, depth - 1); continue; }
+    const txt = part.replace(/&[a-z#0-9]+;/gi, '·'); for (const ch of txt) { plain += ch; bold.push(depth > 0); }
+  }
+  const words = []; const re = /\S+\s*/g; let mm;
+  while ((mm = re.exec(plain))) words.push({ end: mm.index + mm[0].length, word: mm[0].trim(), emph: bold.slice(mm.index, mm.index + mm[0].trim().length).some(Boolean) });
+  let k = 0;
   return new Promise((resolve) => {
     typingDone = resolve;
-    let tick = 0;
-    typing = setInterval(() => {
-      i += 2;
-      if (tick++ % 4 === 0 && /\S/.test(plain.slice(i - 2, i))) sfx.blip();
-      if (i >= plain.length) finishTyping();
-      else textEl.innerHTML = head + htmlPrefix(body, i);
-    }, 18);
+    const step = () => {
+      if (k >= words.length) { finishTyping(); return; }
+      const w = words[k], prevEmph = k > 0 && words[k - 1].emph;
+      textEl.innerHTML = head + htmlPrefix(body, w.end);
+      if (w.emph) { const bs = textEl.querySelectorAll('b'); const last = bs[bs.length - 1]; if (last && !prevEmph) last.classList.add('emph-pop'); }
+      // one pitch for ordinary words; a stressed word gets a higher, louder note
+      sfx.word(w.emph ? 81 : 76, w.emph ? 1 : 0.4);
+      k++;
+      // talk fast; breathe at sentence ends, a little at commas; land a stressed word on the beat
+      const nx = words[k];
+      let ms = 38 + 7 * Math.min(10, w.word.length);
+      if (/[.!?…]["”’)]*$/.test(w.word)) ms = 420; else if (/[,:;—]["”’)]*$/.test(w.word)) ms = 170;
+      if (nx && nx.emph && !w.emph) ms = Math.max(ms, onBeat(ms));
+      typing = setTimeout(step, ms);
+    };
+    typing = setTimeout(step, 60);
   });
+}
+// ms until the next 16th note of the music, at least `min` ms away (just `min + 80` with no music)
+function onBeat(min) {
+  let pos = null, bd = 0;
+  if (engine.playing && engine.song) { pos = engine.time; bd = engine.song.analysis.beatDur; }
+  else if (rise.active && rise.beatDur) { pos = risePos(); bd = rise.beatDur; }
+  if (!bd) return min + 80;
+  let g = bd / 4; if (g < 0.09) g = bd / 2;
+  const t = pos + min / 1000 + 0.04, next = Math.ceil(t / g) * g;
+  return Math.max(min, (next - pos) * 1000);
 }
 function finishTyping() {
   if (!typing) return;
@@ -538,7 +628,7 @@ function _choices(list) {
       b.className = 'choice' + (c.primary ? ' primary' : '');
       // first-time guidance: the first “Next”, and the first action the reader is asked to take
       const isNext = /^Next/.test(c.label.replace(/<[^>]+>/g, ''));
-      const coach = c.primary && !c.locked && (isNext ? !coached.next : !coached.action);
+      const coach = c.coach || (c.primary && !c.locked && (isNext ? !coached.next : !coached.action));
       if (coach) { b.classList.add('coach'); b.dataset.hint = isNext ? 'Click to continue · or press Space' : 'Click to try it'; if (isNext) coached.next = true; else coached.action = true; }
       b.innerHTML = c.label;
       let shown = performance.now();
@@ -547,7 +637,7 @@ function _choices(list) {
         const iv = setInterval(() => { if (c.until()) { clearInterval(iv); b.disabled = false; b.classList.remove('locked'); b.innerHTML = c.then; shown = performance.now(); } }, 150);
       }
       b.onclick = (e) => {
-        if (b.disabled) return;
+        if (b.disabled || swapping) return; // wait for a song switch to finish loading
         e.stopPropagation();
         if (performance.now() - shown < 600) return; // ignore a click/keypress that was meant for the previous line
         // never advance twice in quick succession (double clicks, key + click, key repeat)
@@ -577,10 +667,44 @@ const choices = (...a) => guard(_choices(...a));
 const wait = (ms) => guard(sleep(ms));
 const later = (fn, ms) => { const e = epoch; setTimeout(() => { if (e === epoch) fn(); }, ms); };
 const next = (label = 'Next ▸') => choices([{ label, primary: true }]);
+// Looking back: earlier lines can be re-read without touching the story. While an earlier line is
+// shown, the current choices are hidden (not removed) and come back on return.
+const sayLog = [];
+let histAt = -1; // -1: showing the current line
+function histUI() {
+  const n = sayLog.length;
+  $('#dh-prev').disabled = n < 2 || histAt === 0;
+  $('#dh-next').disabled = histAt === -1;
+  $('#dh-pos').textContent = histAt === -1 ? '' : `${histAt + 1} / ${n}`;
+  box.classList.toggle('browsing', histAt !== -1);
+}
+function histShow(i) {
+  if (typing) finishTyping();
+  if (i >= sayLog.length - 1) { histLeave(); histUI(); return; }
+  histAt = Math.max(0, i);
+  const L = sayLog[histAt];
+  nameEl.textContent = L.name; textEl.innerHTML = L.text;
+  actsEl.style.visibility = 'hidden';
+  histUI();
+}
+function histLeave() {
+  if (histAt === -1) return;
+  histAt = -1;
+  const cur = sayLog[sayLog.length - 1];
+  if (cur) { nameEl.textContent = cur.name; textEl.innerHTML = textEl.dataset.full || cur.text; }
+  actsEl.style.visibility = '';
+}
+$('#dh-prev').addEventListener('click', (e) => { e.stopPropagation(); histShow((histAt === -1 ? sayLog.length - 1 : histAt) - 1); });
+$('#dh-next').addEventListener('click', (e) => { e.stopPropagation(); histShow(histAt === -1 ? sayLog.length : histAt + 1); });
 document.addEventListener('keydown', (e) => {
+  if (e.target.closest && e.target.closest('input, textarea')) return;
+  if (e.key === 'ArrowLeft' && !e.repeat && sayLog.length > 1) { e.preventDefault(); $('#dh-prev').click(); return; }
+  if (e.key === 'ArrowRight' && !e.repeat && histAt !== -1) { e.preventDefault(); $('#dh-next').click(); return; }
+  // while looking back, Space/Enter returns to the current line instead of advancing
+  if ((e.code === 'Space' || e.key === 'Enter') && !e.repeat && histAt !== -1) { e.preventDefault(); e.stopPropagation(); histLeave(); histUI(); return; }
   if ((e.code === 'Space' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); e.stopPropagation(); if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur(); if (typing) finishTyping(); else actsEl.querySelector('.choice.primary, .choice')?.click(); }
 });
-box.addEventListener('click', () => finishTyping());
+box.addEventListener('click', (e) => { if (e.target.closest('#dhist') || e.target.closest('a')) return; if (histAt !== -1) { histLeave(); histUI(); return; } finishTyping(); });
 // top right: the paper behind the current chapter, styled like a row of the poster
 const PAPERS = {
   1: { id: 'maringba', col: '#2fae74', venue: 'CHI 2024 · Best Paper Honorable Mention', title: 'MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery', auth: 'Alexander Wang, Yi Fei Cheng, David Lindlbauer', img: 'maringba-teaser.png' },
@@ -602,6 +726,8 @@ const TITLES = {
   4: ['Chapter 4', `Multi${K('Verse')}`, 'A Creator-Centered Approach to Steering Context-Adaptive Lyrics · UIST 2026', '#1d8a96'],
 };
 let lastTitle = -1, chapterJumped = false;
+let lastActivity = performance.now();
+for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart']) window.addEventListener(ev, () => { lastActivity = performance.now(); }, { passive: true, capture: true });
 function chapterTitle(n) {
   const T = TITLES[n], el = $('#chtitle');
   if (!T || n === lastTitle) return;
@@ -630,7 +756,16 @@ function chapterTitle(n) {
     setTimeout(() => { if (lastTitle !== n0) return; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show'); }, delay);
   } else { el.classList.remove('show'); void el.offsetWidth; el.classList.add('show'); }
 }
+let curChapter = 0;
 function chapter(n) {
+  curChapter = n;
+  // a new chapter: whatever David was doing stops, and (except for the workout) he's back on the couch
+  if (n !== 3 && typeof skip !== 'undefined') {
+    skip.queue = []; if (skip.play) skipStop(1); riseStop();
+    Object.assign(anim, { working: false, free: false, quit: null, idle: null, sing: null, hop: null, walk: null, barMode: null });
+    unlabel('energy'); unlabel('sing'); rackBar();
+    if (n > 0) { room.person.root.position.copy(HOME_SPOT.p); room.person.root.rotation.y = HOME_SPOT.r; pose('sit', 0.4); }
+  }
   document.querySelectorAll('.chapters li').forEach((li, i) => li.classList.toggle('on', i === n));
   chapterTitle(n); chapterJumped = false;
   const p = PAPERS[n];
@@ -643,6 +778,13 @@ function chapter(n) {
   }
 }
 
+// "Tuesday evening": the reader's own day and time of day
+function nowPhrase() {
+  const d = new Date(), h = d.getHours();
+  const day = d.toLocaleDateString('en-US', { weekday: 'long' });
+  const part = h < 5 ? 'night' : h < 12 ? 'morning' : h < 17 ? 'afternoon' : h < 21 ? 'evening' : 'night';
+  return `${day} ${part}`;
+}
 // David's phone, drawn front-on over the room: the reader taps play for him.
 // items: [{ title, artist, art }]; resolves with the index tapped, after onPlay(i) has run.
 async function phone(items, line, onPlay, onShow = null) {
@@ -706,15 +848,17 @@ const CH = [async () => {
   // David's phone, front view: the reader taps play for him
   await say('Hi! My name is <b>Alex</b>. I’m a PhD student at Carnegie Mellon. Today I’d like to introduce you to some of my work on exploring new opportunities for <b>adaptive multimedia experiences</b> and <b>creator control</b>.');
   await next();
-  await phone(PLAYLIST.map((c) => ({ title: c.s.title, artist: c.s.artist, art: c.art })), 'It’s Sunday afternoon, and David is home. Let’s put on some music.', async (i) => {
+  label('davidpin', at(room.person.neck, 0, 0.42, 0), '<span class="dpin"><img src="img/story/david.jpg" alt=""><span><b>David</b><i>our listener</i></span></span><span class="dpin-ar"></span>', 'davidpin');
+  await phone(PLAYLIST.map((c) => ({ title: c.s.title, artist: c.s.artist, art: c.art })), `It’s ${nowPhrase()}, and <b>David</b> is home. Let’s put on some music.`, async (i) => {
     PICK = PLAYLIST[i]; HOTLINE = PICK.s; IPHONE = PICK.r;
     $('#phonecut .pc-artist').textContent = 'Loading…';
     try { await loadHome(); } catch (e) { console.error(e); setLoading(`Couldn’t load audio: ${e.message}`); }
     $('#phonecut .pc-artist').textContent = HOTLINE.artist;
     engine.seek(0); engine.play();
   });
+  unlabel('davidpin');
   await say('Great song choice! 🎶');
-  await next();
+  await choices([{ label: 'Next ▸', primary: true, coach: true }]);
   await say('The way we produce and consume media is rapidly changing. Generative AI is becoming increasingly capable of <b>generating and modifying multimedia content</b>, with higher quality, controllability, and speed.');
   await next();
   await say('I firmly believe these advances present <b>new opportunities for art and storytelling</b>. Instead of simply making content creation easy and fast, generative AI could enable entirely <b>new forms of creative expression</b> that were previously impossible.');
@@ -731,7 +875,7 @@ const CH = [async () => {
   unlabel('callcue');
   engine.applyParams(preset('conventional'));
   await engine.trigger(IPHONE, { ...preset('conventional'), repeats: PICK.reps[0] });
-  showLive('timeline', 'Today', 'Ringtone over the song: the music is cut, the ringtone ignores the beat', async () => { if (!engine.playing) engine.play(); engine.applyParams(preset('conventional')); await engine.trigger(IPHONE, { ...preset('conventional'), repeats: PICK.reps[0] }); ringing = 'jarring'; });
+  showLive('timeline', 'Standard', 'Ringtone ignores the music', async () => { if (!engine.playing) engine.play(); engine.applyParams(preset('conventional')); await engine.trigger(IPHONE, { ...preset('conventional'), repeats: PICK.reps[0] }); ringing = 'jarring'; });
   ringing = 'jarring';
   startle(1);
   label('call', at(room.phone, 0, 0.18, 0), '<b>Incoming call</b> · Chris Donahue', 'phone');
@@ -741,7 +885,7 @@ const CH = [async () => {
   await choices([{ label: 'Try it again with MARingBA', primary: true }]);
   engine.dismiss(); unlabel('call'); unlabel('callcue'); ringing = null; unthink();
   room.setShot(SHOTS.speakers);
-  showLive('mir', 'MARingBA', 'Reading the music: beat, key and structure');
+  showLive('mir', 'MARingBA', 'Music information retrieval');
   await say('In our CHI paper, <b>MARingBA</b>, we first read the music with <b>music information retrieval</b>: beats and downbeats, key, and separated vocals.');
   label('callcue', at(room.phone, 0.2, 0.22, 0), '<span class="cc"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></span>', 'callcue');
   await next('Ring it again ▸');
@@ -750,13 +894,9 @@ const CH = [async () => {
   const ring = await engine.trigger(IPHONE, SUBTLE());
   unlabel('callcue'); countdown = ring;
   const x = ring.prep;
-  label('bm', at(room.phone, -0.15, 0.32, 0), `<i>beat</i> stretched to ${x.target.toFixed(0)} BPM`, 'chip');
-  label('km', at(room.phone, 0.15, 0.25, 0), `<i>key</i> ${x.semis === 0 ? 'already in' : (x.semis > 0 ? '+' : '−') + Math.abs(x.semis) + ' st →'} ${KEY_MAJOR[HOTLINE.key - 1]}`, 'chip');
-  label('nb', at(room.speakers[0], 0, 1.3, 0), ring.start.sweet ? `<i>enters</i> right where the bass drops back in · in ${Math.max(0, ring.wait).toFixed(1)} s` : `<i>enters</i> on the next phrase · in ${Math.max(0, ring.wait).toFixed(1)} s`, 'chip');
-  label('vs', at(room.speakers[1], 0, 1.3, 0), '<i>mix</i> fades in, softened, with reverb', 'chip');
   ringing = 'blended';
   later(() => { anim.groove = true; think('Oh, Chris is calling. Still in the groove 🎶', 'good'); }, Math.max(0, ring.wait * 1000));
-  showLive('timeline', 'MARingBA · Subtle', 'The ringtone, beat-matched and key-matched, waits for the next phrase', async () => { if (!engine.playing) engine.play(); engine.applyParams(preset('subtle')); countdown = await engine.trigger(IPHONE, SUBTLE()); ringing = 'blended'; });
+  showLive('timeline', 'MARingBA', 'Ringtone matched to the music', async () => { if (!engine.playing) engine.play(); engine.applyParams(preset('subtle')); countdown = await engine.trigger(IPHONE, SUBTLE()); ringing = 'blended'; });
   room.setShot(SHOTS.phone);
   await say('The ringtone is <b>stretched to the song’s tempo</b>, <b>moved into its key</b>, and <b>waits for the next phrase</b>, then fades in softly like another instrument in the mix. You still notice it. It just doesn’t break the song.');
   // don't move on until the adapted ringtone has actually played
@@ -781,7 +921,7 @@ const CH = [async () => {
   startle(0.8);
   think('Hey, I was listening to that…', 'bad');
   const d1 = speakFlight();
-  showLive('roll', 'Today', 'A standard voice agent: the music is ducked while it speaks', async () => { if (!engine.playing) engine.play(); speakFlight(); });
+  showLive('roll', 'Standard', 'Music ducks for the voice', async () => { if (!engine.playing) engine.play(); speakFlight(); });
   await say('The music drops out so the voice agent can talk over it. Clear, but it <b>stops the song</b> every time.');
   await wait(Math.max(0, d1 * 1000 - 1500));
   unlabel('vb');
@@ -792,9 +932,7 @@ const CH = [async () => {
   const sung = await singFlight();
   setLoading('');
   later(() => { anim.groove = true; think(`Ha! Alex’s invite, sung over ${HOTLINE.artist.split(' ft.')[0]} 😄`, 'good'); }, Math.max(0, sung.wait * 1000));
-  showLive('roll', 'Music-aware voice agent', 'Each syllable becomes a note on the beat, pitched from the singer’s melody', async () => { if (!engine.playing) engine.play(); await singFlight(); });
-  label('sy', at(room.speakers[0], 0, 1.3, 0), `<i>${sung.n} syllables</i> → ${sung.n} notes on the ${sung.grid === 2 ? '8th' : '16th'}-note grid`, 'chip');
-  label('pi', at(room.speakers[1], 0, 1.3, 0), '<i>pitches</i> from the song’s own melody', 'chip');
+  showLive('roll', 'Music-aware', 'Message sung into the song', async () => { if (!engine.playing) engine.play(); await singFlight(); });
   await say('With a <b>music-aware voice agent</b>, from our UIST paper <i>Towards Music-Aware Virtual Assistants</i>, the message is <b>sung in place of the singer</b>, to the beat. Each syllable gets one note, close to <b>where it is naturally spoken</b>, so the words stay intelligible.');
   await wait(Math.max(0, (sung.wait + sung.dur) * 1000 - 2500));
   await next();
@@ -802,7 +940,7 @@ const CH = [async () => {
   showLive('pro', 'UIST 2024', 'Prosody-conditioned music generation');
   await say('<span class="cite">Towards Music-Aware Virtual Assistants · UIST 2024</span>In the paper, a <b>transformer-based music generation model, conditioned on the speech’s prosody</b>, writes a new melody that fits both the song and the words. We don’t have a GPU to run that model here, so this demo uses a simpler approach that is still prosody-based.');
   await next();
-  showLive('wer', 'UIST 2024', 'Results: intelligibility');
+  showLive('wer', 'UIST 2024', 'Word error rate');
   figs.wer.t0 = null;
   await say('<span class="cite">Towards Music-Aware Virtual Assistants · UIST 2024 · results</span>Conditioning on prosody keeps the sung words intelligible: speech recognition transcribes them at a <b>2% word error rate</b>, versus <b>15% without prosody conditioning</b>.');
   await next();
@@ -838,7 +976,7 @@ const CH = [async () => {
     await wait(2600);
   }
   pose('rack', 0.5); anim.working = true; anim.reps = 0;
-  showLive('rise', 'Today', `The song plays as written: the ${HI()} ends mid-set`, async () => { rise.adapt = false; riseStart(dropEnd - 9); anim.working = true; pose('rack', 0.5); });
+  showLive('rise', 'Standard', 'Song as written', async () => { rise.adapt = false; riseStart(dropEnd - 9); anim.working = true; pose('rack', 0.5); });
   think('Let’s go! 💪', 'good', 3500);
   await say(`David starts squatting during the ${HI()}…`);
   await guard(new Promise((r) => { anim.onCalm = r; }));
@@ -851,7 +989,7 @@ const CH = [async () => {
   const loopStart = rise.choice ? rise.choice.orig - 9 : dropEnd - 9;
   riseStart(loopStart);
   pose('rack', 0.5); anim.working = true; anim.reps = 0;
-  showLive('rise', 'RISE', `David is still working, so RISE loops the ${HI()} at a seamless cutpoint`, async () => { rise.adapt = true; riseStart(loopStart); anim.working = true; pose('rack', 0.5); });
+  showLive('rise', 'RISE', 'Loops while David works', async () => { rise.adapt = true; riseStart(loopStart); anim.working = true; pose('rack', 0.5); });
   think('Let’s go! 💪', 'good', 3500);
   later(() => think(`Yes! Keep the ${HI()} going 🔥`, 'good'), 9600);
   await say(`<b>RISE</b>, from our ISMIR paper, knows David is still working. Near the end of the ${HI()} it <b>jumps back to a point where the music repeats</b>, so the ${HI()} keeps going.`);
@@ -864,19 +1002,20 @@ const CH = [async () => {
   setLoading('Loading The Middle…');
   await loadSkip();
   setLoading('');
-  showLive('skip', 'RISE', 'Skipping ahead: The Middle, while David is ready for his next set');
-  $('#vz-skip').classList.toggle('coach', !coached.skip);
+  showLive('skip', 'RISE', 'Skip to the drop');
+  skipAuto(0, 1);
   think('Ready for the next set!', 'good', 3000);
   skip.played = false;
-  await say(`RISE can also <b>skip</b>. David has rested and is ready to go, but the song is still in a calm part: in <b>${SKIP.title}</b>, the energy only comes back ${Math.round(skip.hiAt - SKIP.from)} s later. Try both versions.`);
-  await choices([{ label: '▶ Play one of the examples…', locked: true, until: () => skip.played, then: 'Next ▸' }]);
+  await say(`RISE can also <b>skip</b>. David has rested and is ready to go, but the song is still in a calm part: in <b>${SKIP.title}</b>, the energy only comes back ${Math.round(skip.hiAt - SKIP.from)} s later. Listen to both versions.`);
+  await next();
   await say(`With RISE, the song <b>jumps ahead</b> at a seamless cutpoint, from ${fmtS(skip.cut.orig)} to ${fmtS(skip.cut.dest)}, so the high-energy part arrives <b>${(skip.cut.dest - skip.cut.orig).toFixed(0)} s sooner</b>. Play both to compare.`);
   await next();
-  skipStop(); anim.free = false; anim.working = false; pose('stand', 0.5); rackBar();
-  showLive('cutplay', 'ISMIR 2025', `Seamless cutpoints inside the drop of ${SKIP.title}`);
-  $('#vz-cutplay').classList.add('coach');
+  skip.queue = []; skipStop(); anim.free = false; anim.working = false; pose('stand', 0.5); rackBar();
+  showLive('cutplay', 'ISMIR 2025', 'Seamless cutpoints');
+  skipAuto(2, 3);
   await say('<span class="cite">RISE · ISMIR 2025</span>When a set starts, it can skip ahead to reach high energy sooner; when David rests, it can skip out of it.');
   await next();
+  skip.queue = []; skipStop(1.5); anim.free = false; anim.working = false;
 
 }, async () => {
   // ---- Chapter 4: MultiVerse
@@ -889,45 +1028,21 @@ const CH = [async () => {
   await next();
   await say('But <b>how can a creator control this?</b> The space of runtime contexts is so large that creators cannot anticipate every adaptation.');
   await next();
-  const ORIG = '“My dog just died, my friend hates me / I saw myself on MTV”';
-  const ANNA = 'Simulated persona';
-  const P_ANNA = { name: 'Anna', line: '25 · graduate student, music and CS', facts: [['Age', '25'], ['Occupation', 'Graduate student studying music and CS'], ['Right now', 'Waiting for her flight to San Jose, where she is starting a new job'], ['Recent hardship', 'A paper rejection with harsh reviews from R2, and her CHI paper ADR’d for no good reason']] };
-  const P_ELENA = { name: 'Elena', line: 'game developer · Berlin', facts: [['Occupation', 'Indie game developer'], ['Location', 'Berlin'], ['Recent hardship', 'Fell out with the collaborators on her indie game, and on bad terms with its Discord moderator']] };
-  const P_DAVID = { name: 'David', line: 'working out at home', facts: [['Right now', 'Squatting in his living room'], ['Recent hardship', 'The music’s energy dropped in the middle of his set']] };
-  showLive('mv', 'MultiVerse', 'C³: creator, content, context');
+  showLive('mv', 'MultiVerse', 'C³ steering controls');
   mv.set({ who: 'A songwriter’s verse', lines: ['My dog just died, my friend hates me', 'I saw myself on MTV'] });
   await say('We propose <b>C³</b>, a creator-centered framework for authoring adaptive media, based on three dimensions: <b>creator</b> intent, <b>content</b> structure, and runtime <b>context</b>. Hover the diagram: most prior work either adapts interfaces for pragmatic goals, or supports creators in making static content.');
   await next();
-  await say('We instantiated the framework in <b>MultiVerse</b>, our UIST 2026 paper: an authoring system for adaptive lyrics. Here’s a walkthrough.');
+  await say('We instantiated the framework in <b>MultiVerse</b>, our UIST 2026 paper: an authoring system for adaptive lyrics.');
   await next();
-  const steps = [
-    { clip: 'original', say: 'Let’s hear what the original sounds like.', panel: { who: 'Original lyrics', lines: ['My dog just died, my friend hates me', 'I saw myself on MTV'] } },
-    { clip: 'nocontrol', say: 'MultiVerse provides <b>simulated personas</b>. Here we select Anna, a graduate student studying music and CS. This is the output <b>without any creator control</b>, which is completely different from what the creator intended.', panel: { who: ANNA + ' · no control', persona: P_ANNA, orig: ORIG, tone: 'bad', lines: ['Anna bends sound into code cha-', 'Sing music that learns to listen'] } },
-    { clip: 'structure', say: 'The creator uses the rhyme tool to annotate that the word replacing “me” should rhyme with “MTV”. The <b>content</b> structure is now preserved, but it still deviates from the sad theme of the original song.', panel: { who: ANNA, persona: P_ANNA, orig: ORIG, lines: ['Anna codes songs with heart and <mark>art</mark>', 'she builds new systems from the <mark>start</mark>'], controls: [['content', 'Last two words should rhyme']], active: ['content'] } },
-    { clip: 'intent', say: 'To fix this, we add control for high-level <b>creator</b> intent, specifying that the lyrics should evoke a sense of isolation.', panel: { who: ANNA, persona: P_ANNA, orig: ORIG, lines: ['The system I built now <mark>hates me</mark>', 'and lock me in this frequen<mark>cy</mark>'], controls: [['content', 'Last two words should rhyme'], ['creator', 'Evoke isolation and keep the words “hates me”']], active: ['content', 'creator'] } },
-    { clip: 'context', say: 'Finally, the creator can specify which <b>context</b> the media responds to: here, the listener’s recent hardship. For Anna, that’s a paper rejection with harsh reviews from R2, and getting her CHI paper ADR’d for <b>no good reason</b>.', panel: { who: ANNA, persona: P_ANNA, orig: ORIG, lines: ['My <u>paper died</u>, my <u>lab</u> <mark>hates me</mark>', 'reviewer writes with cruel<mark>ty</mark>'], controls: [['content', 'Last two words should rhyme'], ['creator', 'Evoke isolation and keep the words “hates me”'], ['context', 'Base the adaptation on the listener’s recent hardship']], active: ['content', 'creator', 'context'] } },
-    { clip: 'elena', say: 'Testing the controls on a different persona, Elena, a game developer in Berlin who fell out with the collaborators on her indie game. The same controls adapt the lyrics differently, and it still reflects how the creator would adapt them.', panel: { who: 'Simulated persona · same controls', persona: P_ELENA, orig: ORIG, lines: ['My <u>co-dev left</u>, my <u>mod</u> <mark>hates me</mark>', 'late nights alone, streets feel emp<mark>ty</mark>'], controls: [['content', 'Last two words should rhyme'], ['creator', 'Evoke isolation and keep the words “hates me”'], ['context', 'Base the adaptation on the listener’s recent hardship']], active: ['content', 'creator', 'context'] } },
-  ];
-  for (const st of steps) {
-    mv.set(st.panel);
-    setReplay(() => playClip(st.clip));
-    playClip(st.clip);
-    await say(st.say);
-    await next();
-  }
-  stopClip();
-  // David's own verse: his recent hardship is the set the drop walked out on
-  room.setShot(SHOTS.mat);
-  mv.set({ who: 'Same controls', persona: P_DAVID, orig: ORIG, lines: ['My <u>set got cut</u>, the <u>drop</u> <mark>hates me</mark>', 'I lift alone in mise<mark>ry</mark>'], controls: [['content', 'Last two words should rhyme'], ['creator', 'Evoke isolation and keep the words “hates me”'], ['context', 'Base the adaptation on the listener’s recent hardship']], active: ['content', 'creator', 'context'] });
-  pose('rack', 0.5); anim.free = true; anim.working = true; anim.reps = 0; rise.adapt = false;
-  const davidLift = () => { pose('rack', 0.5); anim.free = true; anim.working = true; };
-  setReplay(async () => { davidLift(); const ok = await playClip('david'); if (!ok) think('(my verse is still being recorded 🎙️)', 'good', 3000); });
-  playClip('david').then((ok) => { if (!ok) think('Wait, this song is about me? 😳', 'good', 4000); });
-  think('Wait, this song is about me? 😳', 'good', 4000);
-  await say('And for David, whose drop ended mid-set this afternoon.');
+  // the pipeline: profile + controls → generation → lyrics; starts on the full-control version
+  showLive('mvpipe', 'MultiVerse', 'Steering adaptive lyrics');
+  mvp.set({ who: 'anna', level: 3 }, true);
+  setReplay(() => playClip(mvp.out().clip));
+  await say('A listener’s <b>profile</b> and the songwriter’s <b>controls</b> go into generation, and the adapted lyrics come out, checked against the controls. Here’s Anna’s version, with all three controls on.');
   await next();
-  stopClip();
-  anim.working = false; anim.free = false; pose('stand', 0.6); rackBar(); unthink();
+  await say('Try it: <b>turn controls off</b> to hear what each one adds, or <b>switch the listener</b>. There’s even a version for David. Move on whenever you like.');
+  await next();
+  stopClip(); unthink();
   await say('<span class="cite">MultiVerse · UIST 2026</span>We conducted a study with <b>10 songwriters</b>, who transformed their own compositions into adaptive versions. MultiVerse demonstrates that creators can <b>maintain control over adaptive media</b> through authoring mechanisms that shape how the output aligns with their intent.');
   await next();
 
@@ -938,6 +1053,7 @@ const CH = [async () => {
   walkTo([-0.3, 0, -1.85], 0, 2.2); later(() => pose('sit', 0.8), 2000);
   room.setShot(SHOTS.wide);
   engine.play();
+  later(() => callPhone('📱 <b>2 new messages</b> · tap the phone'), 2500);
   await say('Music that listens back: it makes room for a call, sings a message, keeps a workout going, and tells each listener’s story <b>the way the artist meant it</b>.');
   
   // what next: questions float in the middle; Re-watch / Back to the website stay in the dialogue
@@ -952,10 +1068,12 @@ const CH = [async () => {
     let reveal = false;
     if (asked.has('live') || asked.has('creators')) { list.push(['author', 'Is it still the creator’s if it’s adapted by AI??']); if (!unlocked) { unlocked = true; reveal = true; } }
     const allAsked = list.every(([id]) => asked.has(id));
-    if (!first) await say(reveal ? 'Oh! That raises another question…' : allAsked ? 'Anything else? If you have any questions or want to discuss anything, feel free to drop me a message at <a href="mailto:alexanderwang@cmu.edu">alexanderwang@cmu.edu</a>. Even if you just found this experience fun, I’d love to hear it! 😊' : 'Anything else?');
+    if (!first) await say(reveal ? 'Oh! That raises another question…' : allAsked ? 'Thank you so much for playing through the entire experience!! If you have any questions or want to discuss anything, feel free to drop me a message at <a href="mailto:alexanderwang@cmu.edu">alexanderwang@cmu.edu</a>. Even if you just found this experience fun, I’d love to hear it! 😊 Feel free to look around the room, and check David’s phone.' : 'Anything else?');
     first = false;
     
-    const pick = await Promise.race([
+    // once everything has been asked, the bubbles stay hidden until the reader asks for them
+    let pick = allAsked ? await choices([{ label: '💬 Questions', value: 'qs' }, { label: '↺ Re-watch', value: 'again' }, { label: '🏠 Back to my website', value: 'home', primary: true }]) : null;
+    if (!allAsked || pick === 'qs') pick = await Promise.race([
       askQuestion(list, asked, reveal),
       choices([{ label: '↺ Re-watch', value: 'again' }, { label: '🏠 Back to my website', value: 'home', primary: true }]),
     ]);
@@ -1017,6 +1135,248 @@ function askQuestion(list, asked = new Set(), reveal = false) {
   }
   return guard(new Promise((res) => { box.onclick = (e) => { const b = e.target.closest('.qbub'); if (!b) return; box.hidden = true; res(b.dataset.id); }; })).finally(() => { box.hidden = true; });
 }
+// Click a speaker to switch to the next song, any time the home song is playing (not during the
+// workout or the lyrics, which use their own audio). Anything tied to the old song is cleared first.
+let swapping = false;
+const swapClicks = [];
+async function swapSong(to = null) {
+  // clicking through songs too fast: David has had enough
+  const nowMs = performance.now();
+  swapClicks.push(nowMs); while (swapClicks.length && nowMs - swapClicks[0] > 4000) swapClicks.shift();
+  if (to == null && swapClicks.length >= 5) { swapClicks.length = 0; think(['Can you pick one already?? 😤', 'Make up your mind!', 'I was vibing to that one…'][Math.floor(Math.random() * 3)], 'bad', 2600); }
+  if (swapping || !started || ![0, 1, 2, 5].includes(curChapter) || !engine.song || !$('#phonecut').hidden) return;
+  swapping = true;
+  try {
+    // silence what belongs to the old song: ringtones, countdown, sung or spoken invites, ducking
+    engine.dismiss(); ringing = null; countdown = null;
+    for (const v of voiceSrcs.splice(0)) { try { v.stop(); } catch {} }
+    const now = engine.ctx.currentTime;
+    for (const g of [engine.vocalGain.gain, engine.accGain.gain]) { g.cancelScheduledValues(0); g.setValueAtTime(1, now); }
+    vz.notif = null;
+    for (const id of ['bm', 'km', 'nb', 'vs', 'sy', 'pi', 'countdown', 'vb', 'call', 'callcue']) unlabel(id);
+    anim.groove = false;
+    PICK = to != null ? PLAYLIST[to] : PLAYLIST[(PLAYLIST.indexOf(PICK) + 1) % PLAYLIST.length]; HOTLINE = PICK.s; IPHONE = PICK.r;
+    flashLabel('swap', at(room.speakers[1], 0, 1.35, 0), `♫ <b>${HOTLINE.title}</b> · ${HOTLINE.artist}`, 2600);
+    await loadHome();
+    engine.seek(0); engine.play();
+  } catch (e) { console.error(e); setLoading(''); }
+  finally { swapping = false; }
+}
+// ---------------------------------------------------------------- David's phone (at the end)
+// Music: pick a song and set the volume. Messages: Alex and Chris have been texting David, and the
+// reader chooses how he replies.
+const LYRIC_REPLY = { hotline: '♪ You used to call me on my cell phone… you used to, you used to ♪', nothing: '♪ Beautiful girls all over the world… they got nothin’ on you~ ♪', whatislove: '♪ What is love??? ♪' };
+const WORKOUT_REPLY = { waves: '♪ Missing you comes in waves~ ♪', humble: '♪ Be humble! ♪', lost: '♪ I’m lost in these meeeeeemories ♪', cruelsummer: '♪ And it’s oooooh, whoa-oh, it’s a cruel summer ♪' };
+const songReplies = () => [['song', LYRIC_REPLY[HOTLINE.id]], ['workout', WORKOUT_REPLY[(rise.meta && rise.meta.id) || 'waves']]];
+const CHATS = {
+  alex: { name: 'Alex', img: 'img/story/alex-drawn.png', msgs: [['in', 'Hey David! Did you get my calendar invite?? 📅'], ['in', 'I think the voice agent sang it to you 😅']],
+    replies: songReplies,
+    answer: { song: '???', workout: '???' } },
+  chris: { name: 'Chris Donahue', img: 'img/story/chris.jpg', msgs: [['in', 'Hey, I called earlier. Can you call me back when you get a chance?']],
+    replies: songReplies,
+    answer: { song: '…are you okay? 😂', workout: '…are you okay? 😂' } },
+};
+const chatLog = { alex: [], chris: [] };
+// Alex's own songs: shown locked, each opening on SoundCloud
+const ALEX_SC = 'https://soundcloud.com/alex-wang-796617401/sets/alexs-compositions/s-NJGasTQyLPD';
+const ALEX_SONGS = [
+  { id: 'floating', art: 'linear-gradient(135deg, #b8f6ff, #22b5c2 50%, #06303a)', title: 'Floating', sub: 'Alex Wang · 1/3', url: 'https://soundcloud.com/alex-wang-796617401/floating-lyrics-by-johnny-hu-1/s-rjxvc3g1Jye' },
+  { id: 'errorcode', art: 'linear-gradient(135deg, #d9a6ff, #6b1fd1 50%, #0b0412)', title: 'Error Code: Pse', sub: 'Alex Wang · 2/3', url: 'https://soundcloud.com/alex-wang-796617401/error-code-pse-1/s-6IAKtF9TItr' },
+  { id: 'afterburn', art: 'linear-gradient(135deg, #ffe0a0, #e8902a 50%, #3a2412)', title: 'Afterburn', sub: 'Alex Wang · 3/3', url: 'https://soundcloud.com/alex-wang-796617401/afterburn-1/s-CDRMXF8urPA' },
+];
+// Alex's songs unlock by beating them in Liminality, played on David's phone
+const unlocked = new Set((() => { try { return JSON.parse(localStorage.getItem('story.unlocked') || '[]'); } catch { return []; } })());
+// ---- David's music player (end of the story): one queue across the library, with play/pause,
+// previous/next, a clickable timeline, and auto-advance when a song ends
+let alexAudio = null, alexNow = null, musicNow = null, riseLast = 0;
+// Alex's songs play from the decoded Liminality journey, through the same output as everything else
+// (so the volume slider applies). alexAudio = { src, g, t0, at, paused }
+function stopAlex() { if (alexAudio) { const n = engine.ctx.currentTime; try { alexAudio.g.gain.setTargetAtTime(0, n, 0.08); alexAudio.src.stop(n + 0.3); } catch {} alexAudio = null; alexNow = null; } }
+async function playAlex(id, at = 0) {
+  stopAlex(); engine.fadeStop(1); riseStop();
+  alexNow = id;
+  const [, buf] = await loadJourney(engine.ctx);
+  if (alexNow !== id) return;
+  const S = LIM_SONGS[id], ctx = engine.ctx, g = ctx.createGain(), src = ctx.createBufferSource();
+  src.buffer = buf; g.gain.setValueAtTime(0, ctx.currentTime); g.gain.linearRampToValueAtTime(1 / outNorm(), ctx.currentTime + 0.4);
+  src.connect(g).connect(engine.master); src.start(ctx.currentTime + 0.02, S.from + at);
+  alexAudio = { src, g, t0: ctx.currentTime + 0.02, at, paused: false };
+}
+const alexPos = () => (alexAudio ? (alexAudio.paused ? alexAudio.at : alexAudio.at + engine.ctx.currentTime - alexAudio.t0) : 0);
+const queue = () => [
+  ...PLAYLIST.map((c, i) => ({ kind: 'g', i, title: c.s.title, artist: c.s.artist })),
+  ...WORKOUT.map((w, i) => ({ kind: 'w', i, title: w.title, artist: w.artist })),
+  ...ALEX_SONGS.filter((a) => unlocked.has(a.id)).map((a) => ({ kind: 'a', id: a.id, title: a.title, artist: 'Alex Wang' })),
+];
+const sameTrack = (a, b) => a && b && a.kind === b.kind && (a.kind === 'a' ? a.id === b.id : a.i === b.i);
+async function playTrack(tr, at = 0) {
+  musicNow = tr;
+  if (tr.kind === 'a') { playAlex(tr.id, at); }
+  else if (tr.kind === 'g') {
+    stopAlex(); riseStop();
+    if (PLAYLIST[tr.i] !== PICK || !engine.song) await swapSong(tr.i); else { engine.seek(at); engine.play(); }
+    if (engine.song) engine.song.loop = null; // in the player, songs end and the next one starts
+    if (at) engine.seek(at);
+  } else {
+    stopAlex(); const w = WORKOUT[tr.i];
+    if (!rise.meta || rise.meta.id !== w.id || !rise.buf) await loadRise(w);
+    engine.fadeStop(1.2); rise.adapt = false; riseStart(at, at ? 0.3 : 1.2);
+  }
+  if (!$('#phoneapp').hidden) phoneTab('music');
+}
+// where the current track is: { pos, dur, playing }
+function trackPos() {
+  const m = musicNow; if (!m) return null;
+  if (m.kind === 'a') { const S = LIM_SONGS[m.id]; return { pos: alexPos(), dur: S.to - S.from, playing: !!alexAudio && !alexAudio.paused }; }
+  if (m.kind === 'g') return engine.song ? { pos: engine.time, dur: engine.song.duration, playing: engine.playing } : null;
+  return rise.buf ? { pos: rise.active ? risePos() : riseLast, dur: rise.buf.duration, playing: rise.active } : null;
+}
+function togglePlay() {
+  const m = musicNow, p = trackPos(); if (!m || !p) return;
+  if (m.kind === 'a') { if (p.playing) { const at = alexPos(); const id = m.id; stopAlex(); alexNow = id; alexAudio = { paused: true, at, g: { gain: { setTargetAtTime() {} } }, src: { stop() {} } }; } else playAlex(m.id, alexPos()); }
+  else if (m.kind === 'g') { p.playing ? engine.stop() : engine.play(); }
+  else if (p.playing) { riseLast = risePos(); riseStop(); } else riseStart(riseLast, 0.3);
+}
+function seekTrack(frac) {
+  const m = musicNow, p = trackPos(); if (!m || !p) return;
+  const at = Math.max(0, Math.min(p.dur - 0.5, frac * p.dur));
+  if (m.kind === 'a') playAlex(m.id, at);
+  else if (m.kind === 'g') { engine.seek(at); if (!engine.playing) engine.play(); }
+  else riseStart(at, 0.15);
+}
+function stepTrack(d) {
+  const q = queue(); if (!musicNow) return playTrack(q[0]);
+  const i = q.findIndex((t) => sameTrack(t, musicNow));
+  playTrack(q[((i < 0 ? 0 : i) + d + q.length) % q.length]);
+}
+// called each frame: advance when a song ends, keep the phone's timeline moving
+function musicTick() {
+  if (!musicNow) return;
+  const p = trackPos(); if (!p) return;
+  if (p.playing && p.pos >= p.dur - 0.25 && !musicTick.busy) { musicTick.busy = true; Promise.resolve(stepTrack(1)).finally(() => { musicTick.busy = false; }); return; }
+  const bar = document.querySelector('.pa-tl i'); if (bar) bar.style.width = `${(100 * p.pos) / p.dur}%`;
+  const tt = document.querySelector('.pa-time'); if (tt) tt.textContent = `${fmt(p.pos)} / ${fmt(p.dur)}`;
+  const pb = document.querySelector('.pa-pp'); if (pb) pb.textContent = p.playing ? '❚❚' : '▶';
+}
+let lim = null;
+// playtest shortcut: story.html?dev, then press L anywhere to open Liminality
+if (new URLSearchParams(location.search).has('dev')) window.addEventListener('keydown', (e) => { if (e.code === 'KeyL' && $('#limgame').hidden && engine.ctx) playLiminality(); });
+function playLiminality() {
+  $('#phoneapp').hidden = true;
+  lim = lim || new Liminality($('#limgame'), engine.ctx, engine.master);
+  // the room dims; David picks up his phone and plays the whole journey
+  document.body.classList.add('lim-on');
+  engine.fadeStop(1); riseStop(); stopAlex();
+  Object.assign(anim, { sing: null, idle: null });
+  anim.ph = { k: 0, to: 1, both: true }; pose('phoneHold', 0.6);
+  think('Let’s go 🎮', 'good', 2000);
+  lim.open({
+    onCleared: (id) => { unlocked.add(id); try { localStorage.setItem('story.unlocked', JSON.stringify([...unlocked])); } catch {} },
+    onClose: (cleared) => {
+      document.body.classList.remove('lim-on');
+      if (anim.ph) { anim.ph.both = false; anim.ph.to = 0; }
+      later(() => { pose('sit', 0.6); anim.ph = null; }, 700);
+      if (cleared.length) { think(`Unlocked ${cleared.map((id) => LIM_SONGS[id].title).join(', ')}! 🎉`, 'good', 3200); later(() => { playTrack({ kind: 'a', id: cleared[0], title: LIM_SONGS[cleared[0]].title }); callPhone(`🎵 <b>${cleared.length} new song${cleared.length > 1 ? 's' : ''}</b> · tap the phone`); }, 900); }
+      else { think('So close…', 'bad', 2200); engine.play(); }
+    },
+  });
+}
+// make the 3D phone call for attention: a bobbing tag and a glowing pulse, until it's tapped
+function callPhone(text) {
+  label('phonehint', at(room.phone, 0, 0.25, 0), `<span class="ph-in">${text}</span>`, 'phonehint');
+  anim.phoneGlow = true;
+}
+function openPhoneApp(tab = 'messages') {
+  unlabel('phonehint'); anim.phoneGlow = false;
+  const el = $('#phoneapp');
+  el.hidden = false;
+  phoneTab(tab);
+}
+function phoneTab(tab, chat = null) {
+  const el = $('#phoneapp'), body = el.querySelector('.pa-body');
+  for (const b of el.querySelectorAll('.pa-tabs button')) b.classList.toggle('on', b.dataset.tab === tab);
+  if (tab === 'game') {
+    body.innerHTML = `<div class="pa-game">
+      <div class="pg-art"><i></i><b>LIMINALITY</b><span>a five-lane rhythm game by Alex</span></div>
+      <p>Three songs, back to back: <b>Floating</b>, <b>Error Code: Pse</b> and <b>Afterburn</b>. Clear each one to unlock it in David’s music.</p>
+      <div class="pg-songs">${ALEX_SONGS.map((a) => `<span class="${unlocked.has(a.id) ? 'on' : ''}" style="${unlocked.has(a.id) ? `background:${a.art};color:#fff` : ''}">${unlocked.has(a.id) ? '🔓' : '🔒'} ${a.title}</span>`).join('')}</div>
+      <p class="pg-keys">Keys <kbd>D</kbd> <kbd>F</kbd> <kbd>Space</kbd> <kbd>J</kbd> <kbd>K</kbd> · or tap the lanes · <kbd>Esc</kbd> to pause</p>
+      <button class="pg-play">▶ Play</button></div>`;
+    body.querySelector('.pg-play').onclick = () => playLiminality();
+    return;
+  }
+  if (tab === 'music') {
+    if (!musicNow) musicNow = rise.active && rise.meta ? { kind: 'w', i: WORKOUT.findIndex((w) => w.id === rise.meta.id) } : { kind: 'g', i: PLAYLIST.indexOf(PICK) };
+    const vol = Math.round((engine.master ? engine.master.gain.value : 1) * 100);
+    const m = musicNow;
+    const now = m.kind === 'a' ? { title: LIM_SONGS[m.id].title, artist: 'Alex Wang' } : m.kind === 'w' ? { title: WORKOUT[m.i].title, artist: WORKOUT[m.i].artist } : { title: PLAYLIST[m.i].s.title, artist: PLAYLIST[m.i].s.artist };
+    const row = (attrs, art, title, sub, on) => `<button ${attrs} class="${on ? 'on' : ''}"><i style="background:${art}">♪</i><span><b>${title}</b>${sub}</span>${on ? '<em>♫</em>' : ''}</button>`;
+    body.innerHTML = `<div class="pa-now"><span>Now playing</span><b>${now.title}</b>${now.artist}</div>
+      <div class="pa-tl" title="Click to jump"><i></i></div><div class="pa-time mono"></div>
+      <div class="pa-ctl"><button data-c="prev" aria-label="Previous">⏮</button><button data-c="pp" class="pa-pp" aria-label="Play or pause">❚❚</button><button data-c="next" aria-label="Next">⏭</button></div>
+      <label class="pa-vol">🔈<input type="range" min="0" max="100" value="${vol}" aria-label="Volume">🔊</label>
+      <div class="pa-lib">
+        <div class="pa-sec">General</div>
+        ${PLAYLIST.map((c, i) => row(`data-g="${i}"`, c.art, c.s.title, c.s.artist, m.kind === 'g' && m.i === i)).join('')}
+        <div class="pa-sec">Workout</div>
+        ${WORKOUT.map((w, i) => row(`data-w="${i}"`, w.art, w.title, `${w.artist} · ${w.genre}`, m.kind === 'w' && m.i === i)).join('')}
+        <div class="pa-sec">Alex’s music <a href="${ALEX_SC}" target="_blank" rel="noopener">SoundCloud ↗</a></div>
+        ${ALEX_SONGS.map((a) => unlocked.has(a.id)
+          ? row(`data-a="${a.id}"`, a.art, a.title, a.sub, m.kind === 'a' && m.id === a.id)
+          : `<button class="pa-lock" data-lock="${a.id}"><i>🔒</i><span><b>${a.title}</b>${a.sub} · locked</span></button>`).join('')}
+        <div class="pa-lockmsg" hidden></div>
+      </div>`;
+    body.querySelector('input').oninput = (e) => { if (engine.master) engine.master.gain.value = e.target.value / 100; };
+    body.querySelector('.pa-tl').onclick = (e) => { const r = e.currentTarget.getBoundingClientRect(); seekTrack((e.clientX - r.left) / r.width); };
+    body.querySelector('.pa-ctl').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.c === 'pp') togglePlay(); else stepTrack(b.dataset.c === 'next' ? 1 : -1); };
+    musicTick();
+    body.querySelector('.pa-lib').onclick = async (e) => {
+      const b = e.target.closest('button'); if (!b || b.classList.contains('on')) return;
+      if (b.dataset.lock) {
+        const msg = body.querySelector('.pa-lockmsg');
+        msg.hidden = false;
+        msg.innerHTML = `🔒 Alex’s songs unlock as you play through <b>Liminality</b>, a rhythm game Alex made: Floating, Error Code: Pse and Afterburn, back to back. Hit the notes with <kbd>D</kbd> <kbd>F</kbd> <kbd>Space</kbd> <kbd>J</kbd> <kbd>K</kbd> (or tap the lanes).<button>🎮 Play it</button>`;
+        msg.querySelector('button').onclick = (ev) => { ev.stopPropagation(); playLiminality(); };
+        msg.scrollIntoView({ block: 'nearest' });
+        return;
+      }
+      b.querySelector('span').insertAdjacentHTML('beforeend', ' · loading…');
+      if (b.dataset.a) await playTrack({ kind: 'a', id: b.dataset.a });
+      else if (b.dataset.g != null) await playTrack({ kind: 'g', i: +b.dataset.g });
+      else await playTrack({ kind: 'w', i: +b.dataset.w });
+      phoneTab('music');
+    };
+  } else if (!chat) {
+    body.innerHTML = '<div class="pa-list">' + Object.entries(CHATS).map(([id, c]) => {
+      const last = chatLog[id].length ? chatLog[id][chatLog[id].length - 1][1] : c.msgs[c.msgs.length - 1][1];
+      const unread = !chatLog[id].length;
+      return `<button data-c="${id}"><img src="${c.img}" alt=""><span><b>${c.name}</b>${last.replace(/<[^>]+>/g, '')}</span>${unread ? '<em></em>' : ''}</button>`;
+    }).join('') + '</div>';
+    body.querySelector('.pa-list').onclick = (e) => { const b = e.target.closest('button'); if (b) phoneTab('messages', b.dataset.c); };
+  } else {
+    const C = CHATS[chat];
+    const all = C.msgs.concat(chatLog[chat]);
+    body.innerHTML = `<div class="pa-chathead"><button class="pa-back">‹</button><img src="${C.img}" alt=""><b>${C.name}</b></div>
+      <div class="pa-thread">${all.map(([d, t]) => `<div class="pa-msg ${d}">${t}</div>`).join('')}</div>
+      <div class="pa-replies">${chatLog[chat].length ? '' : C.replies().map(([k, t]) => `<button data-k="${k}">${t}</button>`).join('')}</div>`;
+    body.querySelector('.pa-back').onclick = () => phoneTab('messages');
+    const th = body.querySelector('.pa-thread'); th.scrollTop = th.scrollHeight;
+    body.querySelector('.pa-replies').onclick = (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      chatLog[chat].push(['out', b.textContent]);
+      if (b.dataset.k === 'song' || b.dataset.k === 'workout') { pose('startle', 0.15); later(() => pose('sit', 0.4), 500); anim.sing = { t0: performance.now() / 1000 - 0.01, line: b.textContent, dance: (SINGALONG[HOTLINE.id] || SINGALONG.hotline).dance }; }
+      else think('😄', 'good', 1500);
+      phoneTab('messages', chat);
+      setTimeout(() => { chatLog[chat].push(['in', '<span class="pa-typing">•••</span>']); phoneTab('messages', chat); }, 600);
+      setTimeout(() => { chatLog[chat].pop(); chatLog[chat].push(['in', C.answer[b.dataset.k]]); if (!$('#phoneapp').hidden) phoneTab('messages', chat); sfx.tone(1320, 1760, 0.12, 0.05); }, 1800);
+    };
+  }
+}
+$('#phoneapp').addEventListener('click', (e) => {
+  if (e.target.id === 'phoneapp' || e.target.closest('.pa-close')) { $('#phoneapp').hidden = true; return; }
+  const t = e.target.closest('.pa-tabs button'); if (t) phoneTab(t.dataset.tab);
+});
+
 // back to the website, with a fade; `finished` lets the homepage play a little joke
 function goHome(finished = false) {
   const btn = document.getElementById('homebtn');
@@ -1029,16 +1389,18 @@ let started = false, jumpTarget = 0;
 const HOME_SPOT = { p: room.person.root.position.clone(), r: room.person.root.rotation.y };
 async function resetFor(n) {
   lastTitle = -1;
-  clearInterval(typing); typing = null; box.classList.remove('talking'); actsEl.replaceChildren(); textEl.innerHTML = '';
+  clearInterval(typing); typing = null; box.classList.remove('talking'); histLeave(); histUI(); actsEl.replaceChildren(); textEl.innerHTML = '';
   jumpFlashes.length = 0;
-  engine.dismiss(); ringing = null; countdown = null; stopClip(); riseStop(); skipStop(); rise.adapt = false;
+  skip.queue = []; skip.paused = {};
+  engine.dismiss(); ringing = null; countdown = null; bigCount(null); stopClip();
+  for (const v of voiceSrcs.splice(0)) { try { v.stop(); } catch {} } riseStop(); skipStop(); rise.adapt = false;
   hideViz(); setReplay(null); clearLabels(); unthink(); setLoading('');
-  $('#outro').hidden = true; $('#lightbox').hidden = true; $('#phonecut').hidden = true; $('#questions').hidden = true;
+  $('#outro').hidden = true; $('#lightbox').hidden = true; $('#phonecut').hidden = true; $('#questions').hidden = true; $('#phoneapp').hidden = true; unlabel('phonehint');
   Object.assign(anim, { working: false, free: false, quit: null, ph: null, groove: false, onCalm: null, walk: null });
   rackBar();
   room.phone.position.set(0.2, 0.452, 0.04); room.phone.rotation.set(0, 0.35, 0);
   // David is on the couch at home and during calls, at the mat for the workout and the lyrics
-  const atMat = n === 3 || n === 4;
+  const atMat = n === 3;
   room.person.root.position.copy(atMat ? new THREE.Vector3(1.65, 0, 0.55) : HOME_SPOT.p);
   room.person.root.rotation.y = atMat ? 0.25 : HOME_SPOT.r;
   pose(atMat ? 'stand' : 'sit', 0.3);
@@ -1117,6 +1479,26 @@ function startle(k = 1) {
   later(() => pose('sit', 0.5), 750);
 }
 
+// the same countdown, big in the middle of the screen: 4 3 2 1, then a ringing phone
+let bigShown = undefined;
+function bigCount(n) {
+  if (n === bigShown) return;
+  bigShown = n;
+  const el = $('#bigcount');
+  if (n == null) { el.classList.remove('on'); return; }
+  el.innerHTML = n === 'ring' ? '<span class="bc-ring"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></span><span class="bc-cap">Ringing, in time with the song</span>'
+    : `<span class="bc-cap">Ringtone in</span><span class="bc-n">${n}</span>`;
+  el.classList.remove('on', 'pop'); void el.offsetWidth; el.classList.add('on', 'pop');
+  if (n === 'ring') setTimeout(() => { if (bigShown === 'ring') bigCount(null); }, 1800);
+}
+
+// what David sings along with (song titles and humming), and how he dances to each
+const SINGALONG = {
+  hotline: { dance: 'hotline', lines: ['♪ You used to call me on my cell phone… ♪', '♪ (hums along) ♪', '♪ You used to call me on my cell phone… ♪'] },
+  nothing: { dance: 'smooth', lines: ['♪ Nothin’ on youuu ♪', '♪ (hums along) ♪', '♪ ooh-ooh ♪'] },
+  whatislove: { dance: 'roxbury', lines: ['♪ What is love?! ♪', '♪ da-da-da-da ♪', '♪ (head bob intensifies) ♪'] },
+};
+
 // ---------------------------------------------------------------- per frame
 let ringing = null;
 let last = performance.now();
@@ -1127,6 +1509,8 @@ $('#scene').addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clie
 $('#scene').addEventListener('pointerup', (e) => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
   const hv = room.hoverTarget();
+  if (hv && hv.userData.hover === 'speaker') { swapSong(); return; }
+  if (hv && hv.userData.hover === 'phone' && curChapter === 5) { openPhoneApp(); return; }
   if (hv && hv.userData.hover === 'drawer') { const d = room.drawer.userData; d.target = d.target ? 0 : 1; sfx.tone(220, 160, 0.18, 0.04, 'triangle'); return; }
   if (hv && hv.userData.hover === 'namecard') { $('#profile').hidden = false; return; }
   if (!hv || !['poster', 'drake'].includes(hv.userData.hover)) return;
@@ -1167,18 +1551,20 @@ function frame(now) {
     const A = engine.song.analysis, now = engine.time;
     if (now < countdown.t0 - 0.03) {
       let nb = 0; for (let b = countdown.start.beat; b > 0 && A.beats[b] > now + 0.11; b--) nb++;
+      nb = Math.max(1, nb);
       const html = nb <= 4 ? `<span class="cd last" data-n="${nb}">ringtone in <b>${nb}</b></span>` : '<span class="cd">📞 ringtone incoming…</span>';
       if (labels.get('countdown')?.html !== html) label('countdown', at(room.phone, 0, 0.62, 0), html, 'cdtag');
+      bigCount(nb <= 4 ? nb : null);
     } else {
-      countdown = null; unlabel('countdown');
+      countdown = null; unlabel('countdown'); bigCount('ring');
       label('callcue', at(room.phone, 0.2, 0.22, 0), '<span class="cc"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></span>', 'callcue');
     }
-  } else if (countdown) { countdown = null; unlabel('countdown'); }
+  } else if (countdown) { countdown = null; unlabel('countdown'); bigCount(null); }
   const cc = labels.get('callcue'); if (cc) cc.el.style.setProperty('--p', musicOn ? pulse.toFixed(3) : (0.5 + 0.5 * Math.sin(t * 6)).toFixed(3));
 
   // phone buzz / glow
   const scr = room.phone.userData.screen.material.uniforms;
-  scr.uGlow.value = ringing ? 0.5 + 0.5 * Math.sin(t * (ringing === 'jarring' ? 18 : 6)) : 0;
+  scr.uGlow.value = ringing ? 0.5 + 0.5 * Math.sin(t * (ringing === 'jarring' ? 18 : 6)) : anim.phoneGlow ? 0.6 + 0.4 * Math.sin(t * 5) : 0;
   if (!anim.ph || (anim.ph.k === 0 && anim.ph.to === 0)) room.phone.position.x = 0.2 + (ringing === 'jarring' ? Math.sin(t * 70) * 0.004 : 0);
   if (engine.ring == null && ringing === 'jarring') { ringing = null; unlabel('call'); }
 
@@ -1220,6 +1606,67 @@ function frame(now) {
     const sw = Math.sin(Math.PI * beatPos);
     p = { ...p, neck: p.neck + 0.1 * anim.nod, torso: p.torso + 0.04 * anim.nod, lEl: [p.lEl[0] - 0.22 * (0.5 + 0.5 * sw), p.lEl[1], p.lEl[2]], rEl: [p.rEl[0] - 0.22 * (0.5 - 0.5 * sw), p.rEl[1], p.rEl[2]] };
   }
+  // singing along: while a home song plays and nothing else is going on, David sings along now and
+  // then, each song with its own little dance
+  {
+    const busy = !engine.playing || rise.active || skip.play || ringing || engine.ring || vz.notif || anim.working || anim.quit || anim.walk || anim.ph || anim.hop || anim.idle || labels.has('thought') || !$('#phonecut').hidden;
+    const sa = anim.sing;
+    anim.singTilt = 0;
+    if (busy) { if (sa) { anim.sing = null; unlabel('sing'); } }
+    else if (!sa && t > (anim.nextSing || 6)) {
+      const S = SINGALONG[HOTLINE.id] || SINGALONG.hotline;
+      anim.sing = { t0: t, line: S.lines[(anim.singN = ((anim.singN || 0) + 1)) % S.lines.length], dance: S.dance };
+    } else if (sa) {
+      const el = t - sa.t0, beatOn = Math.pow(1 - (beatPos % 1), 2);
+      if (el < 4.5) {
+        if (!labels.has('sing')) label('sing', at(room.person.neck, 0.12, 0.55, 0), `<span class="singl">${sa.line}</span>`, 'singtag');
+        const e = Math.min(1, el / 0.4) * Math.min(1, (4.5 - el) / 0.4);
+        if (sa.dance === 'roxbury') {
+          // the side-to-side head bob, on every beat
+          const side = Math.floor(beatPos) % 2 ? 1 : -1;
+          p = { ...p, neck: p.neck + 0.05 * e };
+          anim.singTilt = side * 0.3 * e * (0.4 + 0.6 * beatOn);
+        } else if (sa.dance === 'hotline') {
+          // one hand up, waving side to side, a little sway
+          const w = Math.sin(beatPos * Math.PI) * e;
+          p = { ...p, rSh: [p.rSh[0] - 1.2 * e, p.rSh[1], p.rSh[2] - 0.5 * w], rEl: [p.rEl[0] - 0.6 * e, p.rEl[1], p.rEl[2]], torso: p.torso + 0.04 * w };
+        } else {
+          // smooth shoulder rolls and a finger point on the beat
+          const r = Math.sin(beatPos * Math.PI * 2) * e;
+          p = { ...p, lSh: [p.lSh[0] - 0.25 * Math.max(0, r), p.lSh[1], p.lSh[2]], rSh: [p.rSh[0] - 0.25 * Math.max(0, -r) - 0.6 * e, p.rSh[1], p.rSh[2]], rEl: [p.rEl[0] - 0.9 * e, p.rEl[1], p.rEl[2]], neck: p.neck + 0.06 * beatOn * e };
+        }
+      } else { anim.sing = null; unlabel('sing'); anim.nextSing = t + 14 + Math.random() * 8; }
+    }
+  }
+  // idle: the reader has sat on the same line for a while, so David entertains himself
+  {
+    const idle = performance.now() - lastActivity;
+    const free = anim.t >= 1 && !anim.working && !anim.quit && !anim.walk && !anim.ph && !anim.hop && (anim.pose === 'sit' || anim.pose === 'stand') && !typing && actsEl.children.length;
+    if (!free || idle < 20000) { if (anim.idle) { anim.idle = null; } }
+    else {
+      if (!anim.idle) {
+        const opts = ['drum', 'stretch'].concat(anim.pose === 'sit' ? ['phone'] : []);
+        anim.idle = { kind: opts[Math.floor(Math.random() * opts.length)], t0: t };
+        const say = { drum: 'Ba-dum-tss 🥁', stretch: 'Mmmh… 🥱', phone: '📱 …' }[anim.idle.kind];
+        think(say, 'good', 2200);
+      }
+      const ii = anim.idle, e = Math.min(1, (t - ii.t0) / 0.6);
+      if (ii.kind === 'drum') {
+        // air drums on the beat: forearms up, hands alternate
+        const hit = Math.pow(1 - (beatPos * 2 % 1), 2);
+        p = { ...p, lSh: [p.lSh[0] - 0.5 * e, p.lSh[1], p.lSh[2]], rSh: [p.rSh[0] - 0.5 * e, p.rSh[1], p.rSh[2]],
+          lEl: [p.lEl[0] - (0.6 + 0.6 * (Math.floor(beatPos * 2) % 2 ? hit : 0)) * e, p.lEl[1], p.lEl[2]], rEl: [p.rEl[0] - (0.6 + 0.6 * (Math.floor(beatPos * 2) % 2 ? 0 : hit)) * e, p.rEl[1], p.rEl[2]], neck: p.neck + 0.08 * hit * e };
+      } else if (ii.kind === 'stretch') {
+        // arms up overhead, lean back, hold, then repeat every few seconds
+        const c = 0.5 - 0.5 * Math.cos(Math.min(1, ((t - ii.t0) % 6) / 2.5) * Math.PI * 2) ;
+        p = { ...p, lSh: [p.lSh[0] - 2.7 * c, p.lSh[1], p.lSh[2] - 0.2 * c], rSh: [p.rSh[0] - 2.7 * c, p.rSh[1], p.rSh[2] + 0.2 * c], lEl: [p.lEl[0] * (1 - c), p.lEl[1], p.lEl[2]], rEl: [p.rEl[0] * (1 - c), p.rEl[1], p.rEl[2]], torso: p.torso - 0.18 * c, neck: p.neck - 0.25 * c };
+      } else if (ii.kind === 'phone') {
+        // head down, scrolling something on his lap
+        const sc = Math.sin(t * 3) * 0.05;
+        p = { ...p, neck: p.neck + 0.45 * e, lSh: [p.lSh[0] - 0.5 * e, p.lSh[1], p.lSh[2] + 0.25 * e], rSh: [p.rSh[0] - 0.5 * e, p.rSh[1], p.rSh[2] - 0.25 * e], lEl: [-1.6 * e + p.lEl[0] * (1 - e), p.lEl[1], p.lEl[2]], rEl: [(-1.6 + sc) * e + p.rEl[0] * (1 - e), p.rEl[1], p.rEl[2]] };
+      }
+    }
+  }
   if (anim.quit) {
     const q = anim.quit, el = t - q.t0;
     if (q.stage === 0 && el > 0.9) { q.stage = 1; pose('lower', 0.8); anim.barMode = 'hands'; }
@@ -1251,7 +1698,7 @@ function frame(now) {
   }
   const sway = musicOn && anim.pose === 'sit' && !anim.working ? Math.sin(beatPos * Math.PI) * (anim.groove ? 0.07 : 0.025) : 0;
   room.person.torso.rotation.z += (sway - room.person.torso.rotation.z) * 0.3;
-  room.person.neck.rotation.z += (-sway * 0.9 - room.person.neck.rotation.z) * Math.min(1, dt * 10);
+  room.person.neck.rotation.z += (-sway * 0.9 + (anim.singTilt || 0) - room.person.neck.rotation.z) * Math.min(1, dt * 14);
   const speakerLift = buff.ripped && anim.working;
   if (speakerLift) {
     // muscle mode: the barbell is too light, so David squats holding a speaker in each hand
@@ -1284,6 +1731,10 @@ function frame(now) {
   { const d = room.drawer.userData; d.open += (d.target - d.open) * Math.min(1, dt * 7); room.drawer.position.x = 0.36 * d.open;
  }
   runJumpFlashes();
+  if (!anim.ph) { const k = anim.phoneGlow ? 1 + 0.18 * (0.5 + 0.5 * Math.sin(t * 6)) : 1; room.phone.scale.setScalar(room.phone.scale.x + (k - room.phone.scale.x) * 0.2); }
+  musicTick();
+  if (document.body.classList.contains('lim-on') && $('#limgame').hidden) document.body.classList.remove('lim-on');
+  for (const b of document.querySelectorAll('.sk-play')) { const on = !!(skip.play && skip.play.lane === +b.dataset.lane && !skip.play.fading); if (b.classList.contains('on') !== on) b.classList.toggle('on', on); }
   room.updateShards(dt);
 
   room.frame(dt, t);
@@ -1291,7 +1742,7 @@ function frame(now) {
   if (vz.kind === 'mir' && engine.song) {
     const root = MAJOR_MAP[HOTLINE.key - 1];
     mir.draw({ song: engine.song, t: engine.time, keyName: `${KEY_MAJOR[HOTLINE.key - 1]} major · ${KEY_MINOR[HOTLINE.key - 1]}`, scale: [0, 2, 4, 5, 7, 9, 11].map((i) => (root + i) % 12) });
-  } else if (vz.kind === 'timeline' && engine.song) tl.draw({ song: engine.song, t: engine.time, ring: engine.ring, preview: null, accent: '#ff9f5a', level: engine.ringLevel() });
+  } else if (vz.kind === 'timeline' && engine.song) tl.draw({ song: engine.song, t: engine.time, ring: engine.ring, preview: null, accent: '#ff9f5a', level: engine.ringLevel(), note: engine.ring && engine.ring.params && engine.ring.params.beatMatch ? (engine.ring.start.sweet ? '⏳ Delayed to the next phrase,\nright where the bass drops back in' : '⏳ Delayed to the next phrase') : null });
   else if (vz.kind === 'roll' && engine.song) roll.draw(engine.song, mel, engine.time, vz.notif && engine.time < vz.notif.t1 + 1.5 ? vz.notif : null, '#e0479e', Math.min(0.6, level));
   else if (vz.kind === 'skip' && skip.buf) {
     const pos = skipPos();
@@ -1307,7 +1758,7 @@ function frame(now) {
         if (b.step === 4 && w > 18) { b.step = 5; pose('watch', 0.4); label('bored', at(room.person.neck, 0.15, 0.6, 0), 'Seriously, where’s the drop?!', 'speech'); }
       } else if (labels.has('bored')) unlabel('bored');
       if (hi && !anim.working) { anim.free = true; anim.working = true; anim.reps = 0; pose('rack', 0.4); if (!skip.play.cheered) { skip.play.cheered = true; think(skip.play.lane ? 'There it is! 🔥' : 'Finally… 😮‍💨', skip.play.lane ? 'good' : 'bad', 2400); } }
-      if (pos > skip.hiAt + 4 && !skip.play.fading) { skip.play.fading = true; const lane = skip.play; skipStop(3); skip.play = lane; setTimeout(() => { if (skip.play === lane) { skip.play = null; anim.free = false; anim.working = false; pose('stand', 0.5); rackBar(); } }, 3000); }
+      if (pos > skip.hiAt + 4 && !skip.play.fading) { skip.play.fading = true; const lane = skip.play; skipStop(3); skip.play = lane; setTimeout(() => { if (skip.play === lane) { skip.play = null; anim.free = false; anim.working = false; pose('stand', 0.5); rackBar(); skipEnded(); } }, 3000); }
     }
     figs.skip.draw(t, { segs: skip.segs, from: SKIP.from - 2, to: SKIP.to, cut: skip.cut, hiAt: skip.hiAt, play: skip.play, pos: skipPos(), start: SKIP.from });
   }
@@ -1315,7 +1766,7 @@ function frame(now) {
     const pos = skip.play && skip.play.lane >= 2 ? skipPos() : null;
     if (pos != null) {
       if (!anim.working) { anim.free = true; anim.working = true; anim.reps = 0; pose('rack', 0.4); }
-      if (engine.ctx.currentTime > skip.play.jumpAt + 2.5 && !skip.play.fading) { skip.play.fading = true; const lane = skip.play; skipStop(3); skip.play = lane; setTimeout(() => { if (skip.play === lane) { skip.play = null; anim.free = false; anim.working = false; pose('stand', 0.5); rackBar(); } }, 3000); }
+      if (engine.ctx.currentTime > skip.play.jumpAt + 2.5 && !skip.play.fading) { skip.play.fading = true; const lane = skip.play; skipStop(3); skip.play = lane; setTimeout(() => { if (skip.play === lane) { skip.play = null; anim.free = false; anim.working = false; pose('stand', 0.5); rackBar(); skipEnded(); } }, 3000); }
     }
     figs.cutplay.draw(t, { drop: skip.drop, play: skip.play && skip.play.lane >= 2 ? skip.play : null, pos, jumped: !!(skip.play && engine.ctx.currentTime >= skip.play.jumpAt) });
   }
@@ -1342,7 +1793,7 @@ function frame(now) {
     const playing = isRise || engine.playing;
     tip.innerHTML = `<div class="t-k">${playing ? '▶ Now playing' : '❚❚ Paused'}</div><div class="t-t">${title}</div><div class="t-a">${artist}</div>
       <div class="t-m"><span>${bpm} BPM</span>${isRise ? '' : `<span>${KEY_MAJOR[HOTLINE.key - 1]} major</span>`}<span>${fmt(pos)} / ${fmt(dur)}</span></div>
-      <div class="t-bar"><i style="width:${(100 * pos) / dur}%"></i></div>`;
+      <div class="t-bar"><i style="width:${(100 * pos) / dur}%"></i></div>${!isRise && [0, 1, 2, 5].includes(curChapter) ? '<div class="t-a">Click to change the song</div>' : ''}`;
     tip.style.left = `${room.pointer.x + 18}px`; tip.style.top = `${room.pointer.y + 12}px`;
     tip.hidden = false;
   } else if (hv && hv.userData.hover === 'poster') {
@@ -1387,4 +1838,4 @@ $('#begin').addEventListener('click', async () => {
   story(0);
 });
 room.setShot(SHOTS.wide, true);
-window.__story = { room, engine, rise, anim, onRep, buff, pose, singFlight, flashJump, get mel() { return mel; }, get flightBuf() { return flightBuf; } };
+window.__story = { room, engine, rise, anim, onRep, buff, pose, singFlight, flashJump, get lim() { return lim; }, get mel() { return mel; }, get flightBuf() { return flightBuf; } };

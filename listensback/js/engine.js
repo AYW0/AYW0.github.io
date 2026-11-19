@@ -52,6 +52,20 @@ function findLoop(song) {
   return best && { from: best.from, to: best.to };
 }
 
+// Gain that brings a set of buffers (played together) to a common RMS level, so songs mastered
+// louder or quieter come out at about the same loudness. Capped so quiet songs aren't blown up.
+export function normGain(bufs, target = 0.11) {
+  let sum = 0, n = 0;
+  const len = Math.max(...bufs.map((b) => b.length)), step = 7;
+  for (let i = 0; i < len; i += step) {
+    let v = 0;
+    for (const b of bufs) for (let c = 0; c < b.numberOfChannels; c++) { const d = b.getChannelData(c); if (i < d.length) v += d[i] / b.numberOfChannels; }
+    sum += v * v; n++;
+  }
+  const rms = Math.sqrt(sum / Math.max(1, n)) || target;
+  return Math.max(0.2, Math.min(1.6, target / rms));
+}
+
 export class Engine extends EventTarget {
   constructor() {
     super();
@@ -79,7 +93,10 @@ export class Engine extends EventTarget {
     this.master = ctx.createGain();
     const limiter = ctx.createDynamicsCompressor();
     limiter.threshold.value = -3; limiter.knee.value = 6; limiter.ratio.value = 8;
-    this.master.connect(limiter).connect(ctx.destination);
+    // loudness normalization for the current song, applied to the whole mix (song + ringtone +
+    // voice) so their balance is unchanged
+    this.songNorm = ctx.createGain();
+    this.master.connect(this.songNorm).connect(limiter).connect(ctx.destination);
 
     // Song: separated vocals + accompaniment, each with its own fader (audioEffects.cs).
     this.songBus = ctx.createGain();
@@ -177,6 +194,7 @@ export class Engine extends EventTarget {
     // Free decoded audio of other songs; keep ringtones.
     for (const k of this.bufferCache.keys()) if (k.startsWith('music/') && !k.startsWith(dir)) this.bufferCache.delete(k);
 
+    this.songNorm.gain.value = normGain([vocals, acc]);
     this.song = {
       ...song, vocals, acc,
       duration: Math.max(vocals.duration, acc.duration),

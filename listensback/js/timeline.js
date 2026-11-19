@@ -22,7 +22,7 @@ export class Timeline {
     this.g.setTransform(d, 0, 0, d, 0, 0);
   }
 
-  draw({ song, t, ring, preview, accent, level }) {
+  draw({ song, t, ring, preview, accent, level, note }) {
     const g = this.g, W = this.w, H = this.h;
     g.clearRect(0, 0, W, H);
     if (!song) {
@@ -142,6 +142,24 @@ export class Timeline {
       g.fillStyle = 'rgba(255,255,255,0.85)';
       g.font = '600 12px ui-sans-serif, system-ui, sans-serif';
       g.fillText(`rings in ${s}s`, playX + 8, laneTop - 8);
+    }
+
+    // Callout pointing at where the ringtone enters (e.g. "waits for the next phrase").
+    if (note && ring && t < ring.t0 + 2.5) {
+      const xr = X(ring.t0);
+      if (xr > 0 && xr < W) {
+        g.font = '800 12px ui-sans-serif, system-ui, sans-serif';
+        const lines = note.split('\n'), tw = Math.max(...lines.map((l) => g.measureText(l).width)) + 20, th = 14 + lines.length * 16;
+        const bx = Math.max(6, Math.min(W - tw - 6, xr - tw / 2)), by = specTop + 14;
+        const bob = Math.sin(t * 6) * 2;
+        g.fillStyle = '#34c759';
+        g.beginPath(); g.moveTo(xr, laneTop + laneH + 3 + bob); g.lineTo(xr - 8, by + bob); g.lineTo(xr + 8, by + bob); g.closePath(); g.fill();
+        roundRect(g, bx, by + bob, tw, th, 8); g.fill();
+        g.fillStyle = '#0b0b12';
+        lines.forEach((l, k) => g.fillText(l, bx + 10, by + bob + 20 + k * 16));
+        g.strokeStyle = '#34c759'; g.lineWidth = 2.5;
+        roundRect(g, xr - 2, laneTop - 2, Math.max(10, X(ring.t0 + ring.plays[0].dur) - xr + 2), laneH + 4, 9); g.stroke();
+      }
     }
 
     g.fillStyle = 'rgba(255,255,255,0.4)';

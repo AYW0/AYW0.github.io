@@ -98,16 +98,78 @@ function limb(len, rTop, rBot, mat) {
   return pivot;
 }
 
-// Modelled loosely on David Lindlbauer: white swept-back hair, short beard, dark leather jacket
+// Modelled loosely on David Lindlbauer: short ash-brown hair swept across, short stubble beard, leather jacket
 // over a black tee, dark jeans. Proportions are roughly anatomical (head ≈ 1/7.5 of height).
+// David's face, shared by both rigs: a real head shape (skull, cheekbones, jaw), a full short
+// beard that wraps the jaw and chin, a moustache, brows, and white hair swept up and back.
+function buildFace(neck, { skin, hairMat, beardMat, darkMat, browTilt = 0 }) {
+  const head = curved(new THREE.SphereGeometry(0.098, 28, 20).scale(0.84, 1.16, 0.98), skin, 0.007);
+  head.position.y = 0.155; neck.add(head);
+  const face = new THREE.Group(); face.position.y = 0.155; neck.add(face);
+  // jaw: a little wider and squarer than the skull's lower half
+  const jaw = curved(new THREE.SphereGeometry(0.072, 20, 12).scale(1.02, 0.8, 1.0), skin, 0.004);
+  jaw.position.set(0, -0.045, 0.012); face.add(jaw);
+  // beard: a closed lower cap over jaw and chin, ear to ear, sitting just proud of the skin
+  const beard = curved(new THREE.SphereGeometry(0.082, 28, 14, Math.PI / 2 - 1.7, 3.4, Math.PI * 0.56, Math.PI * 0.44).scale(0.97, 1.02, 1.04), beardMat, 0.002);
+  beard.position.set(0, -0.032, 0.012); face.add(beard);
+  // moustache: two soft lobes under the nose that meet the beard at the mouth corners
+  for (const sx of [-1, 1]) {
+    const m = curved(new THREE.SphereGeometry(0.015, 12, 8).scale(1.45, 0.42, 0.6), beardMat, 0.0015);
+    m.position.set(sx * 0.016, -0.034, 0.096); m.rotation.z = sx * -0.25; face.add(m);
+  }
+  // mouth: a short line in the gap under the moustache
+  face.add(polyline([[-0.016, -0.053, 0.098], [0, -0.055, 0.1], [0.016, -0.053, 0.098]]));
+  // cheekbones and nose
+  const nose = curved(new THREE.ConeGeometry(0.017, 0.05, 10).rotateX(Math.PI / 2 + 0.4), skin, 0.003); nose.position.set(0, -0.004, 0.104); face.add(nose);
+  // eyes and brows (brows are short bars, slightly angled)
+  for (const sx of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.0085, 8, 6), darkMat); eye.position.set(sx * 0.031, 0.02, 0.088); face.add(eye);
+    const brow = curved(new THREE.BoxGeometry(0.03, 0.007, 0.008), beardMat, 0.002);
+    brow.position.set(sx * 0.032, 0.041, 0.09); brow.rotation.z = sx * (-0.12 + browTilt); face.add(brow);
+    const ear = curved(new THREE.SphereGeometry(0.022, 10, 8).scale(0.45, 1, 0.8), skin, 0.004); ear.position.set(sx * 0.088, 0.003, -0.005); face.add(ear);
+  }
+  // hair (after his lab and HCII portraits): dark ash-brown, short at the sides, the top longer and
+  // combed over to one side from a part above his right eye, so the top is higher on the part side
+  // and the fringe sweeps across the forehead and down toward the other temple
+  // sides: cut short, a thin lighter layer hugging the skull down to the ears
+  const sideMat = halftone({ paper: '#f3f4f6', base: 0.24, range: 0.14, cell: 2.4 });
+  const sides = curved(new THREE.SphereGeometry(0.1, 26, 12, Math.PI / 2 + 1.0, Math.PI * 2 - 2.0, 0, Math.PI * 0.4).scale(0.85, 1.15, 0.99), sideMat, 0.0015);
+  sides.position.set(0, 0.0, -0.002); face.add(sides);
+  // top: the longer hair, a low dome only over the crown
+  const cap = curved(new THREE.SphereGeometry(0.097, 28, 14, 0, Math.PI * 2, 0, Math.PI * 0.36).scale(0.89, 1.0, 1.02), hairMat, 0.0025);
+  cap.position.set(0, 0.016, -0.01);
+  // back of the head: a full hair shell, pushed back so the face stays clear and only the back and
+  // the sides behind the ears show; this fills the gaps that read as bald spots
+  const back = curved(new THREE.SphereGeometry(0.096, 26, 14, 0, Math.PI * 2, 0, Math.PI * 0.58).scale(0.9, 1.1, 1.0), sideMat, 0.002);
+  back.position.set(0, 0.004, -0.02); face.add(back); face.add(cap);
+  const P = -0.042; // the part, on his right (screen left when he faces you)
+  // combed-over locks, from the part across the top; each a long soft wedge pointing down-across
+  const locks = [
+    [P + 0.02, 0.112, 0.055, 0.042, -0.42], [P + 0.045, 0.106, 0.062, 0.04, -0.5], [P + 0.07, 0.096, 0.064, 0.036, -0.62],
+    [P + 0.095, 0.083, 0.058, 0.03, -0.78], [P + 0.02, 0.122, 0.01, 0.044, -0.32], [P + 0.055, 0.115, 0.01, 0.042, -0.42],
+    [P + 0.085, 0.1, 0.008, 0.036, -0.58], [P + 0.03, 0.118, -0.04, 0.04, -0.28], [P + 0.07, 0.106, -0.04, 0.038, -0.4],
+  ];
+  for (const [x, y, z, r, rz] of locks) {
+    const l = curved(new THREE.SphereGeometry(r, 14, 8).scale(1.8, 0.3, 0.85), hairMat, 0.002);
+    l.position.set(x, y - 0.026, z * 0.95); l.rotation.set(-0.25, 0, rz); face.add(l);
+  }
+  // the short side under the part, sitting flat
+  // comb lines following the sweep
+  for (let k = 0; k < 4; k++) {
+    const z = 0.06 - k * 0.03, y0 = 0.108 - k * 0.002;
+    face.add(polyline([[P + 0.005, y0, z], [P + 0.05, y0 - 0.012, z + 0.006], [P + 0.1, y0 - 0.038, z + 0.004]], LINE_SOFT));
+  }
+  return { head, face };
+}
+
 function buildPerson() {
   const skin = halftone({ paper: '#ffffff', base: 0.02, range: 0.28 });
   const tee = halftone({ paper: '#ffffff', base: 0.85, range: 0.1, cell: 3.4 });
-  const leather = halftone({ paper: '#f2e9df', base: 0.62, range: 0.3, cell: 3.6 });
-  const jeans = halftone({ paper: '#e6ecfb', base: 0.38, range: 0.35 });
+  const leather = halftone({ paper: '#e9e9ee', base: 0.84, range: 0.14, cell: 3.4 });
+  const jeans = halftone({ paper: '#ececef', base: 0.6, range: 0.22 });
   const shoes = halftone({ paper: '#ffffff', base: 0.8, range: 0.15 });
-  const hairMat = halftone({ paper: '#ffffff', base: 0.0, range: 0.1, cell: 3.4 });
-  const beardMat = halftone({ paper: '#ffffff', base: 0.26, range: 0.15, cell: 3.0 });
+  const hairMat = halftone({ paper: '#f1f2f4', base: 0.4, range: 0.2, cell: 3.0 });
+  const beardMat = halftone({ paper: '#f6ece2', base: 0.2, range: 0.14, cell: 2.2 });
   const darkMat = new THREE.MeshBasicMaterial({ color: INK });
   const root = new THREE.Group();
   const hips = new THREE.Group(); root.add(hips);
@@ -127,7 +189,15 @@ function buildPerson() {
   for (const side of [-1, 1]) {
     const lapel = box(0.055, 0.15, 0.015, leather); lapel.position.set(side * 0.06, 0.45, 0.11); lapel.rotation.z = side * 0.4; lapel.rotation.x = -0.15; jacketBits.add(lapel);
     jacketBits.add(polyline([[side * 0.04, 0.06, 0.1], [side * 0.045, 0.42, 0.12]]));
+    // silver: a zip track down the open front edge, and lapel snaps
+    const silver = new THREE.MeshBasicMaterial({ color: 0xd7dbe3 });
+    const track = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.36, 0.006), silver); track.position.set(side * 0.047, 0.24, 0.122); jacketBits.add(track);
+    for (let k = 0; k < 9; k++) { const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.004, 0.006), new THREE.MeshBasicMaterial({ color: 0x8e95a3 })); tooth.position.set(side * 0.047, 0.08 + k * 0.04, 0.125); jacketBits.add(tooth); }
+    const snap = new THREE.Mesh(new THREE.CircleGeometry(0.011, 14), silver); snap.position.set(side * 0.085, 0.44, 0.124); snap.rotation.z = side * 0.4; jacketBits.add(snap);
+    const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.006, 0.004), silver); pocket.position.set(side * 0.1, 0.16, 0.112); pocket.rotation.z = side * -0.5; jacketBits.add(pocket);
   }
+  // the zip pull at the bottom of one side
+  const pull = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.03, 0.006), new THREE.MeshBasicMaterial({ color: 0xd7dbe3 })); pull.position.set(0.047, 0.07, 0.13); jacketBits.add(pull);
   // muscles revealed when the jacket rips: pecs and abs
   const abs = new THREE.Group(); abs.visible = false; torso.add(abs);
   const pecs = [];
@@ -137,25 +207,7 @@ function buildPerson() {
   }
   const neck = new THREE.Group(); neck.position.y = 0.52; torso.add(neck);
   const neckSeg = curved(new THREE.CylinderGeometry(0.046, 0.055, 0.1, 12), skin, 0.005); neckSeg.position.y = 0.03; neck.add(neckSeg);
-  const head = curved(new THREE.SphereGeometry(0.098, 24, 18).scale(0.9, 1.14, 1), skin, 0.007);
-  head.position.y = 0.155; neck.add(head);
-  const jaw = curved(new THREE.SphereGeometry(0.07, 16, 10).scale(1, 0.7, 0.95), skin, 0.005);
-  jaw.position.set(0, 0.095, 0.02); neck.add(jaw);
-  const face = new THREE.Group(); face.position.y = 0.155; neck.add(face);
-  const beard = curved(new THREE.SphereGeometry(0.1, 24, 12, Math.PI / 2 - 1.15, 2.3, Math.PI * 0.52, Math.PI * 0.38).scale(0.92, 1.14, 1), beardMat, 0.003);
-  face.add(beard);
-  const nose = curved(new THREE.ConeGeometry(0.016, 0.04, 8).rotateX(Math.PI / 2 + 0.3), skin, 0.003); nose.position.set(0, -0.002, 0.098); face.add(nose);
-  for (const sx of [-1, 1]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 6), darkMat); eye.position.set(sx * 0.032, 0.022, 0.085); face.add(eye);
-    face.add(polyline([[sx * 0.016, 0.045, 0.09], [sx * 0.05, 0.048, 0.078]]));
-    const ear = curved(new THREE.SphereGeometry(0.022, 10, 8).scale(0.45, 1, 0.8), skin, 0.004); ear.position.set(sx * 0.09, 0.005, -0.005); face.add(ear);
-  }
-  face.add(polyline([[-0.018, -0.05, 0.094], [0.018, -0.05, 0.094]]));
-  const hair = curved(new THREE.SphereGeometry(0.104, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.42).scale(0.94, 1.12, 1.04), hairMat, 0.006);
-  hair.position.set(0, 0.016, -0.01); face.add(hair);
-  const quiff = curved(new THREE.SphereGeometry(0.06, 16, 10).scale(1.3, 0.5, 1.15), hairMat, 0.005);
-  quiff.position.set(0, 0.105, 0.035); quiff.rotation.x = -0.4; face.add(quiff);
-  for (let i = -2; i <= 2; i++) face.add(polyline([[i * 0.022, 0.1, 0.07], [i * 0.026, 0.118, 0.0], [i * 0.03, 0.1, -0.07]], LINE_SOFT));
+  const { head } = buildFace(neck, { skin, hairMat, beardMat, darkMat });
   const parts = { root, hips, torso, neck, head, chest, waist, traps, neckSeg, teeStrip, jacketBits, abs, pecs, leather, skin, shoulders: [], upperArms: [], forearms: [], hands: [] };
   for (const side of [-1, 1]) {
     const sh = new THREE.Group(); sh.position.set(side * 0.205, 0.46, 0); torso.add(sh);
@@ -184,10 +236,10 @@ function buildPerson() {
 // the same white hair and beard, bare-chested in jeans.
 function buildBuffPerson() {
   const skin = halftone({ paper: '#ffffff', base: 0.03, range: 0.42 });
-  const jeans = halftone({ paper: '#e6ecfb', base: 0.38, range: 0.35 });
+  const jeans = halftone({ paper: '#ececef', base: 0.6, range: 0.22 });
   const shoes = halftone({ paper: '#ffffff', base: 0.8, range: 0.15 });
-  const hairMat = halftone({ paper: '#ffffff', base: 0.0, range: 0.1, cell: 3.4 });
-  const beardMat = halftone({ paper: '#ffffff', base: 0.26, range: 0.15, cell: 3.0 });
+  const hairMat = halftone({ paper: '#f1f2f4', base: 0.4, range: 0.2, cell: 3.0 });
+  const beardMat = halftone({ paper: '#f6ece2', base: 0.2, range: 0.14, cell: 2.2 });
   const darkMat = new THREE.MeshBasicMaterial({ color: INK });
   const blob = (r, sx, sy, sz, x, y, z, parent, mat = skin) => { const m = curved(new THREE.SphereGeometry(r, 16, 12).scale(sx, sy, sz), mat, 0.005); m.position.set(x, y, z); parent.add(m); return m; };
   const root = new THREE.Group(), hips = new THREE.Group(); root.add(hips);
@@ -210,16 +262,7 @@ function buildBuffPerson() {
   torso.add(polyline([[0, 0.4, 0.15], [0, 0.08, 0.12]]));
   const neck = new THREE.Group(); neck.position.y = 0.64; torso.add(neck);
   const neckSeg = curved(new THREE.CylinderGeometry(0.07, 0.1, 0.12, 14), skin, 0.005); neckSeg.position.y = 0.02; neck.add(neckSeg);
-  const head = curved(new THREE.SphereGeometry(0.098, 24, 18).scale(0.9, 1.14, 1), halftone({ paper: '#ffffff', base: 0.02, range: 0.28 }), 0.007);
-  head.position.y = 0.155; neck.add(head);
-  const face = new THREE.Group(); face.position.y = 0.155; neck.add(face);
-  face.add(curved(new THREE.SphereGeometry(0.1, 24, 12, Math.PI / 2 - 1.15, 2.3, Math.PI * 0.52, Math.PI * 0.38).scale(0.92, 1.14, 1), beardMat, 0.003));
-  for (const sx of [-1, 1]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 6), darkMat); eye.position.set(sx * 0.032, 0.022, 0.085); face.add(eye);
-    face.add(polyline([[sx * 0.014, 0.04, 0.09], [sx * 0.05, 0.05, 0.078]])); // determined brows
-  }
-  face.add(curved(new THREE.SphereGeometry(0.104, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.42).scale(0.94, 1.12, 1.04), hairMat, 0.006));
-  const quiff = curved(new THREE.SphereGeometry(0.06, 16, 10).scale(1.3, 0.5, 1.15), hairMat, 0.005); quiff.position.set(0, 0.105, 0.035); quiff.rotation.x = -0.4; face.add(quiff);
+  const { head } = buildFace(neck, { skin: halftone({ paper: '#ffffff', base: 0.02, range: 0.28 }), hairMat, beardMat, darkMat, browTilt: 0.35 });
   const parts = { root, hips, torso, neck, head, shoulders: [], upperArms: [], forearms: [], hands: [], buff: true };
   for (const side of [-1, 1]) {
     const sh = new THREE.Group(); sh.position.set(side * 0.33, 0.55, 0); torso.add(sh);
@@ -583,6 +626,8 @@ export class Room {
 
   // ---------------------------------------------------------------- camera
   setShot(s, instant = false) {
+    // phones are tall and narrow: pull back so the room's width (and David) fits
+    if (this.w && this.w < 700) s = { ...s, dist: s.dist * Math.min(1.9, 1 + (700 - this.w) / 420) };
     this.shot = { target: new THREE.Vector3(...s.target), yaw: s.yaw, pitch: s.pitch, dist: s.dist };
     this.user.yaw *= 0.3; this.user.pitch *= 0.3;
     if (instant) { this.cam = { target: this.shot.target.clone(), yaw: s.yaw, pitch: s.pitch, dist: s.dist }; }
@@ -618,7 +663,10 @@ export class Room {
   // (on the left) is open so it never covers the character.
   applyOffset() {
     const sx = this.shiftX || 0;
-    this.camera.setViewOffset(this.w, this.h, -sx * this.w, this.h * 0.1, this.w, this.h);
+    // narrow screens: the card covers the top and the dialogue the bottom, so frame the room
+    // a little lower and a little wider
+    const narrow = this.w < 700, cardOn = !!document.querySelector('.vizcard.on');
+    this.camera.setViewOffset(this.w, this.h, -sx * this.w, this.h * (narrow ? (cardOn ? -0.06 : 0.04) : 0.1), this.w, this.h);
     this.camera.updateProjectionMatrix();
   }
 

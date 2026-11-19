@@ -44,13 +44,14 @@
       <canvas id="vz-rise" class="vz-canvas"></canvas>
       <canvas id="vz-mir" class="vz-canvas"></canvas>
       <div id="vz-mv" class="vz-canvas vz-mv"></div>
+      <div id="vz-mvpipe" class="vz-canvas vz-mvpipe"></div>
       <canvas id="vz-bm" class="vz-canvas"></canvas>
       <canvas id="vz-pro" class="vz-canvas"></canvas>
       <canvas id="vz-cut" class="vz-canvas"></canvas>
       <canvas id="vz-study" class="vz-canvas"></canvas>
       <canvas id="vz-wer" class="vz-canvas"></canvas>
-      <div id="vz-cutplay" class="vz-canvas vz-skipwrap"><canvas></canvas><button class="sk-play" data-lane="2">▶ Loop B</button><button class="sk-play" data-lane="3">▶ Skip B</button></div>
-      <div id="vz-skip" class="vz-canvas vz-skipwrap"><canvas></canvas><button class="sk-play" data-lane="0">▶ As written</button><button class="sk-play" data-lane="1">▶ With skip</button></div>
+      <div id="vz-cutplay" class="vz-canvas vz-skipwrap"><canvas></canvas><button class="sk-play" data-lane="2"><i></i>Loop B</button><button class="sk-play" data-lane="3"><i></i>Skip B</button></div>
+      <div id="vz-skip" class="vz-canvas vz-skipwrap"><canvas></canvas><button class="sk-play" data-lane="0"><i></i>As written</button><button class="sk-play" data-lane="1"><i></i>With skip</button></div>
       <div class="vz-figs"></div>
     </section>
 
@@ -60,10 +61,18 @@
       <img class="dface" id="dface" src="img/story/alex-drawn.png" alt="Alex">
       <div class="dname mono" id="dname">Alex</div>
       <div class="dtext" id="dtext"></div>
+      <div class="dhist" id="dhist"><button id="dh-prev" aria-label="Previous line" title="Previous line">‹</button><span id="dh-pos"></span><button id="dh-next" aria-label="Next line" title="Back to the current line">›</button></div>
       <div class="dacts" id="dacts"></div>
     </section>
 
     <div id="questions" class="questions" hidden></div>
+    <div id="limgame" class="limgame" hidden></div>
+    <div id="phoneapp" class="phoneapp" hidden>
+      <div class="pa-phone"><button class="pa-close" aria-label="Close">✕</button>
+        <div class="pa-tabs"><button data-tab="messages">💬 Messages</button><button data-tab="music">🎵 Music</button><button data-tab="game">🎮 Game</button></div>
+        <div class="pa-body"></div>
+      </div>
+    </div>
     <div id="outro" class="outro" hidden>
       <a href="index.html"><span class="mono">CHI 2024</span><b>MARingBA</b>Ringtones that play along with the song</a>
       <a href="sing.html"><span class="mono">UIST 2024</span><b>Music-aware voice agents</b>Messages sung into the song</a>
@@ -104,6 +113,7 @@
       </div>
     </div>
 
+    <div id="bigcount" class="bigcount" aria-live="polite"></div>
     <div id="chtitle" class="chtitle" aria-live="polite"><span class="ct-num"></span><span class="ct-name"></span><span class="ct-sub"></span></div>
 
     <div id="intro" class="intro">

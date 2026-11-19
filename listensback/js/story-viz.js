@@ -687,3 +687,74 @@ export class CutPlayFig extends AnimFig {
     });
   }
 }
+
+// MultiVerse, as a pipeline (after the UIST '26 talk): a listener's profile and the creator's C³
+// controls go into generation, and the adapted lyric comes out. Readers can switch listeners and
+// turn controls on or off; each combination we have a recording for plays.
+const MV_PERSONAS = {
+  anna: { name: 'Anna', tag: '25 · grad student, music & CS', facts: [['Right now', 'Waiting for her flight to San Jose, starting a new job'], ['Recent hardship', 'A paper rejection with harsh reviews from R2, and her CHI paper ADR’d']] },
+  elena: { name: 'Elena', tag: 'indie game developer · Berlin', facts: [['Right now', 'Late nights finishing her game'], ['Recent hardship', 'Fell out with her collaborators; on bad terms with the Discord moderator']] },
+  david: { name: 'David', tag: 'working out at home', facts: [['Right now', 'In his living room, between sets'], ['Recent hardship', 'The drop ended in the middle of his set']] },
+};
+const MV_CTRL = [
+  ['content', 'Content', 'Last two words should rhyme'],
+  ['creator', 'Creator', 'Evoke isolation; keep “hates me”'],
+  ['context', 'Context', 'Base it on the listener’s recent hardship'],
+];
+// output per listener and number of controls on (0 = none … 3 = all)
+const MV_OUT = {
+  anna: [
+    { clip: 'nocontrol', lines: ['Anna bends sound into code cha-', 'sing music that learns to listen'], note: 'No control: the theme and the rhyme are gone.' },
+    { clip: 'structure', lines: ['Anna codes songs with heart and <mark>art</mark>', 'she builds new systems from the <mark>start</mark>'], note: 'Rhyme kept, but the sad theme is lost.' },
+    { clip: 'intent', lines: ['The system I built now <mark>hates me</mark>', 'and lock me in this frequen<mark>cy</mark>'], note: 'Isolation and “hates me” kept, but it isn’t about Anna.' },
+    { clip: 'context', lines: ['My <u>paper died</u>, my <u>lab</u> <mark>hates me</mark>', 'reviewer writes with cruel<mark>ty</mark>'], note: 'All three: it’s Anna’s story, in the songwriter’s voice.' },
+  ],
+  elena: { clip: 'elena', lines: ['My <u>co-dev left</u>, my <u>mod</u> <mark>hates me</mark>', 'late nights alone, streets feel emp<mark>ty</mark>'], note: 'Same controls, a different listener.' },
+  david: { clip: 'david', lines: ['My <u>set got cut</u>, the <u>drop</u> <mark>hates me</mark>', 'I lift alone in mise<mark>ry</mark>'], note: 'Same controls, for David.' },
+};
+export class MvPipe {
+  constructor(root, onPlay) {
+    this.root = root; this.onPlay = onPlay;
+    this.state = { who: 'anna', level: 3 };
+    root.innerHTML = `
+      <div class="mp-in">
+        <div class="mp-box mp-profile"><div class="mp-h">Listener profile</div><div class="mp-tabs"></div><div class="mp-pf"></div></div>
+        <div class="mp-box mp-ctl"><div class="mp-h">Creator’s controls <span class="mp-hint">click to toggle</span></div><div class="mp-chips"></div></div>
+      </div>
+      <div class="mp-gen"><div class="mp-arrow"></div><div class="mp-engine">✦ Generate<small>LLM rewrite<br>+ rule checks</small></div><div class="mp-arrow"></div></div>
+      <div class="mp-box mp-out"><div class="mp-h">Adapted lyrics <button class="mp-play" aria-label="Play">▶</button></div>
+        <button class="mp-orig">▶ Original: “My dog just died, my friend hates me / I saw myself on MTV”</button>
+        <div class="mp-lines"></div><div class="mp-note"></div></div>`;
+    const tabs = root.querySelector('.mp-tabs');
+    for (const [id, p] of Object.entries(MV_PERSONAS)) { const b = document.createElement('button'); b.dataset.who = id; b.textContent = p.name; tabs.append(b); }
+    const chips = root.querySelector('.mp-chips');
+    MV_CTRL.forEach(([id, name, text], i) => { const b = document.createElement('button'); b.className = `mp-chip c-${id}`; b.dataset.i = i; b.innerHTML = `<b>${name}</b><span>${text}</span>`; chips.append(b); });
+    tabs.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; this.set({ who: b.dataset.who, level: 3 }, true); });
+    chips.addEventListener('click', (e) => {
+      const b = e.target.closest('.mp-chip'); if (!b || this.state.who !== 'anna') return;
+      const i = +b.dataset.i;
+      // controls build on each other: clicking one turns on everything up to it, or off from it
+      this.set({ who: 'anna', level: this.state.level > i ? i : i + 1 }, true);
+    });
+    root.querySelector('.mp-play').addEventListener('click', () => this.onPlay(this.out().clip, true));
+    root.querySelector('.mp-orig').addEventListener('click', () => this.onPlay('original', true));
+    this.render();
+  }
+  out() { const s = this.state; return s.who === 'anna' ? MV_OUT.anna[s.level] : MV_OUT[s.who]; }
+  set(st, play = false) {
+    this.state = { ...this.state, ...st };
+    this.render(true);
+    if (play) this.onPlay(this.out().clip, true);
+  }
+  render(anim = false) {
+    const s = this.state, P = MV_PERSONAS[s.who], o = this.out(), q = (x) => this.root.querySelector(x);
+    for (const b of this.root.querySelectorAll('.mp-tabs button')) b.classList.toggle('on', b.dataset.who === s.who);
+    q('.mp-pf').innerHTML = `<div class="mp-tag">${P.tag}</div>` + P.facts.map(([k, v]) => `<div class="mp-fact"><i>${k}</i>${v}</div>`).join('');
+    for (const b of this.root.querySelectorAll('.mp-chip')) { b.classList.toggle('on', +b.dataset.i < s.level); b.classList.toggle('locked', s.who !== 'anna'); }
+    q('.mp-hint').textContent = s.who === 'anna' ? 'click to toggle' : 'same controls';
+    q('.mp-lines').innerHTML = o.lines.map((l) => `<div>${l}</div>`).join('');
+    q('.mp-note').textContent = o.note;
+    q('.mp-out').classList.toggle('bad', s.who === 'anna' && s.level === 0);
+    if (anim) { this.root.querySelector('.mp-engine').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)', boxShadow: '0 0 18px rgba(255,209,102,0.8)' }, { transform: 'scale(1)' }], { duration: 500 }); q('.mp-lines').animate([{ opacity: 0, transform: 'translateX(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 180, fill: 'backwards' }); }
+  }
+}
