@@ -1348,7 +1348,7 @@ function phoneTab(tab, chat = null) {
       if (b.dataset.lock) {
         const msg = body.querySelector('.pa-lockmsg');
         msg.hidden = false;
-        msg.innerHTML = `🔒 Alex’s songs unlock as you play through <b>Liminality</b>, a rhythm game Alex made: Floating, Error Code: Pse and Afterburn, back to back. Hit the notes with <kbd>D</kbd> <kbd>F</kbd> <kbd>Space</kbd> <kbd>J</kbd> <kbd>K</kbd> (or tap the lanes).<button>🎮 Play it</button>`;
+        msg.innerHTML = `🔒 Alex’s songs unlock as you play through <b>Liminality</b>, a rhythm game Alex made.<button>🎮 Play it</button>`;
         msg.querySelector('button').onclick = (ev) => { ev.stopPropagation(); playLiminality(); };
         msg.scrollIntoView({ block: 'nearest' });
         return;
