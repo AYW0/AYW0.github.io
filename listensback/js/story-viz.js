@@ -715,13 +715,16 @@ const MV_OUT = {
 export class MvPipe {
   constructor(root, onPlay) {
     this.root = root; this.onPlay = onPlay;
-    this.state = { who: 'anna', level: 3 };
+    this.state = { who: 'anna', level: 0 };
+    this.seen = new Set(['anna']); this.waiters = []; this.guide = null;
     root.innerHTML = `
       <div class="mp-in">
-        <div class="mp-box mp-profile"><div class="mp-h">Listener profile</div><div class="mp-tabs"></div><div class="mp-pf"></div></div>
-        <div class="mp-box mp-ctl"><div class="mp-h">Creator’s controls <span class="mp-hint">click to toggle</span></div><div class="mp-chips"></div></div>
+        <div class="mp-box mp-ctl"><div class="mp-h">Creator-specified control <span class="mp-hint">click to toggle</span></div><div class="mp-chips"></div></div>
+        <div class="mp-box mp-profile"><div class="mp-h">Audience persona</div><div class="mp-tabs"></div><div class="mp-pf"></div></div>
       </div>
-      <div class="mp-gen"><div class="mp-arrow"></div><div class="mp-engine">✦ Generate<small>LLM rewrite<br>+ rule checks</small></div><div class="mp-arrow"></div></div>
+      <div class="mp-wires"><i></i><i></i></div>
+      <div class="mp-engine">LLM <small>(Gemini 3)</small></div>
+      <div class="mp-wires mp-one"><i></i></div>
       <div class="mp-box mp-out"><div class="mp-h">Adapted lyrics <button class="mp-play" aria-label="Play">▶</button></div>
         <button class="mp-orig">▶ Original: “My dog just died, my friend hates me / I saw myself on MTV”</button>
         <div class="mp-lines"></div><div class="mp-note"></div></div>`;
@@ -729,12 +732,12 @@ export class MvPipe {
     for (const [id, p] of Object.entries(MV_PERSONAS)) { const b = document.createElement('button'); b.dataset.who = id; b.textContent = p.name; tabs.append(b); }
     const chips = root.querySelector('.mp-chips');
     MV_CTRL.forEach(([id, name, text], i) => { const b = document.createElement('button'); b.className = `mp-chip c-${id}`; b.dataset.i = i; b.innerHTML = `<b>${name}</b><span>${text}</span>`; chips.append(b); });
-    tabs.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; this.set({ who: b.dataset.who, level: 3 }, true); });
+    tabs.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; this.set({ who: b.dataset.who, level: 3 }); });
     chips.addEventListener('click', (e) => {
       const b = e.target.closest('.mp-chip'); if (!b || this.state.who !== 'anna') return;
       const i = +b.dataset.i;
       // controls build on each other: clicking one turns on everything up to it, or off from it
-      this.set({ who: 'anna', level: this.state.level > i ? i : i + 1 }, true);
+      this.set({ who: 'anna', level: this.state.level > i ? i : i + 1 });
     });
     root.querySelector('.mp-play').addEventListener('click', () => this.onPlay(this.out().clip, true));
     root.querySelector('.mp-orig').addEventListener('click', () => this.onPlay('original', true));
@@ -742,19 +745,31 @@ export class MvPipe {
   }
   out() { const s = this.state; return s.who === 'anna' ? MV_OUT.anna[s.level] : MV_OUT[s.who]; }
   set(st, play = false) {
+    const prev = this.state;
     this.state = { ...this.state, ...st };
-    this.render(true);
+    this.seen.add(this.state.who);
+    const changed = prev.who !== this.state.who || prev.level !== this.state.level;
+    this.render(changed);
+    if (changed && !play && this.onChange) this.onChange();
     if (play) this.onPlay(this.out().clip, true);
+    this.waiters = this.waiters.filter(([f, r]) => (f(this) ? (r(), false) : true));
   }
+  // resolves once the reader has done something (pred is checked after every change)
+  until(pred) { return pred(this) ? Promise.resolve() : new Promise((r) => this.waiters.push([pred, r])); }
+  // guide: 'ctl' points at the next control to turn on, 'who' at listeners not yet seen, null = none
+  setGuide(g) { this.guide = g; this.render(); }
   render(anim = false) {
     const s = this.state, P = MV_PERSONAS[s.who], o = this.out(), q = (x) => this.root.querySelector(x);
     for (const b of this.root.querySelectorAll('.mp-tabs button')) b.classList.toggle('on', b.dataset.who === s.who);
     q('.mp-pf').innerHTML = `<div class="mp-tag">${P.tag}</div>` + P.facts.map(([k, v]) => `<div class="mp-fact"><i>${k}</i>${v}</div>`).join('');
     for (const b of this.root.querySelectorAll('.mp-chip')) { b.classList.toggle('on', +b.dataset.i < s.level); b.classList.toggle('locked', s.who !== 'anna'); }
     q('.mp-hint').textContent = s.who === 'anna' ? 'click to toggle' : 'same controls';
+    const gi = this.guide === 'ctl' && s.who === 'anna' ? s.level : -1;
+    for (const b of this.root.querySelectorAll('.mp-chip')) b.classList.toggle('guide', +b.dataset.i === gi);
+    for (const b of this.root.querySelectorAll('.mp-tabs button')) b.classList.toggle('guide', this.guide === 'who' && !this.seen.has(b.dataset.who));
     q('.mp-lines').innerHTML = o.lines.map((l) => `<div>${l}</div>`).join('');
     q('.mp-note').textContent = o.note;
     q('.mp-out').classList.toggle('bad', s.who === 'anna' && s.level === 0);
-    if (anim) { this.root.querySelector('.mp-engine').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)', boxShadow: '0 0 18px rgba(255,209,102,0.8)' }, { transform: 'scale(1)' }], { duration: 500 }); q('.mp-lines').animate([{ opacity: 0, transform: 'translateX(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 180, fill: 'backwards' }); }
+    if (anim) { for (const w of this.root.querySelectorAll('.mp-wires i')) w.animate([{ backgroundPosition: '0 -40px' }, { backgroundPosition: '0 40px' }], { duration: 500, delay: w.parentNode.classList.contains('mp-one') ? 300 : 0 }); this.root.querySelector('.mp-engine').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)', boxShadow: '0 0 18px rgba(255,209,102,0.8)' }, { transform: 'scale(1)' }], { duration: 500 }); q('.mp-lines').animate([{ opacity: 0, transform: 'translateX(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 180, fill: 'backwards' }); }
   }
 }

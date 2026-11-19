@@ -438,7 +438,13 @@ export class Room {
     const body = box(0.085, 0.012, 0.17, dark); phone.add(body);
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.072, 0.15), halftone({ paper: '#ffffff', base: 0.0, range: 0.0 }));
     screen.rotation.x = -Math.PI / 2; screen.position.y = 0.0075; phone.add(screen);
-    phone.userData = { hover: 'phone', screen }; table.add(phone);
+    // green halo around the phone, shown when it wants to be picked up
+    const hc = document.createElement('canvas'); hc.width = 128; hc.height = 192;
+    const hg = hc.getContext('2d'); hg.shadowColor = '#2ee66b'; hg.shadowBlur = 30; hg.strokeStyle = '#2ee66b'; hg.lineWidth = 16;
+    hg.beginPath(); hg.roundRect(30, 30, 68, 132, 14); hg.stroke(); hg.stroke(); hg.stroke();
+    const halo = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.3), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(hc), transparent: true, depthWrite: false, opacity: 0 }));
+    halo.rotation.x = -Math.PI / 2; halo.position.y = 0.009; halo.renderOrder = 2; halo.raycast = () => {}; phone.add(halo);
+    phone.userData = { hover: 'phone', screen, halo }; table.add(phone);
     const mug = curved(new THREE.CylinderGeometry(0.045, 0.04, 0.1, 18), halftone({ base: 0.05, range: 0.3 }));
     mug.position.set(-0.3, 0.495, -0.08); table.add(mug);
     const books = box(0.3, 0.06, 0.22, halftone({ base: 0.2, range: 0.3 })); books.position.set(-0.2, 0.15, 0); table.add(books);

@@ -83,6 +83,7 @@ const mvp = new MvPipe($('#vz-mvpipe'), (clip) => {
   playClip(clip).then((ok) => { if (!ok && clip === 'david') think('(my verse is still being recorded 🎙️)', 'good', 3000); });
   if (clip === 'david') think('Wait, this song is about me? 😳', 'good', 3500);
 });
+mvp.onChange = () => stopClip();
 const figs = { bm: new BeatMatchFig($('#vz-bm')), pro: new ProsodyFig($('#vz-pro')), cut: new CutFig($('#vz-cut')), study: new StudyFig($('#vz-study')), wer: new WerFig($('#vz-wer')), skip: new SkipFig($('#vz-skip canvas')), cutplay: new CutPlayFig($('#vz-cutplay canvas')) };
 $('#vz-cutplay').addEventListener('click', (e) => { const b = e.target.closest('.sk-play'); if (b && skip.buf) skipToggle(+b.dataset.lane); });
 $('#vz-skip').addEventListener('click', (e) => { const b = e.target.closest('.sk-play'); if (b && skip.buf) skipToggle(+b.dataset.lane); });
@@ -976,7 +977,7 @@ const CH = [async () => {
     await wait(2600);
   }
   pose('rack', 0.5); anim.working = true; anim.reps = 0;
-  showLive('rise', 'Standard', 'Song as written', async () => { rise.adapt = false; riseStart(dropEnd - 9); anim.working = true; pose('rack', 0.5); });
+  showLive('rise', 'Standard', 'Song as written');
   think('Let’s go! 💪', 'good', 3500);
   await say(`David starts squatting during the ${HI()}…`);
   await guard(new Promise((r) => { anim.onCalm = r; }));
@@ -989,7 +990,7 @@ const CH = [async () => {
   const loopStart = rise.choice ? rise.choice.orig - 9 : dropEnd - 9;
   riseStart(loopStart);
   pose('rack', 0.5); anim.working = true; anim.reps = 0;
-  showLive('rise', 'RISE', 'Loops while David works', async () => { rise.adapt = true; riseStart(loopStart); anim.working = true; pose('rack', 0.5); });
+  showLive('rise', 'RISE', 'Loops while David works');
   think('Let’s go! 💪', 'good', 3500);
   later(() => think(`Yes! Keep the ${HI()} going 🔥`, 'good'), 9600);
   await say(`<b>RISE</b>, from our ISMIR paper, knows David is still working. Near the end of the ${HI()} it <b>jumps back to a point where the music repeats</b>, so the ${HI()} keeps going.`);
@@ -1029,18 +1030,25 @@ const CH = [async () => {
   await say('But <b>how can a creator control this?</b> The space of runtime contexts is so large that creators cannot anticipate every adaptation.');
   await next();
   showLive('mv', 'MultiVerse', 'C³ steering controls');
-  mv.set({ who: 'A songwriter’s verse', lines: ['My dog just died, my friend hates me', 'I saw myself on MTV'] });
+  mv.set({});
   await say('We propose <b>C³</b>, a creator-centered framework for authoring adaptive media, based on three dimensions: <b>creator</b> intent, <b>content</b> structure, and runtime <b>context</b>. Hover the diagram: most prior work either adapts interfaces for pragmatic goals, or supports creators in making static content.');
   await next();
   await say('We instantiated the framework in <b>MultiVerse</b>, our UIST 2026 paper: an authoring system for adaptive lyrics.');
   await next();
   // the pipeline: profile + controls → generation → lyrics; starts on the full-control version
   showLive('mvpipe', 'MultiVerse', 'Steering adaptive lyrics');
-  mvp.set({ who: 'anna', level: 3 }, true);
-  setReplay(() => playClip(mvp.out().clip));
-  await say('A listener’s <b>profile</b> and the songwriter’s <b>controls</b> go into generation, and the adapted lyrics come out, checked against the controls. Here’s Anna’s version, with all three controls on.');
-  await next();
-  await say('Try it: <b>turn controls off</b> to hear what each one adds, or <b>switch the listener</b>. There’s even a version for David. Move on whenever you like.');
+  mvp.seen = new Set(['anna']); mvp.set({ who: 'anna', level: 0 });
+  mvp.setGuide('ctl');
+  await say('The songwriter’s <b>controls</b> and a listener’s <b>persona</b> go into an LLM, and the adapted lyrics come out. With no controls, the song loses its theme and its rhyme. Turn on the <b>content</b> control.');
+  await guard(mvp.until((m) => m.state.who === 'anna' && m.state.level >= 1));
+  await say('Now the rhyme is kept, but the sad theme is gone. Turn on the <b>creator</b> control.');
+  await guard(mvp.until((m) => m.state.who === 'anna' && m.state.level >= 2));
+  await say('Isolation and “hates me” are back, but it isn’t about Anna. Turn on the <b>context</b> control.');
+  await guard(mvp.until((m) => m.state.who === 'anna' && m.state.level >= 3));
+  mvp.setGuide('who');
+  await say('Now it’s Anna’s story, in the songwriter’s voice. Same controls, different listener: try <b>Elena</b> and <b>David</b>.');
+  await guard(mvp.until((m) => m.seen.has('elena') && m.seen.has('david')));
+  mvp.setGuide(null);
   await next();
   stopClip(); unthink();
   await say('<span class="cite">MultiVerse · UIST 2026</span>We conducted a study with <b>10 songwriters</b>, who transformed their own compositions into adaptive versions. MultiVerse demonstrates that creators can <b>maintain control over adaptive media</b> through authoring mechanisms that shape how the output aligns with their intent.');
@@ -1156,7 +1164,9 @@ async function swapSong(to = null) {
     for (const id of ['bm', 'km', 'nb', 'vs', 'sy', 'pi', 'countdown', 'vb', 'call', 'callcue']) unlabel(id);
     anim.groove = false;
     PICK = to != null ? PLAYLIST[to] : PLAYLIST[(PLAYLIST.indexOf(PICK) + 1) % PLAYLIST.length]; HOTLINE = PICK.s; IPHONE = PICK.r;
-    flashLabel('swap', at(room.speakers[1], 0, 1.35, 0), `♫ <b>${HOTLINE.title}</b> · ${HOTLINE.artist}`, 2600);
+    musicNow = { kind: 'g', i: PLAYLIST.indexOf(PICK) }; // David's phone shows what the speakers play
+    if (!$('#phoneapp').hidden) phoneTab('music');
+    if (to == null) flashLabel('swap', at(room.speakers[1], 0, 1.35, 0), `♫ <b>${HOTLINE.title}</b> · ${HOTLINE.artist}`, 2600);
     await loadHome();
     engine.seek(0); engine.play();
   } catch (e) { console.error(e); setLoading(''); }
@@ -1169,7 +1179,7 @@ const LYRIC_REPLY = { hotline: '♪ You used to call me on my cell phone… you 
 const WORKOUT_REPLY = { waves: '♪ Missing you comes in waves~ ♪', humble: '♪ Be humble! ♪', lost: '♪ I’m lost in these meeeeeemories ♪', cruelsummer: '♪ And it’s oooooh, whoa-oh, it’s a cruel summer ♪' };
 const songReplies = () => [['song', LYRIC_REPLY[HOTLINE.id]], ['workout', WORKOUT_REPLY[(rise.meta && rise.meta.id) || 'waves']]];
 const CHATS = {
-  alex: { name: 'Alex', img: 'img/story/alex-drawn.png', msgs: [['in', 'Hey David! Did you get my calendar invite?? 📅'], ['in', 'I think the voice agent sang it to you 😅']],
+  alex: { name: 'Alex', img: 'img/story/alex-drawn.png', msgs: [['in', 'Hey David! Did you get my calendar invite?? 📅']],
     replies: songReplies,
     answer: { song: '???', workout: '???' } },
   chris: { name: 'Chris Donahue', img: 'img/story/chris.jpg', msgs: [['in', 'Hey, I called earlier. Can you call me back when you get a chance?']],
@@ -1180,9 +1190,9 @@ const chatLog = { alex: [], chris: [] };
 // Alex's own songs: shown locked, each opening on SoundCloud
 const ALEX_SC = 'https://soundcloud.com/alex-wang-796617401/sets/alexs-compositions/s-NJGasTQyLPD';
 const ALEX_SONGS = [
-  { id: 'floating', art: 'linear-gradient(135deg, #b8f6ff, #22b5c2 50%, #06303a)', title: 'Floating', sub: 'Alex Wang · 1/3', url: 'https://soundcloud.com/alex-wang-796617401/floating-lyrics-by-johnny-hu-1/s-rjxvc3g1Jye' },
-  { id: 'errorcode', art: 'linear-gradient(135deg, #d9a6ff, #6b1fd1 50%, #0b0412)', title: 'Error Code: Pse', sub: 'Alex Wang · 2/3', url: 'https://soundcloud.com/alex-wang-796617401/error-code-pse-1/s-6IAKtF9TItr' },
-  { id: 'afterburn', art: 'linear-gradient(135deg, #ffe0a0, #e8902a 50%, #3a2412)', title: 'Afterburn', sub: 'Alex Wang · 3/3', url: 'https://soundcloud.com/alex-wang-796617401/afterburn-1/s-CDRMXF8urPA' },
+  { id: 'floating', art: 'linear-gradient(135deg, #b8f6ff, #22b5c2 50%, #06303a)', title: 'Floating', sub: 'Alexander Wang · 1/3', url: 'https://soundcloud.com/alex-wang-796617401/floating-lyrics-by-johnny-hu-1/s-rjxvc3g1Jye' },
+  { id: 'errorcode', art: 'linear-gradient(135deg, #d9a6ff, #6b1fd1 50%, #0b0412)', title: 'Error Code: Pse', sub: 'Alexander Wang · 2/3', url: 'https://soundcloud.com/alex-wang-796617401/error-code-pse-1/s-6IAKtF9TItr' },
+  { id: 'afterburn', art: 'linear-gradient(135deg, #ffe0a0, #e8902a 50%, #3a2412)', title: 'Afterburn', sub: 'Alexander Wang · 3/3', url: 'https://soundcloud.com/alex-wang-796617401/afterburn-1/s-CDRMXF8urPA' },
 ];
 // Alex's songs unlock by beating them in Liminality, played on David's phone
 const unlocked = new Set((() => { try { return JSON.parse(localStorage.getItem('story.unlocked') || '[]'); } catch { return []; } })());
@@ -1206,7 +1216,7 @@ const alexPos = () => (alexAudio ? (alexAudio.paused ? alexAudio.at : alexAudio.
 const queue = () => [
   ...PLAYLIST.map((c, i) => ({ kind: 'g', i, title: c.s.title, artist: c.s.artist })),
   ...WORKOUT.map((w, i) => ({ kind: 'w', i, title: w.title, artist: w.artist })),
-  ...ALEX_SONGS.filter((a) => unlocked.has(a.id)).map((a) => ({ kind: 'a', id: a.id, title: a.title, artist: 'Alex Wang' })),
+  ...ALEX_SONGS.filter((a) => unlocked.has(a.id)).map((a) => ({ kind: 'a', id: a.id, title: a.title, artist: 'Alexander Wang' })),
 ];
 const sameTrack = (a, b) => a && b && a.kind === b.kind && (a.kind === 'a' ? a.id === b.id : a.i === b.i);
 async function playTrack(tr, at = 0) {
@@ -1245,9 +1255,14 @@ function seekTrack(frac) {
   else riseStart(at, 0.15);
 }
 function stepTrack(d) {
-  const q = queue(); if (!musicNow) return playTrack(q[0]);
+  const q = queue(); if (!musicNow) musicNow = { kind: 'g', i: PLAYLIST.indexOf(PICK) };
   const i = q.findIndex((t) => sameTrack(t, musicNow));
   playTrack(q[((i < 0 ? 0 : i) + d + q.length) % q.length]);
+}
+async function speakerNext() {
+  if (speakerNext.busy) return; speakerNext.busy = true;
+  try { await stepTrack(1); const m = musicNow, t = m.kind === 'a' ? { title: LIM_SONGS[m.id].title, artist: 'Alexander Wang' } : m.kind === 'w' ? WORKOUT[m.i] : PLAYLIST[m.i].s; flashLabel('swap', at(room.speakers[1], 0, 1.35, 0), `♫ <b>${t.title}</b> · ${t.artist}`, 2600); }
+  finally { speakerNext.busy = false; }
 }
 // called each frame: advance when a song ends, keep the phone's timeline moving
 function musicTick() {
@@ -1298,9 +1313,7 @@ function phoneTab(tab, chat = null) {
   if (tab === 'game') {
     body.innerHTML = `<div class="pa-game">
       <div class="pg-art"><i></i><b>LIMINALITY</b><span>a five-lane rhythm game by Alex</span></div>
-      <p>Three songs, back to back: <b>Floating</b>, <b>Error Code: Pse</b> and <b>Afterburn</b>. Clear each one to unlock it in David’s music.</p>
       <div class="pg-songs">${ALEX_SONGS.map((a) => `<span class="${unlocked.has(a.id) ? 'on' : ''}" style="${unlocked.has(a.id) ? `background:${a.art};color:#fff` : ''}">${unlocked.has(a.id) ? '🔓' : '🔒'} ${a.title}</span>`).join('')}</div>
-      <p class="pg-keys">Keys <kbd>D</kbd> <kbd>F</kbd> <kbd>Space</kbd> <kbd>J</kbd> <kbd>K</kbd> · or tap the lanes · <kbd>Esc</kbd> to pause</p>
       <button class="pg-play">▶ Play</button></div>`;
     body.querySelector('.pg-play').onclick = () => playLiminality();
     return;
@@ -1309,7 +1322,7 @@ function phoneTab(tab, chat = null) {
     if (!musicNow) musicNow = rise.active && rise.meta ? { kind: 'w', i: WORKOUT.findIndex((w) => w.id === rise.meta.id) } : { kind: 'g', i: PLAYLIST.indexOf(PICK) };
     const vol = Math.round((engine.master ? engine.master.gain.value : 1) * 100);
     const m = musicNow;
-    const now = m.kind === 'a' ? { title: LIM_SONGS[m.id].title, artist: 'Alex Wang' } : m.kind === 'w' ? { title: WORKOUT[m.i].title, artist: WORKOUT[m.i].artist } : { title: PLAYLIST[m.i].s.title, artist: PLAYLIST[m.i].s.artist };
+    const now = m.kind === 'a' ? { title: LIM_SONGS[m.id].title, artist: 'Alexander Wang' } : m.kind === 'w' ? { title: WORKOUT[m.i].title, artist: WORKOUT[m.i].artist } : { title: PLAYLIST[m.i].s.title, artist: PLAYLIST[m.i].s.artist };
     const row = (attrs, art, title, sub, on) => `<button ${attrs} class="${on ? 'on' : ''}"><i style="background:${art}">♪</i><span><b>${title}</b>${sub}</span>${on ? '<em>♫</em>' : ''}</button>`;
     body.innerHTML = `<div class="pa-now"><span>Now playing</span><b>${now.title}</b>${now.artist}</div>
       <div class="pa-tl" title="Click to jump"><i></i></div><div class="pa-time mono"></div>
@@ -1509,7 +1522,8 @@ $('#scene').addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clie
 $('#scene').addEventListener('pointerup', (e) => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
   const hv = room.hoverTarget();
-  if (hv && hv.userData.hover === 'speaker') { swapSong(); return; }
+  // at the end the speakers and David's phone share one queue: a click goes to the next track
+  if (hv && hv.userData.hover === 'speaker') { if (curChapter === 5 && $('#limgame').hidden) speakerNext(); else swapSong(); return; }
   if (hv && hv.userData.hover === 'phone' && curChapter === 5) { openPhoneApp(); return; }
   if (hv && hv.userData.hover === 'drawer') { const d = room.drawer.userData; d.target = d.target ? 0 : 1; sfx.tone(220, 160, 0.18, 0.04, 'triangle'); return; }
   if (hv && hv.userData.hover === 'namecard') { $('#profile').hidden = false; return; }
@@ -1731,6 +1745,7 @@ function frame(now) {
   { const d = room.drawer.userData; d.open += (d.target - d.open) * Math.min(1, dt * 7); room.drawer.position.x = 0.36 * d.open;
  }
   runJumpFlashes();
+  { const h = room.phone.userData.halo; if (h) { const o = anim.phoneGlow ? 0.55 + 0.45 * Math.sin(t * 5) : 0; h.material.opacity += (o - h.material.opacity) * 0.2; h.visible = h.material.opacity > 0.01; } }
   if (!anim.ph) { const k = anim.phoneGlow ? 1 + 0.18 * (0.5 + 0.5 * Math.sin(t * 6)) : 1; room.phone.scale.setScalar(room.phone.scale.x + (k - room.phone.scale.x) * 0.2); }
   musicTick();
   if (document.body.classList.contains('lim-on') && $('#limgame').hidden) document.body.classList.remove('lim-on');
@@ -1742,7 +1757,7 @@ function frame(now) {
   if (vz.kind === 'mir' && engine.song) {
     const root = MAJOR_MAP[HOTLINE.key - 1];
     mir.draw({ song: engine.song, t: engine.time, keyName: `${KEY_MAJOR[HOTLINE.key - 1]} major · ${KEY_MINOR[HOTLINE.key - 1]}`, scale: [0, 2, 4, 5, 7, 9, 11].map((i) => (root + i) % 12) });
-  } else if (vz.kind === 'timeline' && engine.song) tl.draw({ song: engine.song, t: engine.time, ring: engine.ring, preview: null, accent: '#ff9f5a', level: engine.ringLevel(), note: engine.ring && engine.ring.params && engine.ring.params.beatMatch ? (engine.ring.start.sweet ? '⏳ Delayed to the next phrase,\nright where the bass drops back in' : '⏳ Delayed to the next phrase') : null });
+  } else if (vz.kind === 'timeline' && engine.song) tl.draw({ song: engine.song, t: engine.time, ring: engine.ring, preview: null, accent: '#ff9f5a', level: engine.ringLevel(), note: engine.ring && engine.ring.params && engine.ring.params.beatMatch ? '⏳ Delayed to the next phrase' : null });
   else if (vz.kind === 'roll' && engine.song) roll.draw(engine.song, mel, engine.time, vz.notif && engine.time < vz.notif.t1 + 1.5 ? vz.notif : null, '#e0479e', Math.min(0.6, level));
   else if (vz.kind === 'skip' && skip.buf) {
     const pos = skipPos();
@@ -1786,7 +1801,15 @@ function frame(now) {
   $('#scene').classList.toggle('pointing', !!hv);
   for (const f of room.frames) { const on = hv === f ? 1 : paperHi && f === room.posterFrames[paperHi] ? 2.2 + 0.4 * Math.sin(t * 5) : 0; f.userData.lift = (f.userData.lift || 0) + (on - (f.userData.lift || 0)) * 0.2; f.userData.pic.position.z = 0.022 + f.userData.lift * 0.03; f.scale.setScalar(1 + f.userData.lift * 0.04); }
 
-  if (hv && hv.userData.hover === 'speaker' && (engine.song || rise.buf)) {
+  if (hv && hv.userData.hover === 'speaker' && (engine.song || rise.buf || alexAudio)) {
+    // at the end, the speakers show whatever David's phone is playing (including Alex's songs)
+    const m = curChapter === 5 ? musicNow : null, tp = m && trackPos();
+    if (m && tp) {
+      const t = m.kind === 'a' ? { title: LIM_SONGS[m.id].title, artist: 'Alexander Wang' } : m.kind === 'w' ? WORKOUT[m.i] : PLAYLIST[m.i].s;
+      tip.innerHTML = `<div class="t-k">${tp.playing ? '▶ Now playing' : '❚❚ Paused'}</div><div class="t-t">${t.title}</div><div class="t-a">${t.artist}</div>
+      <div class="t-m"><span>${fmt(tp.pos)} / ${fmt(tp.dur)}</span></div>
+      <div class="t-bar"><i style="width:${(100 * tp.pos) / tp.dur}%"></i></div><div class="t-a">Click for the next song</div>`;
+    } else {
     const isRise = rise.active, title = isRise ? rise.meta.title : HOTLINE.title, artist = isRise ? rise.meta.artist : HOTLINE.artist;
     const bpm = isRise ? Math.round(60 / rise.beatDur) : Math.round(HOTLINE.bpm);
     const pos = isRise ? risePos() : engine.time, dur = isRise ? rise.buf.duration : engine.song.duration;
@@ -1794,6 +1817,7 @@ function frame(now) {
     tip.innerHTML = `<div class="t-k">${playing ? '▶ Now playing' : '❚❚ Paused'}</div><div class="t-t">${title}</div><div class="t-a">${artist}</div>
       <div class="t-m"><span>${bpm} BPM</span>${isRise ? '' : `<span>${KEY_MAJOR[HOTLINE.key - 1]} major</span>`}<span>${fmt(pos)} / ${fmt(dur)}</span></div>
       <div class="t-bar"><i style="width:${(100 * pos) / dur}%"></i></div>${!isRise && [0, 1, 2, 5].includes(curChapter) ? '<div class="t-a">Click to change the song</div>' : ''}`;
+    }
     tip.style.left = `${room.pointer.x + 18}px`; tip.style.top = `${room.pointer.y + 12}px`;
     tip.hidden = false;
   } else if (hv && hv.userData.hover === 'poster') {
