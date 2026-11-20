@@ -79,7 +79,7 @@ b { font-weight: 700; }
 .intro h1 { margin: 6px 0 10px; font-size: 44px; line-height: 1.05; letter-spacing: -0.03em; }
 .intro p { margin: 0 0 18px; color: var(--ink-2); font-size: 17px; }
 .intro .small { font-size: 13px; margin: 14px 0 0; }
-.begin { font: 700 17px var(--sans); color: #fff; background: var(--ink); border: 0; border-radius: 10px; padding: 12px 22px; cursor: pointer; box-shadow: 4px 4px 0 var(--accent); }
+.begin { display: block; margin: 0 auto; font: 700 17px var(--sans); color: #fff; background: var(--ink); border: 0; border-radius: 10px; padding: 12px 22px; cursor: pointer; box-shadow: 4px 4px 0 var(--accent); }
 .begin:disabled { opacity: 0.6; cursor: progress; }
 .outro { position: absolute; left: 50%; top: 76px; transform: translateX(-50%); display: grid; grid-template-columns: repeat(4, 210px); gap: 12px; }
 .outro a { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: var(--ink); background: #fff; border: 1.5px solid var(--ink); border-radius: 12px; padding: 12px 14px; box-shadow: 4px 4px 0 var(--ink); font-size: 13px; }
@@ -600,9 +600,11 @@ b { font-weight: 700; }
 .pa-lock:nth-of-type(n) { }
 
 /* Liminality on David's phone */
-body.lim-on #scene { filter: brightness(0.32) saturate(0.6) hue-rotate(-15deg); transition: filter .8s; }
+body.lim-on #scene { filter: brightness(0.12) saturate(0.5) hue-rotate(-15deg); transition: filter .8s; }
 #scene { transition: filter .8s; }
-body.lim-on .dialogue, body.lim-on .vizcard, body.lim-on #questions, body.lim-on #labels .tag3d:not(.thought) { opacity: 0.15; pointer-events: none; }
+/* while the game is open only the phone (and David's thoughts) show: everything else fades out */
+body.lim-on .dialogue, body.lim-on .vizcard, body.lim-on #questions, body.lim-on .chapters, body.lim-on .papercard, body.lim-on .brand, body.lim-on #labels .tag3d:not(.thought) { opacity: 0 !important; pointer-events: none !important; }
+body.lim-on .limgame { background: radial-gradient(ellipse at center, rgba(2,6,10,0.55), rgba(2,6,10,0.94) 70%); }
 .limgame { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; }
 .lm-phone { position: relative; width: min(380px, 94vw); height: min(680px, 88vh); border-radius: 36px; border: 10px solid #111827; overflow: hidden; box-shadow: 0 0 60px rgba(60,220,230,0.35), 0 20px 50px rgba(0,0,0,0.5); animation: pcIn .5s cubic-bezier(.2,.8,.2,1); touch-action: none; }
 .lm-phone canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
@@ -674,3 +676,4 @@ body.lim-on .dialogue, body.lim-on .vizcard, body.lim-on #questions, body.lim-on
 .mp-chip.guide::after { content: "click ▸"; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font: 800 10px var(--mono); color: #ffd166; }
 @keyframes mpGuide { 50% { outline-color: rgba(255,209,102,0.25); box-shadow: 0 0 14px rgba(255,209,102,0.55); } }
 @media (prefers-reduced-motion: reduce) { .mp-chip.guide, .mp-tabs button.guide { animation: none; } }
+.dtext u { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }

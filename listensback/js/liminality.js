@@ -1,5 +1,5 @@
 // Liminality, a small web version of Alex's 2021 five-lane rhythm game, played on David's phone.
-// One continuous journey (Floating → Error Code: Pse → Afterburn), like the original. Audio and
+// One continuous journey (Floating → Error Code: PSE → Afterburn), like the original. Audio and
 // chart come from the restored Unity project: each cue there is the moment a note *spawns*; it
 // reaches the pads 8 beats later (cueBeatOffset), which is when it should be hit. The long intro
 // is trimmed to just before the opening flash.
@@ -11,12 +11,12 @@ const APPROACH = 1.6;   // seconds a note is on screen before it reaches the pad
 // playtest mode (story.html?dev): drag the timeline to scrub, never fail, A toggles autoplay
 export const DEV = new URLSearchParams(location.search).has('dev');
 const MISS_LIMIT = DEV ? Infinity : 10;
-const END_FADE = [537, 541]; // the ending bell has rung out by ~540 s: fade, then show the results  // misses in a row before offering a restart
+const END_FADE = [543, 545.5]; // the ending bell has rung out by ~545 s: fade, then show the results  // misses in a row before offering a restart
 export const LIM_FILE = 'audio/liminality/journey.mp3';
 export const LIM_SONGS = {
   floating: { title: 'Floating', from: 2.0, to: 158.0 },
-  errorcode: { title: 'Error Code: Pse', from: 158.0, to: 362.0 },
-  afterburn: { title: 'Afterburn', from: 362.0, to: 541 },
+  errorcode: { title: 'Error Code: PSE', from: 158.0, to: 362.0 },
+  afterburn: { title: 'Afterburn', from: 362.0, to: 545.5 },
 };
 let dataP = null;
 export const loadData = (ctx) => (dataP = dataP || Promise.all([
@@ -214,7 +214,7 @@ export class Liminality {
       if (m.mode === 'drop' && m.beat % 2 === 0) th.glow = hit;
       if (m.mode === 'blackout') { th.flash = 0.75; th.flashCol = '0,0,0'; }
     } else if (sec === 1) {
-      // Error Code: Pse: pitch black; the build glows on half then quarter notes; the drop strobes
+      // Error Code: PSE: pitch black; the build glows on half then quarter notes; the drop strobes
       // purple on odd beats with the hue thrown around
       th = { kind: 'pse', top: [0, 0, 0], mid: [6, 2, 12], bot: [0, 0, 0], rays: 0, line: '170,90,255', lineA: 0.35 + 0.4 * m.I, plate: 'rgba(150,80,230,0.85)', note: '215,160,255', spark: '200,120,255', flash: 0, flashCol: '150,40,255' };
       if (m.mode === 'build') { th.fog = 0.22 * m.I; if ((m.half && m.beat % 2 === 1) || m.quarter) th.glow = hit * 0.8; if (m.hueJitter && !reduce) th.hue = (m.beat * 47) % 120 - 60; if (!reduce && this.lastNote(t).age < 0.07) th.glitch = 'hint'; }
@@ -317,21 +317,26 @@ export class Liminality {
       const PALS = [['190,60,255', '255,255,255'], ['0,255,230', '255,0,120'], ['255,255,255', '120,120,140'], ['255,40,90', '60,0,255'], ['170,255,60', '190,60,255']];
       const pal = PALS[Math.floor(rnd(3) * PALS.length)], amt = chaos ? (0.4 + 0.6 * rnd(4)) * (th.glitchAmt ?? 1) : 0.2;
       const scale = this.c.width / W, src = (x, y, w, h) => [x * scale, y * scale, w * scale, h * scale];
+      // one snapshot of the frame per draw; the slices are copied from it (drawing the canvas onto
+      // itself, many times a frame, is what made the drop stutter)
+      const snap = this.snap || (this.snap = document.createElement('canvas'));
+      if (snap.width !== this.c.width || snap.height !== this.c.height) { snap.width = this.c.width; snap.height = this.c.height; }
+      { const sg = snap.getContext('2d'); sg.globalCompositeOperation = 'copy'; sg.drawImage(this.c, 0, 0); }
       for (const st of pick) {
         if (st === 'bands') {
           // horizontal bands smeared sideways
-          for (let i = 0; i < (chaos ? 6 + 10 * amt : 1); i++) { const y = Math.random() * H, h = (chaos ? 3 : 1) + Math.random() * (chaos ? 30 : 4), off = (Math.random() - 0.5) * (chaos ? 120 : 16) * amt; try { g.drawImage(this.c, ...src(0, y, W, h), off, y, W, h); } catch {} if (chaos) { g.fillStyle = `rgba(${pal[i % 2]},${0.1 + Math.random() * 0.25})`; g.fillRect(off * 0.5, y, W, Math.max(1, h * 0.3)); } }
+          for (let i = 0; i < (chaos ? 6 + 10 * amt : 1); i++) { const y = Math.random() * H, h = (chaos ? 3 : 1) + Math.random() * (chaos ? 30 : 4), off = (Math.random() - 0.5) * (chaos ? 120 : 16) * amt; try { g.drawImage(snap, ...src(0, y, W, h), off, y, W, h); } catch {} if (chaos) { g.fillStyle = `rgba(${pal[i % 2]},${0.1 + Math.random() * 0.25})`; g.fillRect(off * 0.5, y, W, Math.max(1, h * 0.3)); } }
         } else if (st === 'vertical') {
           // tall slices dropped up or down
-          for (let i = 0; i < 5 + 6 * amt; i++) { const x = Math.random() * W, w = 4 + Math.random() * 40, off = (Math.random() - 0.5) * 140 * amt; try { g.drawImage(this.c, ...src(x, 0, w, H), x, off, w, H); } catch {} }
+          for (let i = 0; i < 5 + 6 * amt; i++) { const x = Math.random() * W, w = 4 + Math.random() * 40, off = (Math.random() - 0.5) * 140 * amt; try { g.drawImage(snap, ...src(x, 0, w, H), x, off, w, H); } catch {} }
         } else if (st === 'blocks') {
           // datamosh: copied blocks out of place
-          for (let i = 0; i < 8 + 10 * amt; i++) { const bw = 16 + Math.random() * 60, bh = 8 + Math.random() * 40, sx = Math.random() * (W - bw), sy = Math.random() * (H - bh); try { g.drawImage(this.c, ...src(sx, sy, bw, bh), sx + (Math.random() - 0.5) * 80, sy + (Math.random() - 0.5) * 40, bw, bh); } catch {} }
+          for (let i = 0; i < 8 + 10 * amt; i++) { const bw = 16 + Math.random() * 60, bh = 8 + Math.random() * 40, sx = Math.random() * (W - bw), sy = Math.random() * (H - bh); try { g.drawImage(snap, ...src(sx, sy, bw, bh), sx + (Math.random() - 0.5) * 80, sy + (Math.random() - 0.5) * 40, bw, bh); } catch {} }
           for (let i = 0; i < 6; i++) { g.fillStyle = `rgba(${pal[i % 2]},0.45)`; g.fillRect(Math.random() * W, Math.random() * H, 4 + Math.random() * 30, 2 + Math.random() * 10); }
         } else if (st === 'rgb') {
           // split colour channels
           g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.3 + 0.2 * amt;
-          try { g.drawImage(this.c, 0, 0, this.c.width, this.c.height, (8 + 10 * Math.random()) * amt, 0, W, H); g.drawImage(this.c, 0, 0, this.c.width, this.c.height, -(8 + 10 * Math.random()) * amt, 2, W, H); } catch {}
+          try { g.drawImage(snap, 0, 0, snap.width, snap.height, (8 + 10 * Math.random()) * amt, 0, W, H); g.drawImage(snap, 0, 0, snap.width, snap.height, -(8 + 10 * Math.random()) * amt, 2, W, H); } catch {}
           g.restore();
         } else if (st === 'scan') {
           // a rolling scan bar and interlace lines
@@ -340,12 +345,12 @@ export class Liminality {
         } else if (st === 'pixel') {
           // the frame drops to a coarse resolution for an instant
           const k = 0.06 + 0.06 * Math.random(); g.save(); g.imageSmoothingEnabled = false;
-          try { g.drawImage(this.c, 0, 0, this.c.width, this.c.height, 0, 0, W * k, H * k); g.drawImage(this.c, 0, 0, W * k * scale, H * k * scale, 0, 0, W, H); } catch {}
+          try { g.drawImage(snap, 0, 0, snap.width, snap.height, 0, 0, W * k, H * k); g.drawImage(snap, 0, 0, W * k * scale, H * k * scale, 0, 0, W, H); } catch {}
           g.restore();
         } else if (st === 'tear') {
           // the whole frame tears at one line and slides
           const y = H * (0.2 + 0.6 * Math.random()), off = (Math.random() - 0.5) * 90 * amt;
-          try { g.drawImage(this.c, ...src(0, y, W, H - y), off, y, W, H - y); } catch {}
+          try { g.drawImage(snap, ...src(0, y, W, H - y), off, y, W, H - y); } catch {}
           g.fillStyle = `rgba(${pal[1]},0.6)`; g.fillRect(0, y - 1, W, 2);
         } else if (st === 'invert' && th.beatPh < 0.18) {
           g.save(); g.globalCompositeOperation = 'difference'; g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.restore();
@@ -395,10 +400,10 @@ export class Liminality {
     const theme = this.theme(sec, prog, t);
     // background layer (shakes, flashes, hue jumps, glitches); the highway sits on its own layer on top
     g.save(); if (theme.shake) g.translate((Math.random() - 0.5) * theme.shake, (Math.random() - 0.5) * theme.shake);
-    if (theme.hue) g.filter = `hue-rotate(${theme.hue}deg)`;
     this.drawWorld(g, W, H, theme, t);
+    // hue jumps: a 'hue' blend over the background (a canvas filter here costs whole frames)
+    if (theme.hue) { g.save(); g.globalCompositeOperation = 'hue'; g.globalAlpha = 0.75; g.fillStyle = `hsl(${(275 + theme.hue + 360) % 360},90%,50%)`; g.fillRect(-20, -20, W + 40, H + 40); g.restore(); }
     if (theme.flash > 0.01) { g.fillStyle = `rgba(${theme.flashCol},${theme.flash})`; g.fillRect(0, 0, W, H); }
-    g.filter = 'none';
     g.restore();
     // highway: five lanes converging toward a horizon; f is depth (0 far, 1 at the pads)
     const hy = H * 0.18, py = H * 0.8, cx = W / 2, topW = W * 0.16, botW = W * 0.92;

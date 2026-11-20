@@ -716,7 +716,7 @@ export class MvPipe {
   constructor(root, onPlay) {
     this.root = root; this.onPlay = onPlay;
     this.state = { who: 'anna', level: 0 };
-    this.seen = new Set(['anna']); this.waiters = []; this.guide = null;
+    this.seen = new Set(['anna']); this.versions = new Set(['anna:0']); this.waiters = []; this.guide = null;
     root.innerHTML = `
       <div class="mp-in">
         <div class="mp-box mp-ctl"><div class="mp-h">Creator-specified control <span class="mp-hint">click to toggle</span></div><div class="mp-chips"></div></div>
@@ -747,7 +747,7 @@ export class MvPipe {
   set(st, play = false) {
     const prev = this.state;
     this.state = { ...this.state, ...st };
-    this.seen.add(this.state.who);
+    this.seen.add(this.state.who); this.versions.add(this.state.who + ':' + this.state.level); if (this.state.who === 'anna') this.annaMax = Math.max(this.annaMax || 0, this.state.level);
     const changed = prev.who !== this.state.who || prev.level !== this.state.level;
     this.render(changed);
     if (changed && !play && this.onChange) this.onChange();

@@ -286,8 +286,13 @@ async function loadRise(w = WORKOUT[0]) {
 // side by side: as written, and with RISE skipping 2:11.3 → 2:20.2 so the energy comes back sooner.
 const SKIP = { id: 'middle', file: 'middle.mp3', title: 'The Middle', artist: 'Zedd, Maren Morris & Grey', from: 124, cut: [131.3, 140.2], to: 156 };
 const skip = { buf: null, segs: null, cut: null, play: null, voices: [] };
-async function loadSkip() {
-  if (skip.buf) return;
+// shared, retryable: the workout chapter starts it early so it's ready by the time it's needed
+let skipLoading = null;
+function loadSkip() {
+  if (skip.ready) return Promise.resolve();
+  return (skipLoading = skipLoading || _loadSkip().then(() => { skip.ready = true; }, (e) => { skipLoading = null; skip.buf = null; throw e; }));
+}
+async function _loadSkip() {
   const dir = `rise-assets/${SKIP.id}/`;
   const [bt, sj, ab] = await Promise.all([
     fetch(dir + 'beat_times.csv').then((r) => r.text()),
@@ -760,6 +765,8 @@ function chapterTitle(n) {
 let curChapter = 0;
 function chapter(n) {
   curChapter = n;
+  setLoading('');
+  if (n === 3) loadSkip().catch(() => {});
   // a new chapter: whatever David was doing stops, and (except for the workout) he's back on the couch
   if (n !== 3 && typeof skip !== 'undefined') {
     skip.queue = []; if (skip.play) skipStop(1); riseStop();
@@ -1001,8 +1008,11 @@ const CH = [async () => {
   anim.working = false; pose('stand', 0.6); riseStop(); rackBar(); unthink();
   // skipping: after resting, David is ready, but the song is still calm
   setLoading('Loading The Middle…');
-  await loadSkip();
+  let skipOk = true;
+  try { await guard(Promise.race([loadSkip(), sleep(30000).then(() => { throw new Error('timeout'); })])); }
+  catch (e) { if (e instanceof Jump) throw e; console.error(e); skipOk = false; }
   setLoading('');
+  if (skipOk) {
   showLive('skip', 'RISE', 'Skip to the drop');
   skipAuto(0, 1);
   think('Ready for the next set!', 'good', 3000);
@@ -1017,7 +1027,7 @@ const CH = [async () => {
   await say('<span class="cite">RISE · ISMIR 2025</span>When a set starts, it can skip ahead to reach high energy sooner; when David rests, it can skip out of it.');
   await next();
   skip.queue = []; skipStop(1.5); anim.free = false; anim.working = false;
-
+  }
 }, async () => {
   // ---- Chapter 4: MultiVerse
   chapter(4);
@@ -1037,19 +1047,27 @@ const CH = [async () => {
   await next();
   // the pipeline: profile + controls → generation → lyrics; starts on the full-control version
   showLive('mvpipe', 'MultiVerse', 'Steering adaptive lyrics');
-  mvp.seen = new Set(['anna']); mvp.set({ who: 'anna', level: 0 });
-  mvp.setGuide('ctl');
-  await say('The songwriter’s <b>controls</b> and a listener’s <b>persona</b> go into an LLM, and the adapted lyrics come out. With no controls, the song loses its theme and its rhyme. Turn on the <b>content</b> control.');
-  await guard(mvp.until((m) => m.state.who === 'anna' && m.state.level >= 1));
-  await say('Now the rhyme is kept, but the sad theme is gone. Turn on the <b>creator</b> control.');
-  await guard(mvp.until((m) => m.state.who === 'anna' && m.state.level >= 2));
-  await say('Isolation and “hates me” are back, but it isn’t about Anna. Turn on the <b>context</b> control.');
-  await guard(mvp.until((m) => m.state.who === 'anna' && m.state.level >= 3));
-  mvp.setGuide('who');
-  await say('Now it’s Anna’s story, in the songwriter’s voice. Same controls, different listener: try <b>Elena</b> and <b>David</b>.');
-  await guard(mvp.until((m) => m.seen.has('elena') && m.seen.has('david')));
+  mvp.seen = new Set(['anna']); mvp.versions = new Set(['anna:0']); mvp.annaMax = 0; mvp.set({ who: 'anna', level: 0 });
+  // a guided walk: Next shows the next thing, and using the panel directly moves the dialogue
+  // along too (to the first step the reader hasn't done yet)
+  const steps = [
+    { line: 'The songwriter’s <b>controls</b> and a listener’s <b>persona</b> go into an LLM, and the adapted lyrics come out. With no controls, the song loses its theme and its rhyme. Turn on the <b>content</b> control.', done: (m) => m.annaMax >= 1, go: () => mvp.set({ who: 'anna', level: 1 }) },
+    { line: 'Now the rhyme is kept, but the sad theme is gone. Turn on the <b>creator</b> control.', done: (m) => m.annaMax >= 2, go: () => mvp.set({ who: 'anna', level: 2 }) },
+    { line: 'Isolation and “hates me” are back, but it isn’t about Anna. Turn on the <b>context</b> control.', done: (m) => m.annaMax >= 3, go: () => mvp.set({ who: 'anna', level: 3 }) },
+    { line: 'Now it’s Anna’s story, in the songwriter’s voice. Same controls, different listener: try <b>Elena</b> and <b>David</b>.', done: (m) => m.seen.has('elena') && m.seen.has('david'), go: () => {} },
+  ];
+  for (;;) {
+    const i = steps.findIndex((st) => !st.done(mvp));
+    if (i < 0) break;
+    mvp.setGuide(i < 3 ? 'ctl' : 'who');
+    await say(steps[i].line);
+    if (steps[i].done(mvp)) continue;
+    const r = await guard(Promise.race([_choices([{ label: 'Next ▸', primary: true }]).then(() => 'next'), mvp.until(steps[i].done).then(() => 'did')]));
+    if (r === 'did') actsEl.replaceChildren(); // the reader did it themselves: drop the stale Next
+    if (r === 'next') { if (i === steps.length - 1) break; steps[i].go(); }
+  }
   mvp.setGuide(null);
-  await next();
+  if (steps[steps.length - 1].done(mvp)) await next();
   stopClip(); unthink();
   await say('<span class="cite">MultiVerse · UIST 2026</span>We conducted a study with <b>10 songwriters</b>, who transformed their own compositions into adaptive versions. MultiVerse demonstrates that creators can <b>maintain control over adaptive media</b> through authoring mechanisms that shape how the output aligns with their intent.');
   await next();
@@ -1076,7 +1094,7 @@ const CH = [async () => {
     let reveal = false;
     if (asked.has('live') || asked.has('creators')) { list.push(['author', 'Is it still the creator’s if it’s adapted by AI??']); if (!unlocked) { unlocked = true; reveal = true; } }
     const allAsked = list.every(([id]) => asked.has(id));
-    if (!first) await say(reveal ? 'Oh! That raises another question…' : allAsked ? 'Thank you so much for playing through the entire experience!! If you have any questions or want to discuss anything, feel free to drop me a message at <a href="mailto:alexanderwang@cmu.edu">alexanderwang@cmu.edu</a>. Even if you just found this experience fun, I’d love to hear it! 😊 Feel free to look around the room, and check David’s phone.' : 'Anything else?');
+    if (!first) await say(reveal ? 'Oh! That raises another question…' : allAsked ? 'Thank you so much for playing through the entire experience!! If you have any questions or want to discuss anything, feel free to drop me a message at <a href="mailto:alexanderwang@cmu.edu">alexanderwang@cmu.edu</a>. Even if you just found this experience fun, I’d love to hear it! 😊 Feel free to look around the room, and check David’s phone 👀.' : 'Anything else?');
     first = false;
     
     // once everything has been asked, the bubbles stay hidden until the reader asks for them
@@ -1118,7 +1136,7 @@ const CH = [async () => {
       await next();
       await say('Playtesting takes a lot of time, to make sure nothing unexpected happens. But once it’s finalized, the author still keeps their <b>creative voice</b>, even though every player gets a completely different story and trajectory.');
       await next();
-      await say('I’m actively working on better <b>control and authoring mechanisms</b> that let creators keep their voice.');
+      await say('I’m actively working on better <b>control and authoring mechanisms</b> that <u>let creators keep their voice</u>.');
       await next();
     }
   }
@@ -1191,7 +1209,7 @@ const chatLog = { alex: [], chris: [] };
 const ALEX_SC = 'https://soundcloud.com/alex-wang-796617401/sets/alexs-compositions/s-NJGasTQyLPD';
 const ALEX_SONGS = [
   { id: 'floating', art: 'linear-gradient(135deg, #b8f6ff, #22b5c2 50%, #06303a)', title: 'Floating', sub: 'Alexander Wang · 1/3', url: 'https://soundcloud.com/alex-wang-796617401/floating-lyrics-by-johnny-hu-1/s-rjxvc3g1Jye' },
-  { id: 'errorcode', art: 'linear-gradient(135deg, #d9a6ff, #6b1fd1 50%, #0b0412)', title: 'Error Code: Pse', sub: 'Alexander Wang · 2/3', url: 'https://soundcloud.com/alex-wang-796617401/error-code-pse-1/s-6IAKtF9TItr' },
+  { id: 'errorcode', art: 'linear-gradient(135deg, #d9a6ff, #6b1fd1 50%, #0b0412)', title: 'Error Code: PSE', sub: 'Alexander Wang · 2/3', url: 'https://soundcloud.com/alex-wang-796617401/error-code-pse-1/s-6IAKtF9TItr' },
   { id: 'afterburn', art: 'linear-gradient(135deg, #ffe0a0, #e8902a 50%, #3a2412)', title: 'Afterburn', sub: 'Alexander Wang · 3/3', url: 'https://soundcloud.com/alex-wang-796617401/afterburn-1/s-CDRMXF8urPA' },
 ];
 // Alex's songs unlock by beating them in Liminality, played on David's phone
