@@ -656,3 +656,6 @@ a.proj-story { white-space: nowrap; } a.proj-story i { font-style: normal; }
 a.proj-story .ps-short { display: none; }
 @media (max-width: 560px) { a.proj-story .ps-long { display: none; } a.proj-story .ps-short { display: inline; } a.proj-story { font-size: 0.78rem; } }
 @media (max-width: 380px) { a.proj-story { white-space: normal; height: auto; min-height: 38px; } }
+/* the story invite sits centred on the home button's row */
+.proj-top { display: grid; grid-template-columns: 38px 1fr 38px; align-items: center; gap: 0.6rem; }
+.proj-top a.proj-story { justify-self: center; }

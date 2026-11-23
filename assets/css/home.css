@@ -318,3 +318,4 @@ a:hover { border-bottom-color: var(--accent); }
 .home-pub-featured:hover::before { width: 5px; opacity: 1; }
 .home-pub-featured:hover .vplayer:not([data-active]) { box-shadow: 6px 6px 0 var(--paper); }
 @media (max-width: 620px) { .home-pub-featured { margin-left: 0; } }
+.home-pub-featured { margin-bottom: 0.6rem; }
