@@ -231,3 +231,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   .logo span, .ring-btn.ringing .bell, .song.loading .art { animation: none; }
 }
+
+/* the demos share one nav: home, story, each demo (current one marked), the paper */
+.demo-nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.demo-nav a.on { background: var(--accent); border-color: var(--accent); color: #fff; pointer-events: none; }

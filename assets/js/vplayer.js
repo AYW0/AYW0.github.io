@@ -13,9 +13,9 @@
     var frame = document.createElement('div');
     frame.className = 'vplayer-frame';
     var iframe = document.createElement('iframe');
-    var start = el.getAttribute('data-start');
+    var start = el.getAttribute('data-start'), end = el.getAttribute('data-end');
     iframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0' +
-      (start ? '&start=' + encodeURIComponent(start) : '');
+      (start ? '&start=' + encodeURIComponent(start) : '') + (end ? '&end=' + encodeURIComponent(end) : '');
     iframe.title = 'Video';
     iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
     iframe.setAttribute('allowfullscreen', '');

@@ -2,7 +2,7 @@
 // Song values come from each scene's beatTracking/tempoAdjustment components;
 // ringtone values come from the tempoAdjustment/notification components per app.
 
-export const ASSETS = 'assets/';
+export const ASSETS = new URL('../assets/', import.meta.url).href; // resolves from this file, so pages elsewhere can use the engine
 
 // Camelot index (1-12) -> major key name / relative minor (tempoAdjustment.cs majorKeyNames).
 export const KEY_MAJOR = ['B', 'F♯', 'D♭', 'A♭', 'E♭', 'B♭', 'F', 'C', 'G', 'D', 'A', 'E'];

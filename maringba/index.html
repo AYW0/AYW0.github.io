@@ -5,29 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MARingBA — Alexander Wang</title>
   <meta name="description" content="MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery (CHI 2024).">
-  <link rel="stylesheet" href="/assets/css/project.css?v=16">
+  <link rel="stylesheet" href="/assets/css/project.css?v=27">
 </head>
-<body>
+<body style="--paper:#2fae74">
   <div class="proj-wrap">
 
-    <a class="proj-back" href="/">← Alexander Wang</a>
+    <div class="proj-top"><a class="proj-back proj-home" href="/" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2V20a1 1 0 0 1-1 1h-5.2v-5.6H9.2V21H4a1 1 0 0 1-1-1z"/></svg></a><a class="proj-story" href="/listensback/story.html"><span>✦</span> <i class="ps-long">You can try an interactive experience of my research here</i><i class="ps-short">Try the interactive experience</i> <b>→</b></a></div>
 
     <header class="proj-hero">
       <h1 class="proj-title">MARingBA: Music-Adaptive Ringtones for Blended Audio Notification Delivery</h1>
       <p class="proj-authors"><span class="me">Alexander Wang</span>, Yi Fei Cheng, David Lindlbauer</p>
       <p class="proj-venue">CHI 2024 — ACM Conference on Human Factors in Computing Systems</p>
-      <p class="proj-venue"><span class="proj-award">🏆 Best Paper Honorable Mention (top 5%)</span></p>
+      <p class="proj-awardline"><span class="proj-award">🏆 Best Paper Honorable Mention</span></p>
       <nav class="proj-actions">
-        <a class="proj-btn" href="https://doi.org/10.1145/3613904.3642376" target="_blank" rel="noopener">Paper</a>
-        <a class="proj-btn" href="https://www.youtube.com/watch?v=PFd-AhcDPoA" target="_blank" rel="noopener">Video</a>
-        <a class="proj-btn" href="https://augmented-perception.org/publications/2024-maringba.html" target="_blank" rel="noopener">Project</a>
+        <a class="proj-btn" href="https://doi.org/10.1145/3613904.3642376" target="_blank" rel="noopener">📄 Paper</a>
+        <a class="proj-btn" href="https://www.youtube.com/watch?v=PFd-AhcDPoA" target="_blank" rel="noopener">🎬 Video</a>
       </nav>
     </header>
 
-    <div class="vplayer" data-video="maringba.mp4" data-youtube="PFd-AhcDPoA">
-      <img class="vplayer-poster" src="MARingBAfigureedit.png" alt="MARingBA preview">
-      <button class="vplayer-play" type="button" aria-label="Play preview">▶</button>
-    </div>
+    <figure class="proj-teaser"><img src="MARingBAfigureedit.png" alt="MARingBA: a ringtone reshaped to the song’s beat and key, blended into the music"></figure>
 
     <p class="proj-lead">
       We explore a design space for adapting audio notifications and present MARingBA, a system that
@@ -37,32 +33,8 @@
     </p>
 
     <section class="proj-section">
-      <h2>Audio Examples</h2>
-      <div class="ax-row">
-        <div class="proj-audio-grid">
-          <div class="proj-audio-card">
-            <p class="proj-audio-song">Hotline Bling — Drake</p>
-            <p class="proj-audio-context">iPhone ringtone (Classic)</p>
-            <audio controls preload="none" src="MARINGBA-hotlinebling.mp3"></audio>
-          </div>
-          <div class="proj-audio-card">
-            <p class="proj-audio-song">What Is Love — Haddaway</p>
-            <p class="proj-audio-context">Google Hangouts notification</p>
-            <audio controls preload="none" src="MARINGBA-whatislove.mp3"></audio>
-          </div>
-          <div class="proj-audio-card">
-            <p class="proj-audio-song">Happy — Pharrell Williams</p>
-            <p class="proj-audio-context">Discord notification</p>
-            <audio controls preload="none" src="MARINGBA-happy.mp3"></audio>
-          </div>
-          <div class="proj-audio-card">
-            <p class="proj-audio-song">Somebody That I Used to Know — Gotye</p>
-            <p class="proj-audio-context">iPhone ringtone</p>
-            <audio controls preload="none" src="MARINGBA-usedtoknow.mp3"></audio>
-          </div>
-        </div>
-        <img class="ax-meme" src="drake-meme.jpeg" alt="Drake meme: rejecting jarring interruptions, preferring harmonically blended notifications">
-      </div>
+      <h2>Try It</h2>
+      <div class="try" id="try-mar" style="--paper:#2fae74"></div>
     </section>
 
     <section class="proj-section">
@@ -92,10 +64,9 @@
     <section class="proj-section">
       <h2>Our Approach</h2>
       <p>
-        MARingBA takes the music you're already listening to and an incoming notification, analyzes
-        the music, and reshapes the notification to blend in. Here is each step, with audio.
+        MARingBA analyzes the music you're listening to and reshapes an incoming notification to blend in.
       </p>
-      <div class="wt">
+      <div class="wt tabbed">
 
         <div class="wt-step">
           <span class="wt-num">1</span>
@@ -201,10 +172,6 @@
 }</pre>
       </div>
     </section>
-
-    <footer class="proj-footer">
-      <a href="/">← Back to Alexander Wang</a>
-    </footer>
 
   </div>
 
@@ -398,5 +365,7 @@
       mount.appendChild(wrap);
     })();
   </script>
+  <script type="module" src="/assets/js/try-maringba.js"></script>
+  <script src="/assets/js/wt-tabs.js"></script>
 </body>
 </html>

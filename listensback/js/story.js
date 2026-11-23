@@ -1552,8 +1552,9 @@ function openPoster(hv) {
   const i = hv.userData.info, lb = $('#lightbox');
   lb.querySelector('img').src = hv.userData.hover === 'poster' ? `img/story/poster-${i.id}.png` : 'img/story/drake.png';
   const a = lb.querySelector('a.lb-demo'), pp = lb.querySelector('a.lb-paper');
-  a.hidden = !i.href; if (i.href) { a.href = i.href; a.textContent = `Try the ${i.title.split(':')[0]} demo ▸`; }
+  a.hidden = !i.href; if (i.href) { a.href = i.href; a.textContent = 'Try the demo ▸'; }
   pp.hidden = !i.paper; if (i.paper) pp.href = i.paper;
+  const tk = lb.querySelector('a.lb-talk'); tk.hidden = !i.talk; if (i.talk) tk.href = i.talk;
   lb.hidden = false;
 }
 function frame(now) {

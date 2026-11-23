@@ -275,3 +275,46 @@ a:hover { border-bottom-color: var(--accent); }
 .home-photo.is-waking { animation: wake .42s ease; }
 @keyframes wake { 0% { transform: scale(1); } 45% { transform: scale(0.85) rotate(8deg); filter: blur(2px); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .home-photo.is-drawn, .home-photo.is-waking { animation: none; } }
+
+/* ---- A light touch from the interactive story: navy ink, halftone dots, mono labels, and each
+   paper's colour (the same as its poster in the story). Kept quiet on purpose. ---- */
+:root { --mono: ui-monospace, "SFMono-Regular", Menlo, monospace; --story-ink: #22305a; }
+.home-section > h2 {
+  font-family: var(--mono); font-weight: 600; letter-spacing: 0.14em; color: var(--story-ink); opacity: 0.75;
+  border-bottom: 0; padding-bottom: 0.6rem;
+  background: radial-gradient(circle, rgba(34,48,90,0.35) 0.9px, transparent 1.2px) left bottom / 6px 6px repeat-x;
+}
+.home-pub-featured { position: relative; padding-left: 0.9rem; }
+.home-pub-featured::before { content: ""; position: absolute; left: 0; top: 0.2rem; bottom: 0.2rem; width: 3px; border-radius: 2px; background: var(--paper, var(--rule)); opacity: 0.8; }
+.home-pub-featured .vplayer { transition: width 0.25s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+.home-pub-featured:hover .vplayer:not([data-active]) { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--paper, var(--accent)); }
+.home-pub-featured .home-pub-venue { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.01em; }
+.home-pub-links a { transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease; }
+.home-pub-links a:hover { transform: translate(-1px, -1px); box-shadow: 2px 2px 0 var(--paper, var(--accent)); border-color: var(--story-ink); color: var(--story-ink); background: #fff; }
+.home-photo { box-shadow: 4px 4px 0 rgba(34,48,90,0.12); }
+@media (prefers-reduced-motion: reduce) { .home-pub-featured:hover .vplayer, .home-pub-links a:hover { transform: none; } }
+@media (max-width: 620px) { .home-pub-featured { padding-left: 0.7rem; } }
+
+/* selected paper titles: navy ink, the system's name in its paper colour (as in the story) */
+.home-pub-featured .home-pub-title, .home-pub-featured .home-pub-title a { color: var(--story-ink); }
+.home-pub-featured .home-pub-title a { border-bottom: 0; text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 2px; text-underline-offset: 4px; transition: text-decoration-color .15s ease; }
+.home-pub-featured .home-pub-title a:hover { text-decoration-color: var(--paper); }
+.home-pub-featured .pn { color: var(--paper); font-weight: 750; }
+.home-pub-featured .pn em { font-style: normal; }
+
+/* selected papers: link pills fill with the paper's colour on hover */
+.home-pub-featured .home-pub-links a:hover {
+  background: color-mix(in srgb, var(--paper) 22%, #fff); border-color: var(--paper); color: var(--story-ink);
+  box-shadow: 3px 3px 0 var(--paper); transform: translate(-2px, -2px);
+}
+/* every link pill: a clear wash of colour on hover (the paper's colour for selected papers) */
+.home-pub-links a:hover { background: color-mix(in srgb, var(--paper, #2f5b8f) 38%, #fff); border-color: var(--paper, #2f5b8f); color: #22305a; box-shadow: 3px 3px 0 var(--paper, #2f5b8f); transform: translate(-2px, -2px); }
+.home-pub-featured .home-pub-links a:hover { background: color-mix(in srgb, var(--paper) 38%, #fff); }
+
+/* hovering a selected paper: the whole entry takes on its colour */
+.home-pub-featured { border-radius: 14px; padding: 0.8rem 0.9rem 0.8rem 1.1rem; margin-left: -0.9rem; transition: background .2s ease, box-shadow .2s ease; }
+.home-pub-featured::before { left: 0.25rem; top: 0.9rem; bottom: 0.9rem; transition: width .2s ease; }
+.home-pub-featured:hover { background: color-mix(in srgb, var(--paper) 14%, #fff); box-shadow: 5px 5px 0 color-mix(in srgb, var(--paper) 60%, #fff); }
+.home-pub-featured:hover::before { width: 5px; opacity: 1; }
+.home-pub-featured:hover .vplayer:not([data-active]) { box-shadow: 6px 6px 0 var(--paper); }
+@media (max-width: 620px) { .home-pub-featured { margin-left: 0; } }

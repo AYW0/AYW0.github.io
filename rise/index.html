@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RISE — Alexander Wang</title>
+  <meta name="description" content="RISE: Adaptive Music Playback for Realtime Intensity Synchronization with Exercise (ISMIR 2025).">
+  <link rel="stylesheet" href="/assets/css/project.css?v=27">
+</head>
+<body style="--paper:#e8a33d">
+  <div class="proj-wrap">
+
+    <div class="proj-top"><a class="proj-back proj-home" href="/" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2V20a1 1 0 0 1-1 1h-5.2v-5.6H9.2V21H4a1 1 0 0 1-1-1z"/></svg></a><a class="proj-story" href="/listensback/story.html"><span>✦</span> <i class="ps-long">You can try an interactive experience of my research here</i><i class="ps-short">Try the interactive experience</i> <b>→</b></a></div>
+
+    <header class="proj-hero">
+      <h1 class="proj-title">RISE: Adaptive Music Playback for Realtime Intensity Synchronization with Exercise</h1>
+      <p class="proj-authors"><span class="me">Alexander Wang</span>, Chris Donahue, Dhruv Jain</p>
+      <p class="proj-venue">ISMIR 2025 — International Society for Music Information Retrieval Conference</p>
+      <nav class="proj-actions">
+        <a class="proj-btn" href="https://zenodo.org/records/17706321" target="_blank" rel="noopener">📄 Paper</a>
+        <a class="proj-btn" href="https://www.youtube.com/watch?v=XZLBfpt6Lgg" target="_blank" rel="noopener">🎬 Video</a>
+        <a class="proj-btn" href="https://www.youtube.com/embed/eH-WEAYawsg?start=630&amp;end=905&amp;autoplay=1" target="_blank" rel="noopener">🎤 Presentation</a>
+      </nav>
+    </header>
+
+    <figure class="proj-teaser"><img src="teaser-fig.png" alt="RISE takes the user's music and exercise pattern, synchronizes intensity, and rearranges the song so high-energy parts line up with work intervals"></figure>
+
+    <p class="proj-lead">
+      We propose a system to adapt a user&rsquo;s music to their exercise by aligning high-energy music
+      segments with intense intervals of the workout. The structure of a song may not match the
+      listener&rsquo;s natural phases of rest and work, so they rest longer than needed while waiting for a
+      motivational section, or lose motivation mid-set when it ends too soon. RISE estimates the intense
+      segments in music and uses cutpoint-based rearrangement to extend and shorten them in real time to fit
+      the ongoing exercise routine.
+    </p>
+
+    <section class="proj-section">
+      <h2>Try It</h2>
+      <div class="try" id="try-rise"></div>
+    </section>
+
+    <section class="proj-section">
+  <h2>Citation</h2>
+  <div class="proj-cite">
+    <button class="proj-copy" type="button" data-copy="#bib">Copy</button>
+    <pre id="bib">@inproceedings{wang2025rise,
+  author    = {Wang, Alexander and Donahue, Chris and Jain, Dhruv},
+  title     = {RISE: Music Rearrangement for Realtime Intensity Synchronization With Exercise},
+  booktitle = {Proceedings of the 26th International Society for Music Information Retrieval Conference},
+  publisher = {ISMIR},
+  year      = {2025},
+  pages     = {34--41},
+  doi       = {10.5281/zenodo.17706321}
+}</pre>
+  </div>
+</section>
+
+  </div>
+
+  <script>
+    document.querySelectorAll('.proj-copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var el = document.querySelector(btn.getAttribute('data-copy'));
+        if (!el) return;
+        navigator.clipboard.writeText(el.textContent).then(function () {
+          var old = btn.textContent;
+          btn.textContent = 'Copied';
+          setTimeout(function () { btn.textContent = old; }, 1400);
+        });
+      });
+    });
+  </script>
+  <script src="/assets/js/vplayer.js?v=3"></script>
+  <script type="module" src="/assets/js/try-rise.js"></script>
+</body>
+</html>

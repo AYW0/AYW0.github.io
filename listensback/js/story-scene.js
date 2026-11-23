@@ -377,7 +377,7 @@ export class Room {
       ['maringba', 'MARingBA', 'CHI 2024 · Best Paper Honorable Mention', 'index.html', 'https://doi.org/10.1145/3613904.3642376', 'chi2024', 'CHI 2024', 'Honolulu, HI'],
       ['mva', 'Towards Music-Aware Virtual Assistants', 'UIST 2024', 'sing.html', 'https://doi.org/10.1145/3654777.3676416', 'uist2024', 'UIST 2024', 'Pittsburgh, PA'],
       ['rise', 'RISE', 'ISMIR 2025', 'rise.html', 'https://arxiv.org/abs/2509.17112', 'ismir2025', 'ISMIR 2025', 'Daejeon, Korea'],
-      ['multiverse', 'MultiVerse', 'UIST 2026', null, 'https://doi.org/10.1145/3830398.3830530', 'uist2026', 'UIST 2026', 'Detroit, MI'],
+      ['multiverse', 'MultiVerse', 'UIST 2026', null, 'https://doi.org/10.1145/3830398.3830530', 'uist2026', 'UIST 2026', 'Detroit, MI', 'https://www.youtube.com/watch?v=cBk46Xt4p5w&t=28s'],
     ];
     // a small "presented at" plaque under each poster, drawn on a canvas: logo + venue
     const plaque = (logo, venue, city) => {
@@ -400,9 +400,9 @@ export class Room {
       pic.position.z = 0.017; g.add(pic);
       return g;
     };
-    posters.forEach(([id, title, venue, href, paper, logo, vname, city], i) => {
+    posters.forEach(([id, title, venue, href, paper, logo, vname, city, talk], i) => {
       const z = -1.95 + i * 0.75;
-      const g = framed(`img/story/poster-${id}.png`, 0.6, 0.6 * 2139 / 1292, 'poster', { id, title, venue, href, paper });
+      const g = framed(`img/story/poster-${id}.png`, 0.6, 0.6 * 2139 / 1292, 'poster', { id, title, venue, href, paper, talk });
       this.posterFrames = this.posterFrames || {}; this.posterFrames[id] = g;
       g.rotation.y = Math.PI / 2;
       g.position.set(-3.07, 1.55, z);

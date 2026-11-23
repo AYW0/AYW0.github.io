@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Music-Aware Virtual Assistants — Alexander Wang</title>
   <meta name="description" content="Towards Music-Aware Virtual Assistants (UIST 2024): spoken notifications sung in harmony with your music.">
-  <link rel="stylesheet" href="/assets/css/project.css?v=16">
+  <link rel="stylesheet" href="/assets/css/project.css?v=27">
   <script>
     window.MathJax = {
       tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
@@ -14,26 +14,23 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
 </head>
-<body>
+<body style="--paper:#e0479e">
   <div class="proj-wrap">
 
-    <a class="proj-back" href="/">← Alexander Wang</a>
+    <div class="proj-top"><a class="proj-back proj-home" href="/" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2V20a1 1 0 0 1-1 1h-5.2v-5.6H9.2V21H4a1 1 0 0 1-1-1z"/></svg></a><a class="proj-story" href="/listensback/story.html"><span>✦</span> <i class="ps-long">You can try an interactive experience of my research here</i><i class="ps-short">Try the interactive experience</i> <b>→</b></a></div>
 
     <header class="proj-hero">
       <h1 class="proj-title">Towards Music-Aware Virtual Assistants</h1>
       <p class="proj-authors"><span class="me">Alexander Wang</span>, David Lindlbauer, Chris Donahue</p>
       <p class="proj-venue">UIST 2024 — ACM Symposium on User Interface Software and Technology</p>
       <nav class="proj-actions">
-        <a class="proj-btn" href="https://doi.org/10.1145/3654777.3676416" target="_blank" rel="noopener">Paper</a>
-        <a class="proj-btn" href="https://www.youtube.com/watch?v=cfTumi2MC8E" target="_blank" rel="noopener">Video</a>
-        <a class="proj-btn" href="https://augmented-perception.org/publications/2024-singing-assistants.html" target="_blank" rel="noopener">Project</a>
+        <a class="proj-btn" href="https://doi.org/10.1145/3654777.3676416" target="_blank" rel="noopener">📄 Paper</a>
+        <a class="proj-btn" href="https://www.youtube.com/watch?v=cfTumi2MC8E" target="_blank" rel="noopener">🎬 Video</a>
+        <a class="proj-btn" href="https://www.youtube.com/watch?v=zox8x9wUeOY" target="_blank" rel="noopener">🎤 Presentation</a>
       </nav>
     </header>
 
-    <div class="vplayer" data-video="musicassistant.mp4" data-youtube="cfTumi2MC8E">
-      <img class="vplayer-poster" src="MVAfigure.png" alt="Music-Aware Virtual Assistants preview">
-      <button class="vplayer-play" type="button" aria-label="Play preview">▶</button>
-    </div>
+    <figure class="proj-teaser"><img src="MVAfigure.png" alt="A musical assistant singing a notification into the song in place of the singer"></figure>
 
     <p class="proj-lead">
       We contribute a novel technique for generating new melodies in pop songs with precise rhythmic
@@ -45,62 +42,7 @@
 
     <section class="proj-section">
       <h2>Audio Examples</h2>
-      <div class="proj-audio-grid">
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Get Lucky — Daft Punk</p>
-          <p class="proj-audio-context">"your flight to New York is boarding now"</p>
-          <audio controls preload="none" src="MVA-getlucky.mp3"></audio>
-        </div>
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Disturbia — Rihanna</p>
-          <p class="proj-audio-context">"trash pickup at 10 am today"</p>
-          <audio controls preload="none" src="MVA-disturbia.mp3"></audio>
-        </div>
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Crawling — Linkin Park</p>
-          <p class="proj-audio-context">"assignment due tonight"</p>
-          <audio controls preload="none" src="MVA-crawling.mp3"></audio>
-        </div>
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Spain — Chick Corea</p>
-          <p class="proj-audio-context">"new meeting invitation"</p>
-          <audio controls preload="none" src="MVA-spain.mp3"></audio>
-        </div>
-      </div>
-      <div class="proj-audio-grid compact">
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Take On Me — a-ha</p>
-          <audio controls preload="none" src="MVA/take%20on%20me.mp3"></audio>
-        </div>
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Wake Me Up — Avicii</p>
-          <audio controls preload="none" src="MVA/wake%20me%20up.mp3"></audio>
-        </div>
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Don't You Worry Child — Swedish House Mafia</p>
-          <audio controls preload="none" src="MVA/dont%20you%20worry%20child.mp3"></audio>
-        </div>
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Numb — Linkin Park</p>
-          <audio controls preload="none" src="MVA/numb.mp3"></audio>
-        </div>
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Sad Machine — Porter Robinson</p>
-          <audio controls preload="none" src="MVA/sad%20machine.mp3"></audio>
-        </div>
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Them Changes — Thundercat</p>
-          <audio controls preload="none" src="MVA/them%20changes.mp3"></audio>
-        </div>
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">Canon in D — Pachelbel</p>
-          <audio controls preload="none" src="MVA/canon%20in%20D.mp3"></audio>
-        </div>
-        <div class="proj-audio-card">
-          <p class="proj-audio-song">The Legend of Zelda</p>
-          <audio controls preload="none" src="MVA/the%20legend%20of%20zelda.mp3"></audio>
-        </div>
-      </div>
+      <div class="try" id="try-mva" style="--paper:#e0479e"></div>
     </section>
 
     <section class="proj-section">
@@ -175,30 +117,32 @@
     <section class="proj-section">
       <h2>Comparisons</h2>
 
-      <div class="cmp">
-        <p class="wt-title">Our approach vs. baseline</p>
+      <div class="wt tabbed">
+      <div class="wt-step"><div class="wt-body">
+        <p class="wt-title">Ours vs. baseline</p>
         <div class="wt-audios">
           <div class="wt-audio"><span class="lab">Baseline</span><audio controls preload="none" src="compare/callmemaybe-naive.mp3"></audio></div>
           <div class="wt-audio after"><span class="lab">Our approach</span><audio controls preload="none" src="compare/callmemaybe.mp3"></audio></div>
         </div>
-      </div>
+      </div></div>
 
-      <div class="cmp">
-        <p class="wt-title">Melody generation: prosody-aware generation vs. original melody</p>
+      <div class="wt-step"><div class="wt-body">
+        <p class="wt-title">Melody: prosody-aware vs. original</p>
         <p class="wt-desc">Holding the synthesis method fixed, we compare melodies. Our prosody-aware generation preserves the natural rhythm of the spoken text, while singing the notification to the song's original melody distorts the words.</p>
         <div class="wt-audios">
           <div class="wt-audio after"><span class="lab">Prosody-aware generation</span><audio controls preload="none" src="compare/rick-prosody.mp3"></audio></div>
           <div class="wt-audio"><span class="lab">Original melody</span><audio controls preload="none" src="compare/rick-original.mp3"></audio></div>
         </div>
-      </div>
+      </div></div>
 
-      <div class="cmp">
-        <p class="wt-title">Voice synthesis: our synthesis approach vs. SVS</p>
+      <div class="wt-step"><div class="wt-body">
+        <p class="wt-title">Voice: our synthesis vs. SVS</p>
         <p class="wt-desc">Holding the melody fixed, we compare two ways to make the voice sing: our synthesis approach versus singing voice conversion. Our approach stayed more intelligible.</p>
         <div class="wt-audios">
           <div class="wt-audio after"><span class="lab">Our synthesis approach</span><audio controls preload="none" src="MVA-getlucky.mp3"></audio></div>
           <div class="wt-audio"><span class="lab">Singing voice conversion</span><audio controls preload="none" src="compare/getlucky-svc.mp3"></audio></div>
         </div>
+      </div></div>
       </div>
     </section>
 
@@ -239,10 +183,6 @@
       </div>
     </section>
 
-    <footer class="proj-footer">
-      <a href="/">← Back to Alexander Wang</a>
-    </footer>
-
   </div>
 
   <script src="/assets/js/vplayer.js?v=2"></script>
@@ -259,5 +199,7 @@
       });
     });
   </script>
+  <script type="module" src="/assets/js/try-musicassistant.js"></script>
+  <script src="/assets/js/wt-tabs.js"></script>
 </body>
 </html>
