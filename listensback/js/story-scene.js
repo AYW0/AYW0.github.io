@@ -73,6 +73,36 @@ function curved(geom, mat, hull = 0.008) {
   g.userData.mesh = m;
   return g;
 }
+// A scanned-style plush model: header 'PLS1', vertex/face counts, bbox; then uint16 positions,
+// uint8 RGB colours, uint16/uint32 indices. Scaled so its longest side is `size`, resting on y = 0.
+function halftoneColored({ base = 0.0, range = 0.16, cell = 3.4 } = {}) {
+  const m = halftone({ base, range, cell });
+  m.vertexColors = true;
+  m.vertexShader = 'varying vec3 vCol;\n' + m.vertexShader.replace('void main() {', 'void main() { vCol = color;');
+  m.fragmentShader = 'varying vec3 vCol;\n' + m.fragmentShader.replace('vec3 c = mix(uPaper,', 'vec3 c = mix(vCol,');
+  return m;
+}
+async function loadPlush(url, size) {
+  const buf = await (await fetch(url)).arrayBuffer();
+  const dv = new DataView(buf), nv = dv.getUint32(4, true), nf = dv.getUint32(8, true);
+  const lo = [0, 1, 2].map((i) => dv.getFloat32(12 + i * 4, true)), hi = [0, 1, 2].map((i) => dv.getFloat32(24 + i * 4, true));
+  let o = 36;
+  const q = new Uint16Array(buf, o, nv * 3); o += nv * 6;
+  const col = new Uint8Array(buf, o, nv * 3); o += nv * 3; if (o % 2) o++;
+  const idx = nv < 65536 ? new Uint16Array(buf, o, nf * 3) : new Uint32Array(buf.slice(o), 0, nf * 3);
+  const ext = hi.map((h, i) => h - lo[i]), k = size / Math.max(...ext);
+  const pos = new Float32Array(nv * 3);
+  for (let i = 0; i < nv; i++) for (let a = 0; a < 3; a++) {
+    const x = lo[a] + (q[i * 3 + a] / 65535) * ext[a];
+    pos[i * 3 + a] = a === 1 ? (x - lo[1]) * k : (x - (lo[a] + hi[a]) / 2) * k;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(new Uint8Array(col), 3, true));
+  geo.setIndex(new THREE.BufferAttribute(idx, 1));
+  geo.computeVertexNormals();
+  return curved(geo, halftoneColored(), 0.005);
+}
 function circleLine(r, segs = 48, mat = LINE) {
   const pts = [];
   for (let i = 0; i <= segs; i++) { const a = (i / segs) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, 0)); }
@@ -429,6 +459,32 @@ export class Room {
     for (const sx of [-1.25, 1.25]) for (const sz of [-0.4, 0.4]) { const leg = box(0.05, 0.05, 0.05, dark); leg.position.set(sx, 0.0, sz); couch.add(leg); }
     S.add(couch);
 
+    // the lab's plushies on the couch: Pork the seal and Chop the pig (hover for names, click to squish)
+    this.plushies = [];
+    const plush = (g, name, kind) => {
+      g.userData = { hover: 'plush', name, kind, squish: 0 };
+      g.traverse((o) => { if (o.isMesh) o.userData.hoverRoot = g; });
+      S.add(g); this.plushies.push(g); this.hoverables.push(g);
+    };
+    {
+      // Chop: a 3D model of the real plush (shape from Hunyuan3D, coloured from the product photo),
+      // drawn in the room's halftone with an outline. Loaded from a compact binary: quantised
+      // positions, per-vertex colours, triangle indices.
+      const chop = new THREE.Group(); chop.position.set(0.32, 0.51, -1.86); chop.rotation.y = -0.4;
+      plush(chop, 'Chop', 'pig');
+      loadPlush(new URL('../models/chop.bin', import.meta.url), 0.34).then((g) => {
+        chop.add(g); g.traverse((o) => { if (o.isMesh) o.userData.hoverRoot = chop; });
+      }).catch(() => {});
+    }
+    {
+      // Pork: the chubby spotted seal, made the same way as Chop
+      const pork = new THREE.Group(); pork.position.set(-1.36, 0.51, -1.86); pork.rotation.y = 1.15;
+      plush(pork, 'Pork', 'seal');
+      loadPlush(new URL('../models/pork.bin', import.meta.url), 0.52).then((g) => {
+        pork.add(g); g.traverse((o) => { if (o.isMesh) o.userData.hoverRoot = pork; });
+      }).catch(() => {});
+    }
+
     // coffee table + phone + mug
     const table = new THREE.Group(); table.position.set(-0.55, 0, -0.75);
     const top = box(1.15, 0.05, 0.6, wood); top.position.y = 0.42; table.add(top);
@@ -714,6 +770,12 @@ export class Room {
       this.camera.position.x += Math.sin(t * 61) * s; this.camera.position.y += Math.cos(t * 53) * s;
     }
     this.camera.lookAt(tg);
+    // plush squish: a quick springy squash after a click
+    for (const p of this.plushies || []) {
+      const u = p.userData; u.squish = Math.max(0, u.squish - dt * 2.2);
+      const w = u.squish * Math.sin((1 - u.squish) * 18) * 0.22;
+      p.scale.set(1 + w * 0.6, 1 - w, 1 + w * 0.6);
+    }
     const want = this.focusShift || 0;
     if (Math.abs((this.shiftX || 0) - want) > 1e-4) { this.shiftX = (this.shiftX || 0) + (want - (this.shiftX || 0)) * (1 - Math.exp(-dt * 3)); this.applyOffset(); }
     this.renderer.render(this.scene, this.camera);

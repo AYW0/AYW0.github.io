@@ -8,7 +8,7 @@ import { Engine, normGain } from './engine.js';
 import * as V from './voice.js';
 import { Timeline } from './timeline.js';
 import { Liminality, LIM_SONGS, loadData as loadJourney } from './liminality.js';
-import { Roll, RiseTrack, MirFigure, MvPanel, MvPipe, BeatMatchFig, ProsodyFig, CutFig, StudyFig, WerFig, SkipFig, CutPlayFig } from './story-viz.js';
+import { riseEnvelope, RISE_HOP, Roll, RiseTrack, MirFigure, MvPanel, MvPipe, BeatMatchFig, ProsodyFig, CutFig, StudyFig, WerFig, SkipFig, CutPlayFig } from './story-viz.js';
 
 const $ = (s) => document.querySelector(s);
 // phones and narrow windows: the card sits on top instead of beside the room
@@ -267,7 +267,7 @@ async function loadRise(w = WORKOUT[0]) {
     fetch(dir + 'combined_segments.json').then((r) => r.json()),
     fetch(dir + w.file).then((r) => r.arrayBuffer()).then((a) => engine.ctx.decodeAudioData(a)),
   ]);
-  rise.buf = ab; rise.norm = normGain([ab]);
+  rise.buf = ab; rise.norm = normGain([ab]); riseEnvelope(ab); // precompute the waveform once, at load
   rise.beats = bt.split(/[\s,]+/).filter(Boolean).map(Number);
   const B = rise.beats, at = (i) => B[Math.min(i, B.length - 1)];
   const pairs = (t) => (typeof t === 'string' ? [...t.matchAll(/\((\d+),\s*(\d+)\)/g)].map((m) => [+m[1], +m[2]]) : t || []);
@@ -420,11 +420,20 @@ function riseStart(pos, fadeIn = 0.3) {
   riseStop();
   const when = engine.ctx.currentTime + 0.1;
   rise.maps = [{ c: when, p: pos }]; riseVoice(pos, when, fadeIn); rise.active = true; rise.pending = null; rise.jumps = []; rise.upcoming = null; rise.setStart = when;
+  // played as written: the moment the high part ends, ease the volume down a little, then let it
+  // fade slowly from there
+  if (!rise.adapt && rise.segs) {
+    const hs = rise.segs.find((x) => x.high && x.end > pos);
+    if (hs) {
+      const c = when + (hs.end - pos), v = rise.voices[rise.voices.length - 1].g.gain, L = riseLevel();
+      v.setValueAtTime(L, Math.max(when + fadeIn, c - 0.05)); v.linearRampToValueAtTime(L * 0.6, c + 0.6); v.linearRampToValueAtTime(0, c + 8); // silent as the playhead reaches the end of the view (drop end + 8 s)
+    }
+  }
 }
 function riseStop() {
   jumpFlashes.length = 0;
   const now = engine.ctx?.currentTime || 0;
-  for (const v of rise.voices) { v.g.gain.cancelScheduledValues(0); v.g.gain.setValueAtTime(v.g.gain.value, now); v.g.gain.linearRampToValueAtTime(0, now + 3); try { v.s.stop(now + 3.1); } catch {} }
+  for (const v of rise.voices) { v.g.gain.cancelScheduledValues(now); v.g.gain.setValueAtTime(v.g.gain.value, now); v.g.gain.linearRampToValueAtTime(0, now + 3); try { v.s.stop(now + 3.1); } catch {} }
   rise.voices = []; rise.active = false;
 }
 function risePos(now = engine.ctx.currentTime) { let m = rise.maps[0]; for (const x of rise.maps) if (x.c <= now) m = x; return m ? m.p + (now - m.c) : 0; }
@@ -434,7 +443,8 @@ function riseJump(orig, dest, xf = 0.025) {
   old.g.gain.setValueAtTime(riseLevel(), c - xf); old.g.gain.linearRampToValueAtTime(0, c + xf); old.s.stop(c + xf + 0.02);
   riseVoice(dest - xf, c - xf, 2 * xf);
   rise.maps.push({ c, p: dest });
-  flashJump(dest < orig ? 'loop' : 'skip', c);
+  // before the cutpoints are explained, a loop just extends the drop: no LOOP flash
+  if (rise.showCuts !== false) flashJump(dest < orig ? 'loop' : 'skip', c);
   return c;
 }
 const riseSeg = (p) => !rise.segs ? { high: false } : rise.segs.find((s) => p >= s.start && p < s.end) || rise.segs[rise.segs.length - 1];
@@ -458,7 +468,7 @@ function riseStep() {
       if (best) {
         rise.pending = riseJump(best.orig, best.dest);
         rise.jumps.push({ ...best });
-        setTimeout(() => flashLabel('loop', at(room.speakers[1], 0, 1.35, 0), `↺ Looped back ${(best.orig - best.dest).toFixed(1)} s · seamless`), Math.max(0, (rise.pending - now) * 1000));
+        setTimeout(() => flashLabel('loop', at(room.speakers[1], 0, 1.35, 0), rise.showCuts === false ? `🔥 Drop extended +${(best.orig - best.dest).toFixed(1)} s` : `↺ Looped back ${(best.orig - best.dest).toFixed(1)} s · seamless`), Math.max(0, (rise.pending - now) * 1000));
       }
     }
   }
@@ -989,7 +999,8 @@ const CH = [async () => {
   await say(`David starts squatting during the ${HI()}…`);
   await guard(new Promise((r) => { anim.onCalm = r; }));
   await say(`…and halfway through the set, <b>the ${HI()} ends</b>. The energy drops right when David needs it, and he stops.`);
-  await wait(1500);
+  // let it play out to the end of the view, where it has faded to nothing
+  { const endAt = rise.segs.find((x) => x.high).end + 8; while (rise.active && risePos() < endAt) await wait(200); }
   riseStop(); rackBar();
   await choices([{ label: 'Try it again with RISE', primary: true }]);
   unthink();
@@ -997,13 +1008,12 @@ const CH = [async () => {
   const loopStart = rise.choice ? rise.choice.orig - 9 : dropEnd - 9;
   riseStart(loopStart);
   pose('rack', 0.5); anim.working = true; anim.reps = 0;
-  showLive('rise', 'RISE', 'Loops while David works');
+  rise.showCuts = false;
+  showLive('rise', 'RISE', 'Extends the drop while David works');
   think('Let’s go! 💪', 'good', 3500);
   later(() => think(`Yes! Keep the ${HI()} going 🔥`, 'good'), 9600);
-  await say(`<b>RISE</b>, from our ISMIR paper, knows David is still working. Near the end of the ${HI()} it <b>jumps back to a point where the music repeats</b>, so the ${HI()} keeps going.`);
+  await say(`<b>RISE</b>, from our ISMIR paper, can <b>rearrange music in real time</b> to <b>extend the high-intensity part</b> based on the listener’s activity patterns.`);
   await wait(11000);
-  await next();
-  await say('The loop sits on a <b>seamless cutpoint</b> inside the section, found ahead of time from the song’s own repetition. Listeners rate these cuts as natural as unedited audio.');
   await next('Finish the set ▸');
   anim.working = false; pose('stand', 0.6); riseStop(); rackBar(); unthink();
   // skipping: after resting, David is ready, but the song is still calm
@@ -1545,6 +1555,7 @@ $('#scene').addEventListener('pointerup', (e) => {
   if (hv && hv.userData.hover === 'phone' && curChapter === 5) { openPhoneApp(); return; }
   if (hv && hv.userData.hover === 'drawer') { const d = room.drawer.userData; d.target = d.target ? 0 : 1; sfx.tone(220, 160, 0.18, 0.04, 'triangle'); return; }
   if (hv && hv.userData.hover === 'namecard') { $('#profile').hidden = false; return; }
+  if (hv && hv.userData.hover === 'plush') { hv.userData.squish = 1; const pig = hv.userData.kind === 'pig'; sfx.tone(pig ? 700 : 900, pig ? 420 : 1300, 0.16, 0.05, 'triangle'); return; }
   if (!hv || !['poster', 'drake'].includes(hv.userData.hover)) return;
   openPoster(hv);
 });
@@ -1812,7 +1823,27 @@ function frame(now) {
     const ch = rise.segs.find((x) => x.high);
     // only the loop in use: the one coming up, else the last one taken, else the hand-picked one
     const curLoop = rise.adapt ? rise.upcoming || rise.jumps[rise.jumps.length - 1] || rise.choice : null;
-    track.draw({ segs: rise.segs, beats: rise.beats, pos, from: Math.min(ch.end - 22, (rise.choice ? rise.choice.dest : ch.end) - 4), to: ch.end + 8, loop: curLoop, upcoming: rise.upcoming && curLoop && rise.upcoming.orig === curLoop.orig && rise.upcoming.dest === curLoop.dest ? rise.upcoming : null, jumps: [], working: anim.working, alert: !rise.adapt && anim.working && !riseSeg(pos).high, now: t });
+    // until the cutpoints are explained, a loop reads as the drop going on longer
+    // extended only once the first jump has actually played (it is scheduled a moment ahead)
+    const looped = curLoop && rise.maps.length > 1 && rise.maps[1].c <= engine.ctx.currentTime && rise.jumps.some((j) => j.orig === curLoop.orig && j.dest === curLoop.dest);
+    const extend = rise.adapt && !rise.showCuts && curLoop ? { shown: looped, inChunk: looped && pos >= curLoop.dest && pos < curLoop.orig && anim.working, done: looped && (pos >= curLoop.orig || !anim.working) } : null;
+    // the live waveform: loudness now, and whether it is high, extended (a repeat) or low
+    // what was heard at a context time: map it to song position (follows every jump) and read the
+    // precomputed envelope
+    const env = riseEnvelope(rise.buf);
+    const sample = (c) => {
+      if (c < rise.maps[0].c) return null;
+      let mi = 0; for (let k = 0; k < rise.maps.length; k++) if (rise.maps[k].c <= c) mi = k;
+      const m = rise.maps[mi]; let p = m.p + (c - m.c), jumped = mi > 0;
+      // beyond what is scheduled: predict the coming extension, so it is seen arriving
+      if (mi === rise.maps.length - 1 && rise.adapt && anim.working && curLoop && m.p < curLoop.orig && p >= curLoop.orig) { p = curLoop.dest + (p - curLoop.orig); jumped = true; }
+      const e = env[Math.floor(p / RISE_HOP)]; if (e == null) return null;
+      const ext = jumped && curLoop && p > curLoop.dest - 0.05 && p <= curLoop.orig + 0.05 && !rise.showCuts;
+      return { e, kind: ext ? 'ext' : riseSeg(p).high ? 'high' : 'low' };
+    };
+    const repeating = curLoop && looped && pos >= curLoop.dest && pos < curLoop.orig && anim.working;
+    track.live(rise.active ? sample : null, engine.ctx.currentTime, repeating ? 'ext' : riseSeg(pos).high ? 'high' : 'low');
+    track.draw({ extend, segs: rise.segs, beats: rise.beats, pos, from: Math.min(ch.end - 22, (rise.choice ? rise.choice.dest : ch.end) - 4), to: ch.end + 8, loop: curLoop, upcoming: rise.upcoming && curLoop && rise.upcoming.orig === curLoop.orig && rise.upcoming.dest === curLoop.dest ? rise.upcoming : null, jumps: [], working: anim.working, alert: !rise.adapt && anim.working && !riseSeg(pos).high, now: t });
   }
 
   // hover: speakers show what is playing
@@ -1845,6 +1876,9 @@ function frame(now) {
     tip.style.left = `${room.pointer.x + 18}px`; tip.style.top = `${room.pointer.y + 12}px`; tip.hidden = false;
   } else if (hv && (hv.userData.hover === 'drawer' || hv.userData.hover === 'namecard')) {
     tip.innerHTML = hv.userData.hover === 'drawer' ? `<div class="t-k">Drawer</div><div class="t-t">${room.drawer.userData.target ? 'Close it' : 'Open it'}</div>` : '<div class="t-k">Name card</div><div class="t-t">Alex Wang</div><div class="t-a">Click to read</div>';
+    tip.style.left = `${room.pointer.x + 18}px`; tip.style.top = `${room.pointer.y + 12}px`; tip.hidden = false;
+  } else if (hv && hv.userData.hover === 'plush') {
+    tip.innerHTML = `<div class="t-t">${hv.userData.name} ${hv.userData.kind === 'pig' ? '🐷' : '🦭'}</div>`;
     tip.style.left = `${room.pointer.x + 18}px`; tip.style.top = `${room.pointer.y + 12}px`; tip.hidden = false;
   } else if (hv && hv.userData.hover === 'drake') {
     tip.innerHTML = `<div class="t-k">${hv.userData.info.sub}</div><div class="t-t">${hv.userData.info.title}</div>`;

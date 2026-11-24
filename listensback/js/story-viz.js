@@ -121,19 +121,80 @@ function rr(g, x, y, w, h, r) {
 
 // RISE track (as on rise.html): the song around the chorus in song time, sections drawn hot or
 // calm, the playhead, an upcoming loop as an arc with its replayed region, and loops taken.
+// Live waveform under the RISE track (as in the RISE video): it scrolls right to left with what is
+// playing now, coloured red while high, purple while extended, blue while low.
+const LIVEC = { high: '#ff5a5a', ext: '#c77dff', low: '#5aa8ff' };
+const LIVEN = { high: 'HIGH', ext: 'HIGH · EXTENDED', low: 'LOW' };
+// `sample(c0, c1)` returns { lo, hi, kind } for the audio heard between context times c0 and c1
+// `at(c)` returns { e, kind } for the hop of audio that will play at context time c (from a
+// precomputed envelope). Upcoming audio scrolls in from the right to the playhead on the left,
+// rhythm-game style; columns sit on a fixed time grid and slide by the fractional offset.
+const HOP = 0.006;
+function drawLive(g, at, nowC, L, R, y0, h, kind) {
+  const mid = y0 + h / 2, step = 3, n = Math.ceil((R - L) / step) + 1;
+  g.fillStyle = 'rgba(255,255,255,0.04)'; g.fillRect(L, y0, R - L, h);
+  g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(L, mid, R - L, 1);
+  if (at && nowC != null) {
+    // look ahead: what is about to play flows in from the right and reaches the playhead on the left
+    const k0 = Math.ceil(nowC / HOP), frac = k0 - nowC / HOP;
+    g.save(); g.beginPath(); g.rect(L + 50, y0, R - L - 50, h); g.clip();
+    for (let i = 0; i < n; i++) {
+      const a = at((k0 + i) * HOP); if (!a) continue;
+      const x = L + 50 + (i + frac) * step, v = Math.pow(Math.min(1, a.e), 2.2) * h * 0.48;
+      g.fillStyle = LIVEC[a.kind]; g.globalAlpha = 0.95 - 0.6 * (i / n);
+      g.fillRect(x, mid - v, step - 0.8, Math.max(1, 2 * v));
+    }
+    g.restore(); g.globalAlpha = 1;
+    // the playhead is a speaker: it pumps and shakes with the loudness landing on it, in the
+    // colour of what is playing, and sends a ring out on each hit
+    // low-intensity parts barely move the speaker; high and extended parts drive it fully
+    const cur = at(nowC), gain = cur && cur.kind === 'low' ? 0.25 : 1, e = cur ? Math.pow(Math.min(1.2, cur.e), 1.6) * gain : 0, col = cur ? LIVEC[cur.kind] : '#fff';
+    const st = drawLive.st || (drawLive.st = { prev: 0, rings: [] });
+    if (gain === 1 && e - st.prev > 0.18 && e > 0.45) st.rings.push({ t: nowC, col }); st.prev = e * 0.6 + st.prev * 0.4;
+    const cx = L + 24 + (Math.random() - 0.5) * 3 * e, cy = mid + (Math.random() - 0.5) * 3 * e, r = 9 + 9 * e;
+    for (let i = st.rings.length - 1; i >= 0; i--) { const q = (nowC - st.rings[i].t) / 0.45; if (q > 1 || q < 0) { st.rings.splice(i, 1); continue; }
+      g.strokeStyle = st.rings[i].col; g.globalAlpha = 1 - q; g.lineWidth = 3 * (1 - q) + 0.5; g.beginPath(); g.arc(cx, cy, r + q * 34, 0, Math.PI * 2); g.stroke(); }
+    g.globalAlpha = 1;
+    g.save(); g.shadowColor = col; g.shadowBlur = 12 + 26 * e;
+    g.fillStyle = '#14141f'; g.beginPath(); g.arc(cx, cy, r + 4, 0, Math.PI * 2); g.fill();
+    g.fillStyle = col; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill(); g.restore();
+    g.fillStyle = 'rgba(0,0,0,0.35)'; g.beginPath(); g.arc(cx, cy, r * 0.55, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.arc(cx, cy, r * 0.22, 0, Math.PI * 2); g.fill();
+  }
+  if (kind) { g.font = '800 11px Inter, sans-serif'; g.textBaseline = 'alphabetic'; const t = LIVEN[kind], w = g.measureText(t).width + 14;
+    g.fillStyle = LIVEC[kind]; rr(g, R - w, y0 - 22, w, 18, 9); g.fill(); g.fillStyle = '#0b0b12'; g.fillText(t, R - w + 7, y0 - 9); }
+}
+// precomputed loudness envelope (RMS per HOP), normalised to the song's loud parts
+const ENV = new WeakMap();
+export function riseEnvelope(buf) {
+  if (ENV.has(buf)) return ENV.get(buf);
+  const x = buf.getChannelData(0), sr = buf.sampleRate, w = Math.round(HOP * sr), n = Math.floor(x.length / w), env = new Float32Array(n);
+  for (let k = 0; k < n; k++) { let q = 0; for (let i = k * w, e = i + w; i < e; i += 2) q += x[i] * x[i]; env[k] = Math.sqrt(q / (w / 2)); }
+  const srt = Array.from(env).sort((a, b) => a - b), ref = srt[Math.floor(n * 0.98)] || 1;
+  for (let k = 0; k < n; k++) env[k] /= ref;
+  ENV.set(buf, env); return env;
+}
+export const RISE_HOP = HOP;
+
 export class RiseTrack {
-  constructor(c) { this.c = c; this.g = c.getContext('2d'); }
+  constructor(c) { this.c = c; this.g = c.getContext('2d'); this.hist = []; }
+  // one waveform sample per frame while the song plays
+  live(sample, nowC, kind) { this.sample = sample; this.nowC = nowC; this.kind = kind; }
   fit() {
     const r = this.c.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1);
     if (this.c.width !== Math.round(r.width * d) || this.c.height !== Math.round(r.height * d)) { this.c.width = Math.round(r.width * d); this.c.height = Math.round(r.height * d); }
     this.g.setTransform(d, 0, 0, d, 0, 0); this.w = r.width; this.h = r.height;
   }
-  draw({ segs, beats, pos, from, to, upcoming, jumps, working, alert, now, loop }) {
+  draw({ segs, beats, pos, from, to, upcoming, jumps, working, alert, now, loop, extend, buf }) {
+    // before the cutpoints are revealed, the loop is shown as the drop simply going on longer: an
+    // extra purple chunk after the original drop, with the playhead running through it
+    if (extend && loop) return this.drawExtended({ segs, beats, pos, from, to, working, alert, now, loop, extend, buf });
     this.fit();
     const g = this.g, W = this.w, H = this.h;
     g.clearRect(0, 0, W, H);
-    const L = 10, R = W - 10, top = 64, laneH = H - top - 30, mid = top + laneH / 2;
+    const SH = 54, L = 10, R = W - 10, top = 64, laneH = H - top - 30 - SH - 26, mid = top + laneH / 2;
     const X = (s) => L + ((s - from) / (to - from)) * (R - L);
+    drawLive(g, this.sample, this.nowC, L, R, H - 22 - SH, SH, this.kind);
     for (const s of segs) {
       const x0 = Math.max(L, X(s.start)), x1 = Math.min(R, X(s.end)); if (x1 <= x0) continue;
       g.save(); g.beginPath(); g.rect(x0, top, x1 - x0, laneH); g.clip();
@@ -145,7 +206,7 @@ export class RiseTrack {
       if (s.high) { const off = (now * 120) % 40; for (let x = x0 - laneH - 40 + off; x < x1; x += 40) { g.beginPath(); g.moveTo(x, top + laneH); g.lineTo(x + 14, top + laneH); g.lineTo(x + 14 + laneH, top); g.lineTo(x + laneH, top); g.fill(); } }
       g.globalAlpha = 1;
       g.font = '800 12px Inter, sans-serif'; g.fillStyle = s.high ? '#fff' : 'rgba(170,205,255,0.9)'; g.textBaseline = 'alphabetic';
-      if (x1 - x0 > 110) g.fillText(s.high ? '🔥 HIGH ENERGY · drop' : '〰 CALM · build', x0 + 8, top + laneH - 9);
+      if (x1 - x0 > 50) g.fillText(s.high ? '🔥 HIGH' : '〰 LOW', x0 + 8, top + laneH - 9);
       g.restore();
     }
     for (const b of beats) { const x = X(b); if (x < L || x > R) continue; g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(x, top + laneH - 10, 1, 10); }
@@ -184,6 +245,89 @@ export class RiseTrack {
     if (alert) { g.fillStyle = '#ff7a6e'; g.font = '800 13px Inter, sans-serif'; g.fillText('⚠ the drop ended mid-set', L + 150, H - 8); }
   }
 }
+
+// RiseTrack, extended view: song time up to the loop point, then the repeated chunk as one purple
+// block ("high intensity · extended"), then the rest of the song shifted right.
+RiseTrack.prototype.drawExtended = function ({ segs, beats, pos, from, to, working, alert, now, loop, extend, buf }) {
+  this.fit();
+  const g = this.g, W = this.w, H = this.h, o = loop.orig, d = loop.dest;
+  // the extension opens with a short, eased reveal (slight overshoot) the moment the drop is extended
+  if (extend.shown && this.extT0 == null) this.extT0 = now;
+  if (!extend.shown) this.extT0 = null;
+  const ap = this.extT0 == null ? 0 : Math.min(1, (now - this.extT0) / 1.3);
+  const back = (p) => { const c = 1.6; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+  const Lc = (o - d) * (ap ? back(ap) : 0);
+  g.clearRect(0, 0, W, H);
+  const SH = 54, L = 10, R = W - 10, top = 64, laneH = H - top - 30 - SH - 26, mid = top + laneH / 2;
+  drawLive(g, this.sample, this.nowC, L, R, H - 22 - SH, SH, this.kind);
+  const to2 = to + Lc, X = (t) => L + ((t - from) / (to2 - from)) * (R - L);
+  const disp = (s) => (s <= o ? s : s + Lc); // song time → display time for the parts outside the chunk
+  const band = (x0, x1, high) => {
+    if (x1 <= x0) return;
+    g.save(); g.beginPath(); g.rect(x0, top, x1 - x0, laneH); g.clip();
+    const grd = g.createLinearGradient(0, top, 0, top + laneH);
+    if (high) { grd.addColorStop(0, '#ff8a3d'); grd.addColorStop(0.5, '#ff5a6e'); grd.addColorStop(1, '#7a1030'); } else { grd.addColorStop(0, '#1b2f55'); grd.addColorStop(1, '#0c1630'); }
+    g.fillStyle = grd; g.fillRect(x0, top, x1 - x0, laneH);
+    if (high) { g.globalAlpha = 0.16; g.fillStyle = '#fff'; const off = (now * 120) % 40; for (let x = x0 - laneH - 40 + off; x < x1; x += 40) { g.beginPath(); g.moveTo(x, top + laneH); g.lineTo(x + 14, top + laneH); g.lineTo(x + 14 + laneH, top); g.lineTo(x + laneH, top); g.fill(); } g.globalAlpha = 1; }
+    g.restore();
+  };
+  for (const s of segs) {
+    // before the loop point, and after it (shifted by the extension)
+    band(Math.max(L, X(Math.min(s.start, o))), Math.min(R, X(Math.min(s.end, o))), s.high);
+    if (s.end > o) band(Math.max(L, X(disp(Math.max(s.start, o)))), Math.min(R, X(disp(s.end))), s.high);
+  }
+  // before it happens: mark where the drop will be extended
+  const xa = X(o), xb = X(o + Lc);
+  if (!extend.shown) {
+    const near = Math.max(0, 1 - Math.max(0, o - pos) / 8), pul = 0.5 + 0.5 * Math.sin(now * (4 + 8 * near));
+    g.strokeStyle = '#c77dff'; g.lineWidth = 2.5; g.setLineDash([6, 5]); g.beginPath(); g.moveTo(xa, top - 8); g.lineTo(xa, top + laneH + 4); g.stroke(); g.setLineDash([]);
+    g.save(); g.shadowColor = '#c77dff'; g.shadowBlur = 10 + 14 * pul * near;
+    g.font = '800 12px Inter, sans-serif'; const t = 'EXTEND HERE ▸', w = g.measureText(t).width + 16;
+    g.fillStyle = '#b04ad6'; rr(g, xa - w / 2, top - 34, w, 22, 11); g.fill(); g.restore();
+    g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.fillText(t, xa - w / 2 + 8, top - 23); g.textBaseline = 'alphabetic';
+    g.fillStyle = '#c77dff'; g.beginPath(); g.moveTo(xa - 6, top - 12); g.lineTo(xa + 6, top - 12); g.lineTo(xa, top - 4); g.fill();
+  }
+  // the extension (once the drop has actually been extended)
+  if (Lc > 0.05) {
+    g.save(); g.beginPath(); g.rect(xa, top, xb - xa, laneH); g.clip();
+    const pg = g.createLinearGradient(0, top, 0, top + laneH); pg.addColorStop(0, '#d38cff'); pg.addColorStop(0.5, '#a54bf0'); pg.addColorStop(1, '#4a1580');
+    g.fillStyle = pg; g.fillRect(xa, top, xb - xa, laneH);
+    g.globalAlpha = 0.18; g.fillStyle = '#fff'; const off = (now * 120) % 40; for (let x = xa - laneH - 40 + off; x < xb; x += 40) { g.beginPath(); g.moveTo(x, top + laneH); g.lineTo(x + 14, top + laneH); g.lineTo(x + 14 + laneH, top); g.lineTo(x + laneH, top); g.fill(); } g.globalAlpha = 1;
+    g.restore();
+    g.strokeStyle = 'rgba(255,255,255,0.7)'; g.lineWidth = 1.5; g.setLineDash([4, 4]); g.beginPath(); g.moveTo(xa, top - 4); g.lineTo(xa, top + laneH + 4); g.stroke(); g.setLineDash([]);
+    if (ap < 1) {
+      // glow on the growing block and a ring bursting from the point it opened at
+      g.save(); g.shadowColor = '#d38cff'; g.shadowBlur = 30 * (1 - ap); g.strokeStyle = 'rgba(230,190,255,' + (1 - ap) + ')'; g.lineWidth = 3; g.strokeRect(xa, top, xb - xa, laneH); g.restore();
+      for (const k of [0, 0.18]) { const q = Math.max(0, Math.min(1, (ap - k) / 0.7)); if (!q || q >= 1) continue;
+        g.strokeStyle = 'rgba(211,140,255,' + (1 - q) + ')'; g.lineWidth = 3 * (1 - q) + 1; g.beginPath(); g.arc(xa, mid, 10 + q * 90, 0, Math.PI * 2); g.stroke(); }
+    }
+    const sc = ap < 1 ? Math.min(1.25, back(Math.min(1, ap * 1.4))) : 1;
+    g.save(); g.translate((xa + xb) / 2, top - 16); g.scale(sc, sc);
+    g.font = '800 12px Inter, sans-serif'; const tag = `+${(o - d).toFixed(1)} s extended`; const tw = g.measureText(tag).width + 16;
+    g.shadowColor = '#c77dff'; g.shadowBlur = ap < 1 ? 16 : 0;
+    g.fillStyle = '#b04ad6'; rr(g, -tw / 2, -11, tw, 22, 11); g.fill(); g.shadowBlur = 0; g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.fillText(tag, -tw / 2 + 8, 0); g.restore(); g.textBaseline = 'alphabetic';
+  }
+  // labels on each colour
+  g.textBaseline = 'alphabetic'; g.font = '800 12px Inter, sans-serif';
+  for (const sg of segs) {
+    for (const [a, b] of Lc ? [[sg.start, Math.min(sg.end, o)], [Math.max(sg.start, o), sg.end]] : [[sg.start, sg.end]]) {
+      if (b <= a) continue; const x0 = Math.max(L, X(disp(a))), x1 = Math.min(R, X(disp(b))); if (x1 - x0 < 40) continue;
+      g.fillStyle = sg.high ? '#fff' : 'rgba(170,205,255,0.9)'; g.fillText(sg.high ? '🔥 HIGH' : '〰 LOW', x0 + 8, top + laneH - 9);
+    }
+  }
+  if (Lc && xb - xa > 60) { g.fillStyle = '#fff'; g.fillText(xb - xa > 150 ? '🔥 HIGH · EXTENDED' : 'EXTENDED', xa + 8, top + laneH - 9); }
+  // beats
+  for (const b of beats) { if (b > o && b < d) continue; const x = X(disp(b)); if (x < L || x > R) continue; g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(x, top + laneH - 10, 1, 10); }
+  // playhead: in the extension while repeating, else on the song (shifted after the extension)
+  const D = extend.inChunk ? o + Math.max(0, Math.min(Lc, pos - d)) : extend.done ? disp(pos) : Math.min(pos, o);
+  g.fillStyle = 'rgba(7,7,13,0.4)'; g.fillRect(L, top, Math.max(0, X(D) - L), laneH);
+  const xp = X(D);
+  g.fillStyle = '#fff'; g.fillRect(xp - 1.5, top - 6, 3, laneH + 12); g.beginPath(); g.arc(xp, mid, 7, 0, Math.PI * 2); g.fill();
+  g.font = '700 11px "Roboto Mono", monospace'; g.textBaseline = 'alphabetic';
+  g.fillStyle = working ? '#ffd166' : 'rgba(255,255,255,0.5)';
+  g.fillText(working ? '● SET IN PROGRESS' : 'RESTING', L, H - 8);
+  if (alert) { g.fillStyle = '#ff7a6e'; g.font = '800 13px Inter, sans-serif'; g.fillText('⚠ the drop ended mid-set', L + 150, H - 8); }
+};
 
 // MARingBA's first step, drawn live from the playing song: music → MIR → beat, key, structure.
 export class MirFigure {

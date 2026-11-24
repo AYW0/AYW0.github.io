@@ -677,3 +677,7 @@ body.lim-on .limgame { background: radial-gradient(ellipse at center, rgba(2,6,1
 @keyframes mpGuide { 50% { outline-color: rgba(255,209,102,0.25); box-shadow: 0 0 14px rgba(255,209,102,0.55); } }
 @media (prefers-reduced-motion: reduce) { .mp-chip.guide, .mp-tabs button.guide { animation: none; } }
 .dtext u { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+/* the RISE track has a live waveform under it */
+#vz-rise.on { height: 330px; }
+@media (max-width: 700px) { #vz-rise.on { height: 250px; } }
